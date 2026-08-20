@@ -51,6 +51,44 @@ export function Ops() {
 
       {status && (
         <>
+          {/* 에스컬레이션 — 판정기·경보 산출. 이 자리가 비어 있어서 매일 나오는
+              critical 이 화면 어디에도 없었다. 경보를 만들어 놓고 아무도 읽지 않는
+              파일에 쓰면 그것도 조용한 실패다. */}
+          {(() => {
+            const e = (status as any)?.escalations;
+            if (!e) return null;
+            if (e.note) return (
+              <Card><div style={{ color: C.warn, fontSize: 13 }}>⚠ {e.note}</div></Card>
+            );
+            const items = e.items || [];
+            return (
+              <Card>
+                <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10 }}>
+                  <b style={{ fontSize: 13 }}>에스컬레이션</b>
+                  <span style={{ fontSize: 11, color: items.length ? C.down : C.up }}>
+                    {items.length ? `${items.length}건 · 최고 ${e.worst}` : "없음"}
+                  </span>
+                  <span style={{ fontSize: 11, color: C.mut, marginLeft: "auto" }}>{e.source} · {e.generated_at}</span>
+                </div>
+                {items.length === 0 ? (
+                  <div style={{ color: C.mut, fontSize: 12 }}>판정기가 올린 건이 없다.</div>
+                ) : items.map((it: any, i: number) => (
+                  <div key={i} style={{ padding: "6px 0", borderTop: i ? `1px solid ${C.line}` : "none", fontSize: 12 }}>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "baseline" }}>
+                      <span style={{ color: it.severity === "critical" ? "#ef4444" : "#f59e0b", fontWeight: 700, minWidth: 48 }}>
+                        {it.severity === "critical" ? "CRIT" : "ALERT"}
+                      </span>
+                      <span style={{ color: C.mut, minWidth: 140 }}>{it.check}</span>
+                      <b>{it.id}</b>
+                      <span style={{ color: C.mut }}>{it.verdict}</span>
+                      <span style={{ flex: 1, minWidth: 220 }}>{it.detail}</span>
+                    </div>
+                    {it.action && <div style={{ color: C.warn, fontSize: 11, marginTop: 2 }}>→ {it.action}</div>}
+                  </div>
+                ))}
+              </Card>
+            );
+          })()}
           <Card>
             <div style={{ color: C.mut, fontSize: 12, marginBottom: 10, fontWeight: 600 }}>데이터 신선도</div>
             <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>

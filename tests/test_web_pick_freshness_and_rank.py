@@ -10,6 +10,7 @@
 """
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -331,3 +332,51 @@ def test_timing_says_which_lanes_it_cannot_price():
     assert "coverage_note" in src and "구조적 한계" in src
     ts = (Path(__file__).resolve().parents[1] / "web/frontend/src/pages/Timing.tsx").read_text(encoding="utf-8")
     assert "coverage_note" in ts and "{cov}" in ts
+
+
+# ── 7. 운영 화면 에스컬레이션 (2026-08-20) ──────────────────────────────────
+
+def test_ops_status_carries_the_escalations():
+    """판정기는 매일 critical 을 내는데 운영 화면엔 데이터 신선도만 있었다.
+
+    경보를 만들어 놓고 아무도 읽지 않는 파일에 쓰면 그것도 조용한 실패다.
+    """
+    import inspect
+    src = inspect.getsource(S.ops_status)
+    assert "_ops_escalations()" in src
+
+
+def test_missing_sentinel_output_says_so_instead_of_showing_zero(tmp_path, monkeypatch):
+    """급소 — 산출이 없을 때 조용히 0건으로 보이면 "문제 없음"으로 읽힌다."""
+    monkeypatch.setattr(S, "REPO", str(tmp_path))
+    out = S._ops_escalations()
+    assert out["items"] == []
+    assert out["note"] and "0건이라는 뜻이 아니다" in out["note"]
+
+
+def test_escalations_include_both_sources(tmp_path, monkeypatch):
+    """판정기와 미채점 경보를 한 자리에 모은다 — 두 곳을 따로 보게 하면 하나는 안 본다."""
+    v = tmp_path / "runtime_state" / "reports" / "validation"
+    v.mkdir(parents=True)
+    (v / "sentinel_latest.json").write_text(json.dumps({
+        "generated_at": "2026-08-20T01:00:00", "worst_severity": "critical",
+        "escalations": [{"severity": "critical", "check": "prereg_kill_criteria",
+                         "id": "kr_ranking_shadow_kill_enforced", "verdict": "FIRED",
+                         "detail": "킬 이후 200건", "on_fire": "정지 지점으로 올린다"}],
+    }), encoding="utf-8")
+    (v / "unresolved_staleness_latest.json").write_text(json.dumps({
+        "stale_days": 10, "breached_ledgers": ["swing_candidate"]}), encoding="utf-8")
+    monkeypatch.setattr(S, "REPO", str(tmp_path))
+
+    out = S._ops_escalations()
+    checks = {i["check"] for i in out["items"]}
+    assert checks == {"prereg_kill_criteria", "unresolved_staleness"}
+    kill = [i for i in out["items"] if i["check"] == "prereg_kill_criteria"][0]
+    assert kill["action"] == "정지 지점으로 올린다", "무엇을 해야 하는지가 함께 와야 한다"
+
+
+def test_ops_page_renders_the_escalations():
+    ops = (Path(__file__).resolve().parents[1] / "web/frontend/src/pages/Ops.tsx").read_text(encoding="utf-8")
+    assert "escalations" in ops and "에스컬레이션" in ops
+    assert "CRIT" in ops, "심각도가 구분돼 보여야 한다"
+    assert "e.note" in ops, "산출 부재도 화면에 남겨야 한다"

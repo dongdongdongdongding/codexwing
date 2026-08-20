@@ -1434,9 +1434,59 @@ def theme():
     return {"themes": out, "total_themes": len(out), "as_of": _theme_records and "최신"}
 
 
+def _ops_escalations():
+    """판정기·경보 산출을 운영 화면으로 올린다.
+
+    **이 자리가 비어 있던 것이 문제였다.** 판정기는 매일 critical 5건을 내는데
+    운영 화면엔 데이터 신선도만 있었다. 죽은 보드가 하루 100행씩 쌓이는 것도
+    화면 어디에도 없었다. 이 리포에서 가장 비쌌던 실패가 조용한 실패인데,
+    경보를 만들어 놓고 아무도 읽지 않는 파일에 쓰는 것은 그 변종이다.
+
+    파일이 없으면 **없다고 말한다** — 조용히 0건으로 보이면 "문제 없음"으로 읽힌다.
+    """
+    out = {"items": [], "worst": None, "source": None, "generated_at": None, "note": None}
+    fp = os.path.join(REPO, "runtime_state/reports/validation/sentinel_latest.json")
+    if not os.path.exists(fp):
+        out["note"] = ("판정기 산출이 없다 — dailyops 의 report_sentinel_expectations 스텝이 "
+                       "아직 돌지 않았다. 0건이라는 뜻이 아니다.")
+        return out
+    try:
+        with open(fp, encoding="utf-8") as fh:
+            d = json.load(fh)
+    except Exception as e:
+        out["note"] = f"판정기 산출을 읽지 못했다: {type(e).__name__}"
+        return out
+    out["source"] = "sentinel_latest.json"
+    out["generated_at"] = d.get("generated_at")
+    out["worst"] = d.get("worst_severity")
+    for e in (d.get("escalations") or []):
+        out["items"].append({
+            "severity": e.get("severity"), "check": e.get("check"),
+            "id": e.get("id") or e.get("lane") or e.get("path"),
+            "verdict": e.get("verdict"), "detail": e.get("detail"),
+            "action": e.get("on_fire") or e.get("action"),
+        })
+    # 미채점 경보도 같은 자리에 올린다 — 두 곳을 따로 보게 하면 하나는 안 본다.
+    up = os.path.join(REPO, "runtime_state/reports/validation/unresolved_staleness_latest.json")
+    try:
+        with open(up, encoding="utf-8") as fh:
+            u = json.load(fh)
+        for lane in (u.get("breached_ledgers") or []):
+            out["items"].append({"severity": "alert", "check": "unresolved_staleness",
+                                 "id": lane, "verdict": "STALE",
+                                 "detail": f"{u.get('stale_days')}일 초과 미채점 행이 있다",
+                                 "action": "정산 파이프 확인"})
+    except Exception:
+        pass
+    return out
+
+
 def ops_status():
     """⑦ 운영 — 스케줄러 세션 상태·데이터 신선도·모델 메타."""
-    out = {"freshness": freshness(), "sessions": [], "models": {}}
+    out = {"freshness": freshness(), "sessions": [], "models": {},
+           # 판정기·경보 산출을 운영 화면으로 올린다. 이 자리가 비어 있어서
+           # 매일 나오는 critical 이 화면 어디에도 없었다.
+           "escalations": _ops_escalations()}
     # 세션 상태(primary_market_session_state.json)
     sp = os.path.join(REPO, "runtime_state/long_term/ops/primary_market_session_state.json")
     try:
