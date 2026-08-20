@@ -430,6 +430,126 @@ KC_EVALUATORS = {
 }
 
 
+ADJUDICATIONS = PROJECT_ROOT / "runtime_state" / "long_term" / "ops" / "adjudications.jsonl"
+
+
+def _adjudicated_ids(root: Path) -> Dict[str, Dict[str, Any]]:
+    """판정 기록 원장. **이 자리가 없던 것이 §40 이 두 달 놓친 진짜 원인이다** —
+    킬 기준이 산문이었던 게 문제가 아니라 판정했는지 확인할 곳이 없었다.
+
+    한 줄 = 한 판정: {"gate_id": ..., "adjudicated_at": ..., "outcome": ..., "where": ...}
+    """
+    path = root / ADJUDICATIONS.relative_to(PROJECT_ROOT)
+    out: Dict[str, Dict[str, Any]] = {}
+    if not path.exists():
+        return out
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except Exception:
+            continue
+        gid = row.get("gate_id")
+        if gid:
+            out[str(gid)] = row
+    return out
+
+
+def _precondition_state(root: Path, pre: Any) -> Dict[str, Any]:
+    """선행조건. **연구 술어가 아니라 파일·행수만 본다.**
+
+    `check` 가 있으면 기계로 재확인하고, 없으면 선언된 met 을 쓰되 미검증임을 표시한다 —
+    선언을 조용히 사실로 승격시키지 않는다.
+    """
+    if not isinstance(pre, dict):
+        return {"met": True, "verified": False, "detail": "선행조건 미선언 — 즉시 판정 대상"}
+    chk = pre.get("check")
+    if isinstance(chk, dict) and chk.get("type") == "min_rows":
+        path = root / str(chk.get("file", ""))
+        if not path.exists():
+            return {"met": False, "verified": True, "detail": f"{chk.get('file')} 없음"}
+        rows = sum(1 for l in path.read_text(encoding="utf-8").splitlines() if l.strip())
+        need = int(chk.get("min", 0))
+        return {"met": rows >= need, "verified": True,
+                "detail": f"{chk.get('file')} {rows}행 (필요 {need})"}
+    return {"met": bool(pre.get("met")), "verified": False,
+            "detail": f"선언값 met={bool(pre.get('met'))} (미검증) — {pre.get('desc','')}"}
+
+
+def check_prereg_track_gates(cfg: Dict[str, Any], root: Optional[Path] = None) -> List[Dict[str, Any]]:
+    """트랙 종료 관문 (OD-48/56).
+
+    **관문은 연구 술어를 평가하지 않는다.** 매일 보는 것은 두 가지뿐이다:
+
+        선행조건 충족  AND  판정 기록 부재   ⇒  발동 (판정이 밀렸다)
+
+    연간 기여 <1%p 같은 걸 매일 계산하는 척하면 매일 같은 답을 내는 가짜 감시가 된다.
+    실제 판정은 사람·하니스가 하고, 그 결과가 판정 원장에 남아야 관문이 닫힌다.
+    """
+    gates = cfg.get("prereg_track_gates") or []
+    if not gates:
+        return []
+    root = root or PROJECT_ROOT
+    done = _adjudicated_ids(root)
+    out: List[Dict[str, Any]] = []
+    for g in gates:
+        gid = str(g.get("id", "?"))
+        base = {"check": "prereg_track_gate", "id": gid, "kind": g.get("kind", "one_shot"),
+                "criterion_at_termination": g.get("criterion_at_termination")}
+        status = str(g.get("status", "overdue"))
+        if status == "see_standing_registry":
+            out.append({**base, "verdict": "IN_STANDING_REGISTRY", "severity": "info",
+                        "detail": f"상시 항목 {g.get('ref')} 에 등록됨 — 중복 판정하지 않는다"})
+            continue
+        if status == "adjudicated" and gid not in done:
+            out.append({**base, "verdict": "CLOSED", "severity": "info",
+                        "detail": f"판정 완료: {g.get('adjudicated_at')} — {g.get('outcome','')}"})
+            continue
+        if gid in done:
+            rec = done[gid]
+            out.append({**base, "verdict": "CLOSED", "severity": "info",
+                        "detail": f"판정 원장 기록: {rec.get('adjudicated_at')} — {rec.get('outcome','')}"})
+            continue
+        pre = _precondition_state(root, g.get("precondition"))
+        if not pre["met"]:
+            out.append({**base, "verdict": "BLOCKED", "severity": "info",
+                        "precondition_verified": pre["verified"],
+                        "detail": f"선행조건 미충족 — {pre['detail']}"})
+            continue
+        out.append({**base, "verdict": "OVERDUE", "severity": str(g.get("severity", "warn")),
+                    "precondition_verified": pre["verified"],
+                    "adjudication_record": g.get("adjudication_record"),
+                    "detail": f"판정할 때가 됐는데 기록이 없다 — {pre['detail']} · "
+                              f"기록처: {g.get('adjudication_record','미지정')}",
+                    "on_fire": g.get("on_fire")})
+    return out
+
+
+def check_prereg_reopen_conditions(cfg: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """재개봉 조건 (OD-51). 킬 기준의 거울상이고 똑같이 아무도 다시 읽지 않는다.
+
+    등록이 없으면 누군가 **"표본 쌓였으니 다시 켜자"** 로 되살린다. 재개봉은 "표본이 쌓이면"이
+    아니라 **"측정 자체가 유효해지면"** 이다.
+    """
+    out: List[Dict[str, Any]] = []
+    for item in (cfg.get("prereg_reopen_conditions") or []):
+        conds = item.get("conditions") or []
+        checkable = [c for c in conds if c.get("machine_readable") is not False]
+        unmet = [c["id"] for c in checkable if not c.get("met")]
+        manual = [c["id"] for c in conds if c.get("machine_readable") is False]
+        ready = not unmet
+        out.append({
+            "check": "prereg_reopen", "id": item.get("id"), "applies_to": item.get("applies_to"),
+            "verdict": "READY_FOR_REVIEW" if ready else "NOT_REOPENABLE",
+            "severity": "warn" if ready else "info",
+            "unmet": unmet, "manual_only": manual,
+            "detail": (f"미충족 {unmet} · 술어화 불가 {manual}" if unmet
+                       else f"전 조건 충족 — 재연구 검토 대상(발행 재개 아님) · 술어화 불가 {manual}"),
+        })
+    return out
+
+
 def check_prereg_kill_criteria(cfg: Dict[str, Any], root: Optional[Path] = None) -> List[Dict[str, Any]]:
     """OD-19 대조 + OD-47(등록과 평가기는 같은 변경에 들어간다).
 
@@ -476,11 +596,6 @@ def check_prereg_kill_criteria(cfg: Dict[str, Any], root: Optional[Path] = None)
         out.append({**base, "verdict": verdict, "severity": sev,
                     "observed": res.get("observed"), "detail": res["detail"],
                     "on_fire": item.get("on_fire") if verdict == "FIRED" else None})
-    gates = cfg.get("prereg_track_end_gates") or []
-    if gates:
-        out.append({"check": "prereg_kill_criteria", "id": "track_end_gates", "verdict": "REGISTERED",
-                    "severity": "info", "count": len(gates),
-                    "detail": f"트랙 종료 관문 {len(gates)}건 — 종료 시 1회 판정(OD-48, 매일 대조 아님)"})
     unreadable = cfg.get("prereg_kill_criteria_not_machine_readable") or []
     if unreadable:
         out.append({"check": "prereg_kill_criteria", "id": "not_machine_readable",
@@ -499,6 +614,8 @@ def run(root: Path, cfg: Dict[str, Any], today: str, state: Dict[str, Any]) -> D
     findings += check_suspension_deadlines(root, cfg, today)
     findings += check_artifact_freshness(root, cfg, today)
     findings += check_prereg_kill_criteria(cfg, root)
+    findings += check_prereg_track_gates(cfg, root)
+    findings += check_prereg_reopen_conditions(cfg)
     worst = max((SEV_ORDER.get(f.get("severity", "info"), 0) for f in findings), default=0)
     cal = {m: trading_days(root, m, today) for m in ("KR", "US")}
 

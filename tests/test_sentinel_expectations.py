@@ -500,7 +500,142 @@ def test_one_shot_gates_are_kept_apart_from_standing_predicates():
     import yaml
     cfg = yaml.safe_load(sen.CONFIG.read_text(encoding="utf-8"))
     standing_ids = {c["id"] for c in cfg["prereg_kill_criteria"]}
-    assert cfg.get("prereg_track_end_gates"), "트랙 종료 관문 섹션이 없다"
-    for g in cfg["prereg_track_end_gates"]:
-        assert g.get("prose") not in standing_ids
-        assert "why_not_daily" in g, "왜 매일이 아닌지가 없으면 다음 사람이 상시로 옮긴다"
+    gates = cfg.get("prereg_track_gates")
+    assert gates, "트랙 종료 관문 섹션이 없다"
+    dupes = [g["id"] for g in gates
+             if g["id"] in standing_ids and g.get("status") != "see_standing_registry"]
+    assert not dupes, f"상시형과 중복 등록: {dupes}"
+
+
+# ---------------------------------------------------------------------------
+# OD-48/56 — 트랙 종료 관문: 연구 술어가 아니라 판정 채무만 본다
+# ---------------------------------------------------------------------------
+
+def _gate(root, item, extra=None):
+    cfg = {"prereg_track_gates": [item]}
+    cfg.update(extra or {})
+    return sen.check_prereg_track_gates(cfg, root)[0]
+
+
+def test_gate_fires_when_precondition_met_and_no_record(tmp_path):
+    """관문이 보는 것은 '선행조건 충족 AND 판정 기록 부재' 뿐이다."""
+    r = _gate(tmp_path, {"id": "g", "status": "overdue", "severity": "warn",
+                         "precondition": {"desc": "데이터 찼다", "met": True},
+                         "adjudication_record": "RESEARCH_LOG.md"})
+    assert r["verdict"] == "OVERDUE" and r["severity"] == "warn"
+    assert "기록이 없다" in r["detail"]
+
+
+def test_gate_is_blocked_while_precondition_unmet(tmp_path):
+    """선행조건 미충족은 발동이 아니다 — 판정할 수 있게 되지도 않았다."""
+    r = _gate(tmp_path, {"id": "g", "status": "blocked",
+                         "precondition": {"desc": "분봉 축적", "met": False}})
+    assert r["verdict"] == "BLOCKED" and r["severity"] == "info"
+
+
+def test_gate_closes_when_adjudication_is_recorded(tmp_path):
+    """판정 원장에 한 줄이 들어오면 닫힌다 — **이 자리가 §40 이 놓친 것**이다."""
+    rec = tmp_path / "runtime_state/long_term/ops/adjudications.jsonl"
+    rec.parent.mkdir(parents=True, exist_ok=True)
+    rec.write_text(json.dumps({"gate_id": "g", "adjudicated_at": "2026-08-20",
+                               "outcome": "기각", "where": "RESEARCH_LOG §42"}) + "\n",
+                   encoding="utf-8")
+    r = _gate(tmp_path, {"id": "g", "status": "overdue",
+                         "precondition": {"met": True}})
+    assert r["verdict"] == "CLOSED" and "2026-08-20" in r["detail"]
+
+
+def test_gate_does_not_evaluate_the_research_predicate(tmp_path):
+    """연간 기여 <1%p 같은 걸 매일 계산하는 척하면 가짜 감시가 된다.
+
+    관문 결과는 킬 기준 원문을 **실어 나르기만** 한다.
+    """
+    crit = "연간 기여 <1%p 면 조연 등급"
+    r = _gate(tmp_path, {"id": "g", "status": "overdue", "precondition": {"met": True},
+                         "criterion_at_termination": crit})
+    assert r["criterion_at_termination"] == crit
+    assert "verdict" in r and r["verdict"] == "OVERDUE"      # 기준을 평가한 흔적이 없다
+    assert "fired" not in r
+
+
+def test_declared_precondition_is_marked_unverified(tmp_path):
+    """선언을 조용히 사실로 승격시키지 않는다."""
+    r = _gate(tmp_path, {"id": "g", "status": "overdue", "precondition": {"met": True}})
+    assert r["precondition_verified"] is False
+
+
+def test_precondition_can_be_machine_verified(tmp_path):
+    rel = "runtime_state/x.jsonl"
+    write_ledger(tmp_path, rel, ["2026-08-01"] * 5)
+    ok = _gate(tmp_path, {"id": "g", "status": "overdue",
+                          "precondition": {"check": {"type": "min_rows", "file": rel, "min": 3}}})
+    short = _gate(tmp_path, {"id": "g", "status": "overdue",
+                             "precondition": {"check": {"type": "min_rows", "file": rel, "min": 50}}})
+    assert ok["verdict"] == "OVERDUE" and ok["precondition_verified"] is True
+    assert short["verdict"] == "BLOCKED" and short["precondition_verified"] is True
+
+
+def test_gate_referring_to_standing_registry_is_not_double_judged(tmp_path):
+    r = _gate(tmp_path, {"id": "g", "status": "see_standing_registry", "ref": "x"})
+    assert r["verdict"] == "IN_STANDING_REGISTRY" and r["severity"] == "info"
+
+
+def test_registered_gates_match_the_confirmed_dispositions():
+    """OD-53/54 확정값이 등록에 반영돼 있어야 한다."""
+    import yaml
+    cfg = yaml.safe_load(sen.CONFIG.read_text(encoding="utf-8"))
+    g = {x["id"]: x for x in cfg["prereg_track_gates"]}
+    assert g["mech_flow_h3_effective_day_intraday"]["status"] == "overdue"   # OD-54
+    t1 = g["autopsy_t1_exit_contract_repair"]
+    assert t1["importance_floor_pp"] == 0.3                                  # OD-53
+    assert "0.3pp" in t1["criterion_at_termination"]
+    assert g["mech_flow_h4_blockdeal_overhang"]["status"] == "overdue"
+    assert g["autopsy_t2_b_lane_death"]["status"] == "see_standing_registry"
+
+
+def test_every_gate_declares_where_the_verdict_gets_written():
+    """adjudication_record 가 없으면 '판정했다'를 기계가 확인할 길이 없다."""
+    import yaml
+    cfg = yaml.safe_load(sen.CONFIG.read_text(encoding="utf-8"))
+    missing = [g["id"] for g in cfg["prereg_track_gates"]
+               if g.get("status") in (None, "overdue", "blocked") and not g.get("adjudication_record")]
+    assert not missing, f"판정 기록처 미선언: {missing}"
+
+
+# ---------------------------------------------------------------------------
+# OD-51 — 재개봉 조건은 킬 기준의 거울상
+# ---------------------------------------------------------------------------
+
+def test_reopen_blocked_while_any_condition_unmet():
+    """'표본 쌓였으니 다시 켜자' 를 막는 것이 이 등록의 존재 이유다."""
+    cfg = {"prereg_reopen_conditions": [{"id": "r", "applies_to": "lane", "conditions": [
+        {"id": "R1", "met": False}, {"id": "R2", "met": True}]}]}
+    r = sen.check_prereg_reopen_conditions(cfg)[0]
+    assert r["verdict"] == "NOT_REOPENABLE" and r["unmet"] == ["R1"]
+
+
+def test_reopen_ready_is_review_not_publication():
+    cfg = {"prereg_reopen_conditions": [{"id": "r", "conditions": [{"id": "R1", "met": True}]}]}
+    r = sen.check_prereg_reopen_conditions(cfg)[0]
+    assert r["verdict"] == "READY_FOR_REVIEW"
+    assert "발행 재개 아님" in r["detail"]
+
+
+def test_method_requirements_are_not_counted_as_unmet():
+    """R4(플라시보 동반)는 방법 요건이라 술어화 대상이 아니다 — 미충족으로 세면 영원히 안 열린다."""
+    cfg = {"prereg_reopen_conditions": [{"id": "r", "conditions": [
+        {"id": "R1", "met": True},
+        {"id": "R4", "machine_readable": False}]}]}
+    r = sen.check_prereg_reopen_conditions(cfg)[0]
+    assert r["verdict"] == "READY_FOR_REVIEW" and r["manual_only"] == ["R4"]
+
+
+def test_registered_reopen_keeps_r1_as_the_blocking_condition():
+    """R1 미충족 상태의 축적은 재개봉을 영원히 만족시키지 못한다(OD-51)."""
+    import yaml
+    cfg = yaml.safe_load(sen.CONFIG.read_text(encoding="utf-8"))
+    conds = {c["id"]: c for c in cfg["prereg_reopen_conditions"][0]["conditions"]}
+    assert conds["R1"]["met"] is False
+    assert conds["R4"].get("machine_readable") is False
+    out = sen.check_prereg_reopen_conditions(cfg)[0]
+    assert out["verdict"] == "NOT_REOPENABLE" and "R1" in out["unmet"]

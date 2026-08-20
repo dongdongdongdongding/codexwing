@@ -1062,12 +1062,6 @@ prereg_kill_criteria:
       정지 중에는 평가하지 않는다(OD-14: 정지 이후 표본으로 판정하지 않는다).
       해제 시 평가기를 붙여야 하며 지금은 술어를 등록하지 않았다 — 블록 상태로만 존재한다.
 
-# OD-48: 일회형은 상시 술어와 섞지 않는다. 매일 술어로 박으면 매일 같은 답을 내는 가짜 감시가
-# 되고, 빼 두면 종료 시점에 아무도 판정하지 않는다(§40 이 두 달 놓친 경위).
-prereg_track_end_gates:
-  - {source: "PREREG_MECH_FLOW_CALENDAR", prose: "8년 중 양수 연도 < 60%면 기각",
-     why_not_daily: "술어는 명확하나 8년 백테스트를 매일 돌릴 수 없다. 하니스 1회 결과 보관 대상"}
-
 # 술어화 불가 — 목록으로만 남긴다(억지 술어화 금지). 판정기가 건수를 보고한다.
 prereg_kill_criteria_not_machine_readable:
   - {source: "§40 §717", prose: "티어 실측 승률 표기",
@@ -1080,3 +1074,136 @@ prereg_kill_criteria_not_machine_readable:
      why: "원문에 수치가 없다. 다른 문서 값을 끌어오면 기준을 발명하는 것"}
   - {source: "§38", prose: "n<200은 기술통계만",
      why: "소비자를 특정하지 못했다 — 검사 대상 미상"}
+
+# ---------------------------------------------------------------------------
+# 트랙 종료 관문 (OD-48/56). 추출: goblin (audit-prereg-track-gates-goblin.md §7)
+#
+# **관문은 연구 술어를 평가하지 않는다.** 매일 보는 것은 두 가지뿐이다:
+#     선행조건 충족  AND  판정 기록 부재   ⇒  발동
+# 연간 기여 <1%p 같은 걸 매일 계산하는 척하면 매일 같은 답을 내는 가짜 감시가 된다.
+#
+# `adjudication_record` 가 필수인 이유: §40 이 두 달 놓친 진짜 원인은 킬 기준이 산문이었던
+# 게 아니라 **판정했는지 확인할 자리가 없었다**는 것이다. 판정 원장은
+# runtime_state/long_term/ops/adjudications.jsonl — 한 줄이 한 판정이다.
+#   {"gate_id": "...", "adjudicated_at": "...", "outcome": "...", "where": "..."}
+# ---------------------------------------------------------------------------
+prereg_track_gates:
+
+  - id: mech_flow_h4_blockdeal_overhang
+    source: "RESEARCH_LOG.md §40 PKG-C ② / PREREG_MECH_FLOW_CALENDAR_2026-08.md H4"
+    prose: "H4 블록딜 오버행 회피 — 사전공시~실행일 창의 픽 감점 근거"
+    kind: one_shot
+    status: overdue
+    severity: warn
+    precondition:
+      desc: "DART D유형(내부자 거래계획 T-30) 2024-07 백필"
+      met: true
+      measured_2026_08_17: {rows: 269, unique_codes: 142, month_coverage: "26/26",
+                            px_long_coverage: "269/269 이벤트 · 142/142 종목"}
+      why: >
+        더 기다릴 데이터가 없다 — "히스토리 2년뿐"은 백필의 한계가 아니라 제도의 나이다
+        (2024-07 시행). 시행 이후 결측 0, 전건에 가격이 붙는다. 따라서 '데이터 미충족'이
+        아니라 **판정 밀림**이다.
+    adjudication_record: "RESEARCH_LOG.md H4 판정 서술 + adjudications.jsonl"
+    criterion_at_termination: >
+      전 가설 시장초과 CI 0 포함 + 연도 일관성 실패 → 트랙 종결 / 8년 중 양수 연도 <60% 기각 /
+      연간 기여 <1%p 면 '조연' 등급
+    on_fire: "정지 지점으로 올린다 — 판정도 유보도 안 된 채 사라진 가설이다"
+    survivorship_caveat: >
+      px_long 은 상폐 0개라 이 이벤트 스터디는 생존편향을 탄다. RESEARCH_STANDARDS §1-2 의
+      보정상수(-0.28pp@20d / -0.67pp@60d) 명시 또는 krx_delisting 대조가 필요하다.
+    narrowing: >
+      원문의 킬 기준 자체는 평가하지 않는다. 관문은 '판정 채무'만 본다.
+
+  - id: mech_flow_h3_effective_day_intraday
+    source: "PREREG_MECH_FLOW_CALENDAR_2026-08.md H3"
+    prose: "H3 효력일 장중 회피 — 효력일 장중 픽이 비효력일 대비 열위"
+    kind: one_shot
+    status: overdue                # OD-54: 미판정으로 확정
+    severity: warn
+    precondition: {desc: "K200 편출입 백필", met: true}
+    adjudication_record: "RESEARCH_LOG.md H3 판정 서술 + adjudications.jsonl"
+    criterion_at_termination: "효력일 픽의 시장초과가 비효력일 대비 열위인가"
+    on_fire: "정지 지점으로 올린다"
+    narrowing: >
+      OD-54: §41 A5 의 "H3 flow일 왜곡 확인(거래량 3.7x)"은 **판정으로 치지 않는다.**
+      거래량 왜곡 확인은 H3 가설(픽이 열위인가)과 다른 진술이다. 억지로 닫으면 판정 안 된
+      가설이 판정된 것으로 기록되고 관문 자체가 무의미해진다.
+
+  - id: mech_flow_h1_h2_rebalance_drift
+    source: "PREREG_MECH_FLOW_CALENDAR_2026-08.md H1/H2"
+    prose: "H1 발표일→효력일 드리프트 / H2 효력일 반전"
+    kind: one_shot
+    status: adjudicated
+    adjudicated_at: "RESEARCH_LOG.md §41 A5 (2026-08-05)"
+    outcome: "생존 3셀이나 전 셀 연간 기여 <1%p → '조연' 등급, 레인화 금지"
+    standing_consequence: rebalance_calendar_no_lane
+    narrowing: "관문은 닫혔고 귀결만 상시 감시로 남는다."
+
+  - id: autopsy_t1_exit_contract_repair
+    source: "PREREG_DEGRADE_AUTOPSY_2026-08.md §2.8"
+    prose: "H1 기각 → T1 종결 / 재개봉: 분봉 축적으로 장중 청산 계약 검증 가능해질 때"
+    kind: one_shot
+    status: blocked
+    severity: warn
+    precondition:
+      desc: "분봉(확장세션) 축적 — 큐 기준 120일"
+      have: 115
+      need: 120
+      met: false
+    adjudication_record: "RESEARCH_LOG.md T1 판정 서술 + adjudications.jsonl"
+    criterion_at_termination: >
+      α_sel >= +0.3pp 且 순열 p<0.01 (H1-a) / 5변형 중 ΔEV >= 0.3pp 且 p<0.01 且
+      8y 연도 일관성 >=60%
+    importance_floor_pp: 0.3        # OD-53
+    narrowing: >
+      OD-53: 중요도 하한은 **새로 정한 값이 아니라** 같은 문서 §6 이 이미 유도한 ΔEV 0.3pp 다
+      (용량 계산 0.10pp 와 §19 측정하한 0.30pp 중 큰 쪽이 지배). RESEARCH_STANDARDS §1-2 와
+      같은 값이다. ⚠️ "스윙 수리 성공 = +17.6%/yr"의 입력이 이 ΔEV 이므로 그 숫자를 결론
+      근거로 인용하는 것은 순환논증이라 금지된다.
+    on_fire: "선행조건 충족 시 자동으로 OVERDUE 로 전이한다"
+
+  - id: autopsy_t2_b_lane_death
+    source: "PREREG_DEGRADE_AUTOPSY_2026-08.md §3.3"
+    status: see_standing_registry
+    ref: b_all_top10_death_verdict
+    narrowing: "중복 등록하지 않는다 — 정지 해제 시 상시 항목에서 살아난다."
+
+  - id: fallback_win_ev_floor
+    source: "RESEARCH_LOG.md §27"
+    prose: "사전등록 킬기준 win<55% | EV<0"
+    kind: one_shot
+    status: adjudicated
+    adjudicated_at: "RESEARCH_LOG.md §27 (2026-07-13) — 기권일 FALLBACK 기각"
+    outcome: "기각"
+    narrowing: "재가동 시에만 되살아난다."
+
+# ---------------------------------------------------------------------------
+# 재개봉 조건 (OD-51) — 킬 기준의 거울상.
+# 등록이 없으면 누군가 "표본 쌓였으니 다시 켜자" 로 되살린다. 재개봉은 "표본이 쌓이면"이
+# 아니라 **"측정 자체가 유효해지면"** 이다.
+# ---------------------------------------------------------------------------
+prereg_reopen_conditions:
+  - id: kr_ranking_shadow_reopen
+    source: "docs/research/KILL_KR_RANKING_SHADOW_2026-08.md §4"
+    applies_to: kr_ranking_shadow
+    all_required: true
+    conditions:
+      - id: R1
+        prose: "채점 지표를 fwd5_cc(원시 종가수익) → 시장초과 net 으로 교체"
+        met: false
+        why_critical: >
+          원시수익으로는 베타와 선별을 영원히 못 가른다. **이 조건 없이는 표본을 아무리
+          쌓아도 무의미하다** — R1 미충족 상태의 축적이 재개봉을 영원히 만족시키지 못한다.
+      - {id: R2, prose: "고유 정산일 >= 20", observed: 4, need: 20, met: false}
+      - {id: R3, prose: "서로 다른 시장국면 >= 2개 (반등장 단일창 금지)",
+         observed: {regimes: [down_chop, up], count: 2}, met: true, provisional: true,
+         caveat: "킬 문서가 '시장국면'의 소스를 지정하지 않았다 — 소스 확정은 운영자 몫"}
+      - {id: R4, prose: "같은날 대조 + 랜덤티커 플라시보 동반", machine_readable: false,
+         why: "방법 요건 — 절차라 산출물로 확인 불가(OD-51 명시)"}
+      - {id: R5, prose: "재판정 시 심도 단조성 = 상관 <= -0.15 且 날짜클러스터 블록CI 상한 < 0",
+         met: false, note: "점추정 부호로는 불충분 — 사전등록 방향으로의 재입증"}
+    reopen_is_not_publication: >
+      R1~R5 를 전부 통과해도 "다시 연구할 수 있다"는 뜻이며 발행/라우팅 금지는 별도 승인
+      없이 해제되지 않는다.
+
