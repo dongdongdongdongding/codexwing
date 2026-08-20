@@ -704,10 +704,14 @@ def test_kosdaq_top1_gate_is_registered_and_counts_the_right_rows():
     assert "kr_swing_candidate_ledger" in chk["file"]
     assert pre["measured_2026_08_20"]["rows_now"] == 26
 
-    # 기준이 EV 로만 판정하도록 못박혀 있는가 — 승률로 승격하면 현행 실패를 반복한다
-    assert "EV" in g["criterion_at_termination"]
-    assert "승률" in g["criterion_at_termination"]
+    # 기준이 세 관문을 모두 요구하는가.
+    # EV 하나만 걸면 p 최하위 픽(+2.18)도 통과한다 — 선별의 값을 재지 못한다.
+    crit = g["criterion_at_termination"]
+    assert "플라시보" in crit, "무작위 대비 검정이 빠지면 선별 없이도 통과한다"
+    assert "스프레드" in crit, "최상위-최하위 방향성 검정이 빠지면 같은 구멍이 남는다"
+    assert "승률" in crit, "승률로 승격하지 않는다는 금지가 명시돼야 한다"
     assert "순환논증" in g["narrowing"]
+    assert "시장중립" in g["notes"], "베타 확인 미완을 감추면 안 된다"
 
 
 def test_kosdaq_top1_gate_stays_blocked_until_the_sample_arrives():
