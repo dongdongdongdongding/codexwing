@@ -78,6 +78,10 @@ export function StatusChips({ p }: { p: any }) {
   );
   return (
     <>
+      {/* 체결 가능성이 가장 먼저 온다 — 못 사는 픽은 나머지 정보가 의미 없다. */}
+      {p.attainability === "LIMIT_UP" && chip("#ef4444", `⛔ 상한가 ${p.day_change?.toFixed(1)}% · 체결불가`)}
+      {p.attainability === "LIMIT_DOWN" && chip("#ef4444", "⛔ 하한가 · 체결불가")}
+      {p.attainability === "STALE_REFERENCE" && chip("#f59e0b", "⚠ 진입가=전일종가")}
       {p.is_top1 && chip("#facc15", "⭐ 1순위")}
       {p.rank_in_day != null && !p.is_top1 && chip("#64748b", `${p.rank_in_day}순위`)}
       {p.expired && chip("#ef4444", `⏱ 만료 ${p.stale_days}일`)}

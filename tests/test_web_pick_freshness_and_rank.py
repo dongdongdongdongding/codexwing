@@ -380,3 +380,75 @@ def test_ops_page_renders_the_escalations():
     assert "escalations" in ops and "에스컬레이션" in ops
     assert "CRIT" in ops, "심각도가 구분돼 보여야 한다"
     assert "e.note" in ops, "산출 부재도 화면에 남겨야 한다"
+
+
+# ── 8. 체결 가능성 (2026-08-20, [G] 발견 · 운영자 승인) ─────────────────────
+
+def test_limit_up_pick_is_blocked_as_unfillable():
+    """급소 — 상한가에는 매도호가가 없어 그 가격에 체결할 수 없다.
+
+    라이브 원장 실측: `kospi_intraday` 58건 중 5건(8.9%)이 당일 +29% 이상 종가.
+    `475150.KS 2026-07-23` 은 +30.00% 에 잡혀 **ret3d −39.58%** 인데
+    원장에는 `exit_t5_h5 = 5.0`(터치 성공)으로 기록돼 있다.
+    걷어내면 백테스트 우위가 소멸한다(KOSDAQ −0.50 p=0.92 / KOSPI +0.72 p=0.18).
+    """
+    row = {"kind": "INTRADAY", "day_change": 29.79, "size_pct_total": 2.0}
+    got = S._entry_attainability(row)
+    assert got["attainable"] is False
+    assert got["attainability"] == "LIMIT_UP"
+    assert "체결할 수 없다" in got["attainability_note"]
+
+
+@pytest.mark.parametrize("dc,want", [
+    (29.0, "LIMIT_UP"), (30.0, "LIMIT_UP"), (28.9, "OK"),
+    (-29.0, "LIMIT_DOWN"), (-30.0, "LIMIT_DOWN"), (-28.9, "OK"),
+    (0.0, "OK"), (None, "OK"),
+])
+def test_limit_threshold_boundaries(dc, want):
+    """경계를 정확히 — 호가단위 반올림 때문에 29.0%를 판정선으로 쓴다."""
+    row = {"kind": "SWING", "day_change": dc}
+    assert S._entry_attainability(row)["attainability"] == want
+
+
+def test_stale_reference_price_is_flagged_not_blocked():
+    """진입가가 '스캔일 종가'인데 매수일이 다음날이면 그 가격은 이미 지나갔다.
+
+    실측: `entry_reference_price` 는 당일 종가와 중앙 편차 0.000%(57%가 정확일치)인데
+    **익일 시가와는 |차|<0.5% 가 0%**, 중앙 −0.79%, 최대 +12.99% 어긋난다.
+    불가가 아니라 **불확실**이므로 차단하지 않고 표시한다 — 차단하면 화면이 비고,
+    그러면 사용자는 아무 정보도 못 받는다.
+    """
+    row = {"kind": "INTRADAY", "scan_date": "2026-08-19", "buy_date": "2026-08-20"}
+    got = S._entry_attainability(row)
+    assert got["attainable"] is None, "불가가 아니라 불확실이다"
+    assert got["attainability"] == "STALE_REFERENCE"
+    assert "종가" in got["attainability_note"] and "체결가는 다르다" in got["attainability_note"]
+
+
+def test_swing_next_open_entry_is_not_flagged_stale():
+    """오탐 방지 — 스윙은 설계상 '익일 시가 진입'이라 정합하다.
+    실측: 스윙 원장 logged_at 중앙 20:38 KST → 익일 09:00 진입. 어긋나지 않는다."""
+    row = {"kind": "SWING", "scan_date": "2026-08-19", "buy_date": "2026-08-20"}
+    assert S._entry_attainability(row)["attainability"] == "OK"
+
+
+def test_unfillable_pick_loses_sizing_in_pick_row():
+    row = S._pick_row("001510", "KOSPI", "kospi_intraday", entry=2810.0, prob=0.8,
+                      scan_date="2026-08-20", extra={"day_change": 29.79})
+    assert row["attainable"] is False
+    assert "size_pct_total" not in row
+    assert "체결 불가" in row["size_note"]
+
+
+def test_frontend_shows_attainability_first():
+    """못 사는 픽은 나머지 정보가 의미 없으니 칩이 가장 먼저 와야 한다."""
+    ui = (Path(__file__).resolve().parents[1] / "web/frontend/src/components/ui.tsx").read_text(encoding="utf-8")
+    assert "LIMIT_UP" in ui and "체결불가" in ui
+    assert ui.index("LIMIT_UP") < ui.index("is_top1"), "체결 가능성이 순위보다 먼저"
+    pk = (Path(__file__).resolve().parents[1] / "web/frontend/src/pages/Picks.tsx").read_text(encoding="utf-8")
+    assert "attainability_note" in pk, "상세에 사유가 있어야 한다"
+
+
+def test_day_change_is_carried_from_the_ledger():
+    """원장에서 안 실어 오면 상한가를 못 거른다."""
+    assert "day_change" in S._LEDGER_EXTRA_KEYS

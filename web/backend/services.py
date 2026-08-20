@@ -50,7 +50,9 @@ TARGET_PCT = 5.0
 # 승격 계약(§7-E)의 원장 필드 → 웹 노출 (티어/레짐상태/계약)
 _LEDGER_EXTRA_KEYS = ("tier", "tier_threshold", "mkt_state", "mkt_dd20", "hold_days",
                       "target_tp_pct", "ev_pred", "exit_contract", "ret_5d", "ret_5d_d",
-                      "atr_pct", "exit_band", "exit_mix_plan", "rank_in_day", "picks_in_day")
+                      "atr_pct", "exit_band", "exit_mix_plan", "rank_in_day", "picks_in_day",
+                      # 체결 가능성 판정에 필요 — 없으면 상한가 픽을 못 거른다
+                      "day_change", "close_vwap")
 
 
 @lru_cache(maxsize=1)
@@ -326,6 +328,60 @@ def _apply_operator_ev_floor(row, lane_key):
     return row
 
 
+# KR 가격제한폭 ±30%. 여유를 두고 29.0%를 상한가 판정선으로 쓴다(호가단위 반올림 때문).
+LIMIT_UP_PCT = 29.0
+LIMIT_DOWN_PCT = -29.0
+
+
+def _entry_attainability(row, today=None):
+    """이 픽의 진입가를 **사용자가 실제로 낼 수 있는가**.
+
+    2026-08-20 실측으로 두 가지가 드러났다.
+
+    **(1) 상한가 픽** — `kospi_intraday` 원장 58건 중 5건(8.9%)이 당일 +29% 이상 종가다.
+    상한가에는 매도호가가 없어 **체결 자체가 불가능**하다. 그런데 상한가 종가는 익일 갭업
+    확률이 높아 "+5% 터치"가 거의 자동으로 참이 되어 백테스트가 부풀려진다
+    (전수 재현: 걷어내면 KOSDAQ −0.50 p=0.92 / KOSPI +0.72 p=0.18 로 소멸).
+    실제 피해도 났다: `475150.KS 2026-07-23` 은 +30.00% 종가에 잡혀 **ret3d −39.58%** 인데
+    원장에는 `exit_t5_h5 = 5.0`(터치 성공)으로 기록돼 있다.
+
+    **(2) 이미 지나간 가격** — 이 레인의 `entry_reference_price` 는 **스캔일 종가**다
+    (당일 종가와 중앙 편차 0.000%). 그런데 스캔은 장 마감 후에 돌고 화면은 **익일 매수**를
+    안내한다. 익일 시가와는 **|차|<0.5% 가 0%**, 중앙 −0.79%, 최대 +12.99% 어긋난다.
+    **즉 화면이 보여주는 진입가로는 살 수 없다.**
+
+    사이징을 떼는 것이 아니라 **무엇을 낼 수 있는 가격인지 말해 주는 것**이 목적이다.
+    """
+    import datetime as _dt
+    out = {}
+    dc = row.get("day_change")
+    if isinstance(dc, (int, float)):
+        if dc >= LIMIT_UP_PCT:
+            out["attainable"] = False
+            out["attainability"] = "LIMIT_UP"
+            out["attainability_note"] = (
+                f"상한가(당일 {dc:+.1f}%) — 매도호가가 없어 이 가격에 체결할 수 없다. "
+                f"백테스트가 부풀려지는 자리이기도 하다.")
+            return out
+        if dc <= LIMIT_DOWN_PCT:
+            out["attainable"] = False
+            out["attainability"] = "LIMIT_DOWN"
+            out["attainability_note"] = f"하한가(당일 {dc:+.1f}%) — 체결 불가."
+            return out
+    # 진입가가 '스캔일 종가'인 레인인데 매수일이 그 다음날이면, 그 가격은 이미 지나갔다.
+    if row.get("kind") == "INTRADAY" and row.get("scan_date") and row.get("buy_date"):
+        if str(row["buy_date"])[:10] > str(row["scan_date"])[:10]:
+            out["attainable"] = None          # 불가가 아니라 **불확실**
+            out["attainability"] = "STALE_REFERENCE"
+            out["attainability_note"] = (
+                f"표시된 진입가는 {row['scan_date']} **종가**다. 매수는 {row['buy_date']} 이므로 "
+                f"실제 체결가는 다르다(실측 중앙 −0.8%, 최대 ±13%). 목표가도 그만큼 어긋난다.")
+            return out
+    out["attainable"] = True
+    out["attainability"] = "OK"
+    return out
+
+
 def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name=None, scan_date=None, source="A", extra=None):
     raw = str(code).split(".")[0]
     code6 = raw.zfill(6) if raw.isdigit() else raw   # KR=6자리, US=원형 유지
@@ -434,6 +490,11 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
     # 신선도 — 매수 대상일이 지난 픽에서 사이징 지시를 걷어낸다.
     # 낡은 픽에 "2%/픽" 이 붙어 나가면 사용자가 지난 진입가로 매매한다. 게이트 판정과
     # 무관한 축이라 스트림 제외가 통과해도 여기서 막아야 한다.
+    # 체결 가능성 — EV·신선도와 **다른 축**이다. 아무리 EV 가 좋아도 못 사는 가격이면 무의미하다.
+    row.update(_entry_attainability(row))
+    if row.get("attainable") is False:
+        row.pop("size_pct_total", None)
+        row["size_note"] = "⛔ 체결 불가 — " + row.get("attainability_note", "")
     _apply_operator_ev_floor(row, lane_key)
     # 발화 빈도 — EV 가 좋아도 픽이 안 나오면 거래할 수 없다(운영자 기준 3거래일 1회).
     _fq = _lane_frequency(lane_key)

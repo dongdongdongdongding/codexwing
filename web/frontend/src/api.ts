@@ -21,6 +21,12 @@ export interface Pick {
   forward_ev?: number; forward_win?: number; forward_n?: number;
   // 신선도 — 매수일이 지난 픽. 낡은 픽이 오늘 픽처럼 보이면 지난 진입가로 매매하게 된다.
   expired?: boolean; stale_days?: number;
+  // 체결 가능성 — EV·신선도와 다른 축. 못 사는 가격이면 EV 가 아무리 좋아도 무의미하다.
+  // 2026-08-20: kospi_intraday 픽 58건 중 5건(8.9%)이 상한가 종가였다(체결 불가).
+  attainable?: boolean | null;
+  attainability?: "OK" | "LIMIT_UP" | "LIMIT_DOWN" | "STALE_REFERENCE";
+  attainability_note?: string;
+  day_change?: number;
   // 발화 빈도 — EV 가 좋아도 픽이 안 나오면 거래할 수 없다(운영자 기준 3거래일 1회).
   lane_frequency?: { last_fired?: string; days_since?: number; median_gap?: number;
                      worst_gap?: number; firing_days?: number; frequency_ok?: boolean };

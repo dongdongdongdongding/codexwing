@@ -184,6 +184,9 @@ function Drawer({ pick, live, onClose }: { pick: Pick; live?: Price; onClose: ()
           {pick.rationale && <Row k="모델 근거" v={pick.rationale} />}
           {pick.size_note && <Row k="권장 비중" v={pick.size_note} />}
           {/* 왜 이 상태인지를 상세에서 숫자로 보인다 — 칩만으론 근거가 안 남는다. */}
+          {(pick as any).attainability_note && (
+            <Row k="체결 가능성" v={(pick as any).attainability_note} />
+          )}
           {pick.rank_note && <Row k="당일 순위" v={pick.rank_note} />}
           {pick.forward_ev != null && (
             <Row k="실측 forward" v={`EV ${pick.forward_ev}%${pick.forward_win != null ? ` · 승률 ${pick.forward_win}%` : ""}${pick.forward_n != null ? ` (n=${pick.forward_n})` : ""}`} />
