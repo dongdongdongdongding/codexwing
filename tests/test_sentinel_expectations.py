@@ -838,3 +838,52 @@ def test_exit_width_gate_pins_the_data_source():
     g = {x["id"]: x for x in cfg["prereg_track_gates"]}["swing_kosdaq_exit_width_7pct"]
     assert "fdr" in g["notes"] and "ohlc_full.parquet 은 쓰지 마라" in g["notes"]
     assert "재현 검증" in g["notes"]
+
+
+def test_kospi_intraday_gate_uses_the_conservative_interval():
+    """유리한 가정에 기대어 승격하지 않는다.
+
+    블록 CI(L=2~10)는 전부 0 을 제외하지만 그것은 lag-1 자기상관 -0.345 를 신뢰한
+    결과이고, n=33 에서 그 값은 2SE 남짓이다. 기준은 가장 보수적인 iid(L=1)여야 한다.
+    """
+    import yaml
+    cfg = yaml.safe_load(sen.CONFIG.read_text(encoding="utf-8"))
+    g = {x["id"]: x for x in cfg["prereg_track_gates"]}["kospi_intraday_top1_market_neutral"]
+
+    crit = g["criterion_at_termination"]
+    assert "iid 부트스트랩(L=1)" in crit, "가장 보수적인 구간을 기준으로 둬야 한다"
+    m = g["precondition"]["measured_2026_08_20"]
+    assert m["ci_iid_L1"][0] < 0, "보수적 구간은 아직 0 아래 — 미확인 상태"
+    assert m["ci_block_L5"][0] > 0, "블록 구간은 0 을 넘는다 — 대비가 보여야 한다"
+    assert m["lag1_autocorr"] < 0, "블록 CI 가 좁아진 이유가 기록돼야 한다"
+
+
+def test_kospi_intraday_gate_discloses_the_multiple_testing():
+    """29개 렌즈 스윕에서 나온 것임을 등록이 숨기면 안 된다."""
+    import yaml
+    cfg = yaml.safe_load(sen.CONFIG.read_text(encoding="utf-8"))
+    g = {x["id"]: x for x in cfg["prereg_track_gates"]}["kospi_intraday_top1_market_neutral"]
+    assert "29개 렌즈" in g["narrowing"], "다중검정 고지가 있어야 한다"
+    assert "두 레인 재현" in g["narrowing"], "근거가 개별 유의성이 아님을 밝혀야 한다"
+
+
+def test_top1_counter_handles_a_lane_with_a_different_outcome_field(tmp_path):
+    """레인마다 결과필드가 다르다 — intraday 는 exit_t5_h5 다.
+
+    원장 필드를 직접 짐작했다가 두 번 틀렸다(policy_ret 로 물어 허위 47건,
+    publish_scope 무시로 허위 게이트 버그). 계수기는 필드를 설정에서 받아야 한다.
+    """
+    from multi_agent.tools.report_sentinel_expectations import _count_top1_scored
+
+    led = tmp_path / "led.jsonl"
+    led.write_text("\n".join(json.dumps(r) for r in [
+        {"date": "2026-08-01", "market": "KOSPI", "p": 0.9, "exit_t5_h5": 2.0},
+        {"date": "2026-08-01", "market": "KOSPI", "p": 0.5, "exit_t5_h5": 9.9},
+        {"date": "2026-08-02", "market": "KOSPI", "p": 0.9, "policy_ret": 2.0},
+    ]), encoding="utf-8")
+
+    got = _count_top1_scored(tmp_path, {"type": "top1_scored", "file": "led.jsonl",
+                                        "market": "KOSPI", "outcome_field": "exit_t5_h5",
+                                        "min": 1})
+    assert got["met"] is True
+    assert "1건" in got["detail"], got["detail"]

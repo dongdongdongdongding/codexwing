@@ -1307,6 +1307,63 @@ prereg_track_gates:
       재현 검증 없이 돌리면 전부 헛수치다.
       투고: backtest-exit-policy-anglerfish.md · measure-alpha-vs-criteria-anglerfish.md
 
+  # ── 2026-08-20 anglerfish 등록: 두 번째 KR 레인 ─────────────────────────────
+  # 깊이 렌즈가 독립된 두 KR 레인에서 재현됐다. 격자 최댓값이 아니라 사전 고정 렌즈의 재현이다.
+  - id: kospi_intraday_top1_market_neutral
+    source: "anglerfish 실측 2026-08-20 (렌즈 29개 스윕 + 유동성매칭 유니버스 대조)"
+    prose: >
+      kospi_intraday_t5 를 top-1 로 자르면 시장중립 초과가 확인되는가.
+      전체 EV +0.11 -> top-1 +2.11 (승률 75.8%). 같은날 유동성매칭 KOSPI 유니버스
+      (144종목/일)에 같은 계약(+5% 터치/5세션, 종가진입) 적용 시 유니버스 +0.51,
+      **초과 +1.61**.
+      swing KOSDAQ 에서 같은 렌즈가 +2.39(전체 -0.08)로 나왔다 — **두 KR 레인 재현**.
+      NASDAQ(top-1 -0.65)과 b레인(rank<=1 -2.29)에서는 반대다.
+    kind: one_shot
+    status: pending
+    severity: warn
+    precondition:
+      desc: "KOSPI top-1 채점행 49건 (iid 가정에서도 CI 하한이 0 을 넘기는 데 필요한 n)"
+      met: false
+      check:
+        type: top1_scored
+        file: runtime_state/reports/experimental/kospi_intraday_swing_ledger.jsonl
+        market: KOSPI
+        score_field: p
+        outcome_field: exit_t5_h5
+        min: 49
+      measured_2026_08_20:
+        n: 33
+        pick_ev: 2.12
+        universe_ev: 0.51
+        excess: 1.61
+        excess_sd: 5.72
+        ci_iid_L1: [-0.29, 3.54]
+        ci_block_L5: [0.24, 3.18]
+        ci_block_L2_to_L10: "전부 0 제외"
+        lag1_autocorr: -0.345
+        independent_subsample: "6/7 승리 p=0.0625"
+        win_days: "23/33"
+    adjudication_record: "RESEARCH_LOG.md kospi_intraday 깊이 판정 서술 + adjudications.jsonl"
+    criterion_at_termination: >
+      n>=49 에서 **iid 부트스트랩(L=1) CI 하한 > 0** 이면 승격을 올린다.
+      넘지 못하면 기각한다.
+
+      **왜 가장 보수적인 L=1 을 기준으로 두는가**: 현재 블록 CI(L=2~10)는 전부 0 을
+      제외하지만, 그것은 lag-1 자기상관 -0.345 를 신뢰한 결과다. n=33 에서 자기상관의
+      표준오차는 약 0.17 이라 -0.345 는 2SE 남짓 — 노이즈일 수 있다.
+      음의 자기상관이 진짜면 유효표본이 커져 유리한 방향인데, **유리한 쪽 가정에
+      기대어 승격하지 않는다.** L=1 이 통과하면 어떤 가정에서도 통과한다.
+    narrowing: >
+      순환논증 금지: n=33 측정은 판정의 입력이지 결론의 근거가 아니다. 추가 16건은 새 데이터.
+      다중검정 고지: 이 레인은 **29개 렌즈 스윕에서 나왔다.** 양수쪽으로 CI 가 0 을 제외한
+      칸은 그 29개 중 0개였고, 이 발견의 근거는 개별 유의성이 아니라 두 레인 재현이다.
+      승격 판정은 그 사실을 알고 해야 한다.
+    notes: >
+      진입가 근사: 원장의 entry_reference_price(15:00)와 당일 종가의 괴리는 중앙 0.000%,
+      75%가 0.5% 이내다. 픽·유니버스 **양쪽 모두 종가 진입**으로 계산해 대조를 대칭으로 맞췄고,
+      그 방식으로 원장 재현 48/48(중앙오차 0.000)을 확인했다.
+      투고: sweep-all-lanes-edge-anglerfish.md
+
 prereg_reopen_conditions:
   - id: kr_ranking_shadow_reopen
     source: "docs/research/KILL_KR_RANKING_SHADOW_2026-08.md §4"
