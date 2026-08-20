@@ -467,8 +467,87 @@ def build_model_lane_interpretation(row: Dict[str, Any], bucket: str) -> Dict[st
 
 
 def build_candidate_interpretation(row: Dict[str, Any]) -> Dict[str, Any]:
+    """픽 해석 + 재귀게이트 스트림 제외 (audit-gate.md F1).
+
+    Discord 카드(`build_model_signals_embed` / `build_top_deep_embeds`)와 top_deep이
+    전부 이 함수를 지나므로, 여기서 한 번 걸면 세 발행 경로에 동시에 적용된다.
+    이전에는 `web/backend/services.py`에만 배선돼 있어 DEGRADE 레인 픽이 Discord에서는
+    ⛔ 표시 없이 `operational_action_level="MODEL_BUY"` · `buy_ready=True` ·
+    "…모델 매수 후보입니다. 진입=종가, 목표 +N%"를 단 **실행가능 매수카드**로 나갔다.
+    """
     row = row if isinstance(row, dict) else {}
     _bucket = str(_first(row.get("decision_bucket"), row.get("bucket"), "") or "").strip()
+    interp = _build_candidate_interpretation_ungated(row, _bucket)
+    return _apply_stream_exclusion_to_interpretation(interp, _bucket)
+
+
+def apply_publish_time_exclusion(interp: Dict[str, Any], bucket: str) -> Dict[str, Any]:
+    """저장된 해석에 **발행시점** 판정을 다시 적용한다 (audit-stream-exclusion.md R1).
+
+    렌더러 세 곳이 `row["candidate_interpretation"]`이 있으면 그걸 그대로 쓴다.
+    그 해석은 **스캔 시점**에 만들어져 영속 저장되므로(라이브 확인: `scan_deep_reports`
+    모델레인 행 200/200이 해석을 들고 있고 `buy_ready`가 굳어 있다), 카드에 굳는 것은
+    발행시점이 아니라 스캔시점의 게이트 상태다. 스캔은 장중이고 재귀게이트는 야간이라
+    최소 한 사이클 지연이 상시 존재하며, archive 경로는 지연이 무기한이다.
+    48h fail-closed도 이 경로는 못 막는다 — 게이트를 **읽지를 않기** 때문이다.
+
+    해석 전체를 재생성하지 않고 **판정 관련 필드만** 다시 적용한다. 나머지 내용
+    (진입가·확률·근거)은 스캔 시점의 사실이라 그대로 두는 게 맞고, 재생성은 저장 당시의
+    맥락을 잃을 수 있다. 바뀌어야 하는 건 "지금 발행해도 되는가" 하나다.
+
+    양방향이다 — 제외뿐 아니라 **해제**도 한다. 제외 시 `buy_ready_before_exclusion`에
+    원래 값을 남겨두고, 레인이 회복하면 그걸로 되돌린다. 이게 없으면 DEGRADE 시절 저장된
+    행이 레인 회복 후에도 영원히 관측전용으로 남는다(안전한 방향이지만 발행시점 판정은 아니다).
+    """
+    return _apply_stream_exclusion_to_interpretation(interp, bucket)
+
+
+def _apply_stream_exclusion_to_interpretation(interp: Dict[str, Any], bucket: str) -> Dict[str, Any]:
+    """제외된 스트림이면 실행가능 표식을 전부 회수하고 관측 전용으로 되돌린다."""
+    if not isinstance(interp, dict):
+        return interp
+    from modules.stream_exclusion import apply_stream_exclusion
+
+    # 이미 제외돼 저장된 해석이면 '제외 이전' 값이 원본이다.
+    had_prior_exclusion = bool(interp.get("stream_excluded"))
+    before = interp.get("buy_ready_before_exclusion")
+    if before is None:
+        before = interp.get("buy_ready")
+
+    # 지난 판정의 흔적을 먼저 지운다. 남겨두면 낡은 `stream_excluded`가 새 판정을 가려
+    # 회복이 영원히 반영되지 않는다(= 재적용이 한 방향으로만 작동한다).
+    interp.pop("stream_excluded", None)
+    interp.pop("stream_exclusion_reason", None)
+
+    apply_stream_exclusion(interp, bucket)
+    if not interp.get("stream_excluded"):
+        if had_prior_exclusion:
+            # 회복 경로 — 굳어 있던 제외를 푼다.
+            interp["buy_ready"] = before
+            interp["buy_ready_blocked"] = False
+            interp["buy_ready_block_reasons"] = []
+            if interp.get("operational_action_level") == "OBSERVE_ONLY":
+                interp["operational_action_level"] = "MODEL_BUY"
+        interp.pop("buy_ready_before_exclusion", None)
+        return interp
+    interp["buy_ready_before_exclusion"] = before
+
+    reason = interp.get("stream_exclusion_reason")
+    detail = interp.get("size_note") or "재귀게이트 스트림 제외"
+    interp["operational_action_label"] = "⛔ 관측 전용 (발행 제외)"
+    interp["buy_ready_blocked"] = bool(before)
+    reasons = interp.get("buy_ready_block_reasons")
+    interp["buy_ready_block_reasons"] = (list(reasons) if isinstance(reasons, list) else []) + [detail]
+    interp["touch_vs_buy_ready_explanation"] = (
+        f"{detail} 이 레인은 forward 검증에서 기대를 밑돌아 실자본 배분 대상이 아닙니다. "
+        "픽은 관측·채점 목적으로만 표시됩니다."
+    )
+    if reason == "degrade":
+        interp["selection_thesis"] = "⛔ 관측 전용 — 재귀게이트 DEGRADE 레인"
+    return interp
+
+
+def _build_candidate_interpretation_ungated(row: Dict[str, Any], _bucket: str) -> Dict[str, Any]:
     if _bucket in MODEL_VALIDATED_LANES:
         return build_model_lane_interpretation(row, _bucket)
     alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}

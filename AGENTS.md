@@ -5,6 +5,13 @@ This repository is a quant trading research and execution-support system being r
 
 The target audience is not only engineers but also a product/planning operator who must inspect system behavior, evaluate failures, and guide iterative improvement.
 
+## 기준 문서 (먼저 읽을 것)
+
+- `docs/RESEARCH_STANDARDS.md` — 무엇이 근거로 인정되는가, 승격 기준, 연구 방향, 멈춰야 하는 지점. **이 리포에서 일하는 모든 에이전트에 구속된다.**
+- `docs/DECISIONS.md` — 운영자 결정 원장(OD-N). 지시할 때 결정을 다시 서술하지 말고 번호를 인용한다.
+
+두 문서의 수정 권한은 오케스트레이터에게만 있다. 다른 에이전트는 인용만 한다.
+
 ## Core Rules
 - Preserve working core logic where reasonable.
 - Separate engine logic from UI logic.

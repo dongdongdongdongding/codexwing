@@ -1,0 +1,324 @@
+"""재귀게이트 DEGRADE 스트림 제외 — 픽 계약 레벨 단일 지점.
+
+§20 정책: DEGRADE 판정을 받은 레인의 픽은 **사이징 권고를 제거하고 관측 전용으로 강등**한다.
+픽 자체는 계속 표시하고(nyg6 계약: 후보 가시성 유지) 원장 채점도 계속한다 —
+막는 것은 **라우팅뿐**이다.
+
+이 모듈이 생긴 이유 (audit-gate.md F1·F2):
+
+- **F1** 제외 로직이 `web/backend/services.py:281-288` 한 곳에만 있었다. Discord 카드
+  (`renderers.py:889 build_model_signals_embed`, `:647 build_top_deep_embeds`)와 top_deep은
+  게이트를 **아예 읽지 않았다**. 그래서 DEGRADE 5레인 픽이 ⛔·관측전용 표시 없이
+  진입가·목표가를 단 실행가능 매수카드로 Discord에 나갔다. §40이 "DEGRADE→발행 자동제외
+  연동"을 집행완료로 기록했으나 실제 집행 범위는 웹 한 곳이었다.
+  두 소비자가 서로 다른 어휘를 쓰는 것이 근본 원인이라(웹=lane_key, Discord=decision_bucket),
+  `GATE_LANE_MAP`이 **양쪽 표기를 함께** 들고 한 판정으로 수렴시킨다.
+
+- **F2** 게이트 리더가 fail-**open**이었다. `except Exception: pass` 후 `{}`를 돌려주면
+  제외 블록이 통째로 건너뛰어져 DEGRADE 레인이 조용히 2% 사이징으로 복귀했다.
+  신선도 검사도 없어 며칠 묵은 판정이 무한정 쓰였다. 안전장치가 **열리는 방향으로** 실패했다.
+  → 여기서는 fail-**closed**다. 게이트를 못 읽거나 낡았으면 사이징을 뺀다.
+
+**2026-08-16 운영자 정책 (2026-08-15 결정을 대체):**
+`UNGATED`는 "게이트가 판단하지 않는다"이지 **"발행해도 된다"가 아니다.**
+게이트 미판단 레인은 발행 불가로 다룬다.
+
+직전 정책은 "fail-closed 범위는 게이트가 덮는 레인뿐"이라 `UNGATED_PUBLISHED_LANES`를
+선언만 하고 통과시켰는데, 그 결과 2026-07-19에 아카이브된 `swing_ensemble`의 저장행이
+계속 매수카드로 나갔다 — **판단하지 않는다는 사실이 발행 허가로 읽히고 있었다.**
+지금은 선언된 발행 레인이 게이트에 없으면 제외하고, 사유(`UNGATED_LANE_KINDS`)로
+왜 막혔고 어떻게 풀리는지를 남긴다.
+
+정책 대상은 **선언된 발행 레인**이지 임의 `decision_bucket`이 아니다 —
+admission 등 비-발행 버킷까지 막으면 top_deep 일반 후보 카드가 통째로 죽는다.
+"""
+from __future__ import annotations
+
+import json
+import os
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_GATE_PATH = PROJECT_ROOT / "runtime_state" / "reports" / "validation" / "research_recursion_gate_latest.json"
+
+# 일일 산출물 신선도 기준. report_daily_model_foundation_gate.py:548과 같은 값을 쓴다.
+MAX_GATE_AGE_HOURS = 48.0
+
+# 발행 레인 표기 → 재귀게이트 레인명(report_research_recursion_gate.py LANES).
+# 웹(`_pick_row`의 lane_key)과 Discord(`decision_bucket`)가 같은 판정을 읽게 하는 것이 핵심이다.
+GATE_LANE_MAP: Dict[str, str] = {
+    # web lane_key
+    "kospi_swing": "swing_candidate",
+    "kosdaq_swing": "swing_candidate",
+    "kosdaq_intraday": "kosdaq_intraday_t10",
+    # web lane_key 이자 Discord decision_bucket (같은 문자열)
+    "kospi_intraday": "kospi_intraday_t5",
+    # Discord decision_bucket
+    "swing_candidate": "swing_candidate",
+    "kosdaq_intraday_3d_t5_vwap_guard": "kosdaq_intraday_t10",
+}
+
+# 발행되지만 게이트가 덮지 않는 레인 — 의도적 미매핑이며, 남의 판정을 물려주지 않는다.
+#   nasdaq_session_edge : 라이브 모델 레인. 원장 nasdaq_session_edge_operational_ledger.jsonl.
+#                         게이트의 nasdaq_session_tape는 nasdaq_session_tape_ledger.jsonl을 보는
+#                         **별개 스트림**이라 판정을 입히면 틀린 배선이 된다.
+#   b_market_neutral    : b_primary_top3 / b_all_top10 중 무엇에 대응하는지 행 단위로 모호.
+#                         현재 AG_B_ENGINE_SCAN=0으로 스캔 자체가 꺼져 있다.
+#   swing_ensemble      : 2026-07-19 아카이브. 게이트 LANES에서 제거됨(과거 픽 해석 호환용만 남음).
+#   nasdaq_swing        : 위 nasdaq_session_edge의 **웹 어휘**(services.py:517 `_pick_row` 인자).
+#                         2026-08-16 추가 — 두 집합 어디에도 없어 조용히 통과하고 있었다.
+#                         "공백을 코드에 명시한다"는 계약이 Discord 어휘에만 적용됐던 것이라,
+#                         이 커밋이 잡겠다던 근본원인(두 어휘)이 선언 계층에서 재발한 셈이다.
+UNGATED_PUBLISHED_LANES = frozenset({
+    "nasdaq_session_edge", "nasdaq_swing", "b_market_neutral", "swing_ensemble",
+})
+
+# UNGATED 레인의 사유 분류. 전부 발행 불가지만 **왜 막혔고 어떻게 풀리는지**가 다르다.
+# 2026-08-16 운영자 정책: **UNGATED는 "게이트가 판단하지 않는다"이지 "발행해도 된다"가 아니다.**
+#
+# 일괄 차단 근거 (실측):
+#   swing_ensemble      판정 완료 DEGRADE(n=112, EV −0.72) 후 2026-07-19 아카이브
+#   nasdaq_session_edge 자기 원장 1행(2026-06-26, 7주 경과) — forward 근거 없음
+#   nasdaq_swing        위 레인의 웹 어휘
+#   b_market_neutral    게이트가 b 두 레인 모두 DEGRADE + 2026-08-03 정지 마커
+# **네 레인 중 현재 forward 근거를 가진 레인이 하나도 없다.** 따라서 '자기 원장 근거로 가른다'는
+# 분기는 오늘 결과를 바꾸지 못하고, **게이트 밖에 두 번째 판정 권위**를 만들 뿐이다 —
+# F1·R5에서 닫아 온 '판정 사본이 둘' 실패 계열 그 자체다.
+# nasdaq_session_edge를 다시 발행하려면 그 레인을 **게이트 LANES에 배선**하는 게 정답이지
+# 여기에 예외를 두는 것이 아니다(tape 판정을 물려주는 오배선과는 별개 문제다).
+UNGATED_LANE_KINDS: Dict[str, str] = {
+    "swing_ensemble": "retired",
+    "nasdaq_session_edge": "unadjudicated",
+    "nasdaq_swing": "unadjudicated",
+    "b_market_neutral": "suspended",
+}
+
+UNGATED_LANE_NOTES: Dict[str, str] = {
+    "retired": ("⛔ 발행 제외(관측) — 은퇴한 레인 (2026-07-19 아카이브, "
+                "판정 완료 DEGRADE n=112 EV −0.72). 복귀 경로 없음 — 교체 완료된 레인이다"),
+    "unadjudicated": ("⛔ 발행 제외(관측) — 재귀게이트가 판단하지 않는 레인 "
+                      "(자기 스트림이라 타 레인 판정을 물려줄 수 없음). "
+                      "발행하려면 게이트 LANES에 이 레인의 원장을 배선해야 한다"),
+    "suspended": ("⛔ 발행 제외(관측) — 정지된 레인 "
+                  "(b_lane_suspended.json, 2026-08-03 · AG_B_ENGINE_SCAN=0)"),
+}
+
+_missing_kind = UNGATED_PUBLISHED_LANES - frozenset(UNGATED_LANE_KINDS)
+if _missing_kind:
+    raise RuntimeError(f"UNGATED 레인에 사유 분류가 없다: {sorted(_missing_kind)}")
+
+# 발행 레인은 **두 집합 중 정확히 하나**에 속해야 한다.
+DECLARED_PUBLISHED_LANES = frozenset(GATE_LANE_MAP) | UNGATED_PUBLISHED_LANES
+
+_both = frozenset(GATE_LANE_MAP) & UNGATED_PUBLISHED_LANES
+if _both:
+    raise RuntimeError(f"레인이 GATE_LANE_MAP과 UNGATED에 동시에 선언됨: {sorted(_both)}")
+
+# 게이트가 '정상'이라고 인정하는 판정. 이 목록에 없으면 전부 닫는다(화이트리스트).
+# report_research_recursion_gate.py가 내는 값은 OBSERVING / DEGRADE / EXCEED / CONFIRM 넷뿐이다(전수 확인).
+# `!= "DEGRADE"` 블랙리스트는 값만 오염돼도 fail-open이었다 — "DEGRADED"·"degrade"·0·None이 전부 통과했고,
+# 리포에 이미 **다른 의미의 "DEGRADED"**(파이프라인 헬스)가 있어 어휘충돌은 가설이 아니다.
+HEALTHY_VERDICTS = frozenset({"CONFIRM", "OBSERVING", "EXCEED"})
+
+_CACHE: Dict[str, Any] = {"key": None, "ts": 0.0, "state": None}
+_CACHE_TTL_SEC = 600.0
+
+
+def _now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _age_hours(stamp: Any, now: datetime) -> Optional[float]:
+    text = str(stamp or "").strip()
+    if not text:
+        return None
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return (now - parsed).total_seconds() / 3600.0
+
+
+def load_gate_state(gate_path: Optional[Path] = None, *, now: Optional[datetime] = None, use_cache: bool = True) -> Dict[str, Any]:
+    """게이트 판정을 읽는다. **실패는 열리지 않고 닫힌다.**
+
+    반환: `{"usable": bool, "error": str|None, "age_hours": float|None, "lanes": {...}}`
+    `usable=False`면 게이트가 덮는 레인은 전부 제외 대상이 된다.
+    """
+    path = Path(gate_path) if gate_path is not None else DEFAULT_GATE_PATH
+    moment = now or _now()
+
+    cache_key = str(path)
+    if use_cache and _CACHE["key"] == cache_key and _CACHE["state"] is not None:
+        if (moment.timestamp() - float(_CACHE["ts"])) < _CACHE_TTL_SEC:
+            return _CACHE["state"]
+
+    state: Dict[str, Any] = {"usable": False, "error": None, "age_hours": None, "lanes": {}}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        state["error"] = "gate_report_missing"
+    except Exception as e:
+        state["error"] = f"gate_report_unreadable: {type(e).__name__}"
+    else:
+        if not isinstance(payload, dict):
+            state["error"] = "gate_report_malformed"
+        else:
+            age = _age_hours(payload.get("generated_at"), moment)
+            state["age_hours"] = round(age, 3) if age is not None else None
+            lanes = {}
+            for entry in payload.get("results") or []:
+                if isinstance(entry, dict) and entry.get("lane"):
+                    lanes[str(entry["lane"])] = {
+                        "verdict": entry.get("verdict"),
+                        "fwd_ev": entry.get("fwd_ev"),
+                        "n": entry.get("n"),
+                    }
+            if not lanes:
+                state["error"] = "gate_report_empty"
+            elif age is None:
+                state["error"] = "gate_report_undated"
+            elif age > MAX_GATE_AGE_HOURS or age < 0:
+                # 음수 age = 미래시각 리포트. 검사하지 않으면 영원히 '신선'해서
+                # 시계 오류·조작된 타임스탬프가 신선도 게이트를 통째로 무력화한다.
+                state["error"] = "gate_report_stale"
+                state["lanes"] = lanes
+            else:
+                state["usable"] = True
+                state["lanes"] = lanes
+
+    if use_cache:
+        _CACHE.update(key=cache_key, ts=moment.timestamp(), state=state)
+    return state
+
+
+def invalidate_cache() -> None:
+    _CACHE.update(key=None, ts=0.0, state=None)
+
+
+def exclusion_enabled() -> bool:
+    """롤백 스위치. 기본 ON — 기존 계약(AG_DEGRADE_STREAM_EXCLUSION=0으로 롤백)을 그대로 유지한다."""
+    return os.environ.get("AG_DEGRADE_STREAM_EXCLUSION", "1") == "1"
+
+
+def stream_status(lane_key: Any, *, gate_state: Optional[Dict[str, Any]] = None,
+                  gate_path: Optional[Path] = None, strict: bool = False) -> Dict[str, Any]:
+    """레인 하나의 발행 자격. 세 소비자가 전부 이걸 통해서 묻는다.
+
+    `strict=True`는 **발행 관문**(웹 `_pick_row`)용이다. 거기 오는 lane_key는 반드시
+    발행 레인이므로, 두 집합 어디에도 없으면 선언을 잊은 것이고 조용히 통과시키면 안 된다.
+    비-strict 경로(해석 빌더)는 admission 등 임의 decision_bucket을 지나므로 막지 않는다.
+    """
+    key = str(lane_key or "")
+    gate_lane = GATE_LANE_MAP.get(key)
+    if gate_lane is None:
+        if key in UNGATED_PUBLISHED_LANES:
+            # 2026-08-16 정책: 게이트 미판단 = 발행 불가. 사유는 레인별로 다르다.
+            kind = UNGATED_LANE_KINDS[key]
+            return {"gated": False, "excluded": True, "reason": "lane_" + kind,
+                    "gate_lane": None, "verdict": None, "ungated_kind": kind}
+        if strict:
+            return {"gated": True, "excluded": True, "reason": "lane_undeclared",
+                    "gate_lane": None, "verdict": None, "error": "lane_undeclared:" + (key or "-")}
+        # 선언된 발행 레인이 아닌 임의 decision_bucket(admission 등)은 정책 대상이 아니다.
+        return {"gated": False, "excluded": False, "reason": None, "gate_lane": None, "verdict": None}
+
+    state = gate_state if gate_state is not None else load_gate_state(gate_path)
+    if not state.get("usable"):
+        stale = state.get("error") == "gate_report_stale"
+        return {
+            "gated": True,
+            "excluded": True,
+            "reason": "gate_stale" if stale else "gate_unavailable",
+            "gate_lane": gate_lane,
+            "verdict": None,
+            "age_hours": state.get("age_hours"),
+            "error": state.get("error"),
+        }
+
+    verdict_row = state["lanes"].get(gate_lane) or {}
+    verdict = verdict_row.get("verdict")
+    if verdict is None and gate_lane not in state["lanes"]:
+        # 게이트는 읽혔는데 이 레인 판정이 없다 = 덮인다고 믿었던 레인이 사라졌다. 닫는다.
+        return {"gated": True, "excluded": True, "reason": "gate_unavailable",
+                "gate_lane": gate_lane, "verdict": None, "error": "lane_missing_from_gate"}
+    healthy = verdict in HEALTHY_VERDICTS
+    if healthy:
+        reason = None
+    elif verdict == "DEGRADE":
+        reason = "degrade"
+    else:
+        reason = "unrecognized_verdict"
+    return {
+        "gated": True,
+        "excluded": not healthy,
+        "reason": reason,
+        "gate_lane": gate_lane,
+        "verdict": verdict,
+        "n": verdict_row.get("n"),
+        "fwd_ev": verdict_row.get("fwd_ev"),
+    }
+
+
+def _size_note(status: Dict[str, Any]) -> str:
+    reason = status.get("reason")
+    if reason == "degrade":
+        return (f"⛔ 발행 제외(관측) — 재귀게이트 DEGRADE (forward n={status.get('n')} "
+                f"EV {status.get('fwd_ev')}, §20 스트림 제외 정책)")
+    kind = status.get("ungated_kind")
+    if kind:
+        return UNGATED_LANE_NOTES[kind]
+    if reason == "lane_undeclared":
+        return ("⛔ 발행 제외(관측) — 이 레인이 스트림 계약에 선언되지 않음 "
+                "(modules/stream_exclusion.py의 GATE_LANE_MAP 또는 UNGATED_PUBLISHED_LANES에 추가 필요)")
+    if reason == "unrecognized_verdict":
+        return (f"⛔ 발행 제외(관측) — 재귀게이트 판정을 해석할 수 없음 "
+                f"(verdict={status.get('verdict')!r}, 화이트리스트 밖, fail-closed)")
+    if reason == "gate_stale":
+        age = status.get("age_hours")
+        return (f"⛔ 발행 제외(관측) — 재귀게이트 판정이 낡음 "
+                f"({age}h > {MAX_GATE_AGE_HOURS}h, fail-closed)")
+    return "⛔ 발행 제외(관측) — 재귀게이트 판정을 읽을 수 없음 (fail-closed)"
+
+
+def apply_stream_exclusion(
+    row: Dict[str, Any],
+    lane_key: Any,
+    *,
+    gate_state: Optional[Dict[str, Any]] = None,
+    gate_path: Optional[Path] = None,
+    strict: bool = False,
+) -> Dict[str, Any]:
+    """픽 행에 스트림 제외를 적용한다(제자리 수정 후 같은 행 반환).
+
+    제외 시: 사이징 권고 제거 · `stream_excluded=True` · ⛔ 라벨 ·
+    실행가능 표식(`buy_ready` / `operational_action_level`) 회수.
+    픽 내용(코드·확률·진입가)과 원장 채점은 건드리지 않는다.
+    """
+    if not isinstance(row, dict):
+        return row
+    if not exclusion_enabled():
+        return row
+
+    status = stream_status(lane_key, gate_state=gate_state, gate_path=gate_path, strict=strict)
+    if not status.get("excluded"):
+        return row
+
+    row.pop("size_pct_total", None)
+    row["stream_excluded"] = True
+    row["stream_exclusion_reason"] = status.get("reason")
+    row["size_note"] = _size_note(status)
+    marker = "⛔관측전용(DEGRADE)" if status.get("reason") == "degrade" else "⛔관측전용(게이트 불가)"
+    existing = row.get("rationale")
+    row["rationale"] = f"{existing} · {marker}" if existing else marker
+
+    # 실행가능 매수 표식 회수 — F1에서 실제 피해가 난 지점(Discord 매수카드).
+    if "buy_ready" in row:
+        row["buy_ready"] = False
+    if "operational_action_level" in row:
+        row["operational_action_level"] = "OBSERVE_ONLY"
+    return row

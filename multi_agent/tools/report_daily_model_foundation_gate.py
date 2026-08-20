@@ -188,7 +188,29 @@ def _evaluate_learning_cycle(
     total_resolved = _int(payload.get("total_resolved"))
     action_ok = action in expected_actions
     fresh_ok = age is not None and age <= max_age_hours
-    new_ok = new_resolved >= min_new_resolved
+
+    # 학습 상태파일 무결성 (run_learning_cycle의 state_load_error).
+    # 손상되면 전 기준선이 0으로 리셋되고 new_resolved가 '새 작업'이 아니라 **창 전체**가 된다
+    # (실측 4156). 그대로 두면 `4156 >= 1`로 NEW_OUTCOMES가 초록이라
+    # **상태파일이 날아간 사고가 "건강한 대량 신규 수확"으로 보인다.**
+    # 그래서 ①손상 자체를 체크로 세우고 ②그 숫자에 기댄 판정이 초록을 못 내게 막는다.
+    # 필드 부재(d1538e9 이전 산출물)는 정상으로 본다 — 과거 리포트를 손상으로 오인하지 않는다.
+    state_load_error = payload.get("state_load_error")
+    state_ok = not state_load_error
+    new_ok = new_resolved >= min_new_resolved and state_ok
+
+    _check(
+        checks,
+        code=f"{report_name.upper()}_STATE_INTEGRITY",
+        passed=state_ok,
+        severity=severity,
+        detail=(f"state_load_error={state_load_error}" if state_load_error
+                else "학습 상태파일 정상"),
+        source_path=path,
+        next_action=("보존된 <training_state.json>.corrupt를 확인해 기준선을 복구하거나, "
+                     "다음 주기 재기준선을 수용할지 판단 (그 주기 new_resolved는 창 전체라 과대계상)"),
+        metrics={"state_load_error": state_load_error},
+    )
     _check(
         checks,
         code=f"{report_name.upper()}_ACTION",
@@ -216,9 +238,15 @@ def _evaluate_learning_cycle(
         code=f"{report_name.upper()}_NEW_OUTCOMES",
         passed=new_ok,
         severity=severity,
-        detail=f"new_resolved_since_last_cycle={new_resolved} min={min_new_resolved}",
+        detail=(
+            f"new_resolved_since_last_cycle={new_resolved} min={min_new_resolved}"
+            if state_ok else
+            f"new_resolved_since_last_cycle={new_resolved} — 상태파일 손상으로 이 수치는 "
+            f"신뢰할 수 없음(기준선 리셋 후 창 전체). {report_name.upper()}_STATE_INTEGRITY 참조"
+        ),
         source_path=path,
-        next_action="후보 outcome resolve/backfill을 늘린 뒤 검증 재실행",
+        next_action=("후보 outcome resolve/backfill을 늘린 뒤 검증 재실행" if state_ok
+                     else "먼저 학습 상태파일 손상을 처리 — 그 전까지 이 수치는 무의미"),
     )
 
 
