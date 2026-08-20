@@ -406,6 +406,7 @@ def test_limit_up_pick_is_blocked_as_unfillable():
 @pytest.mark.parametrize("dc,want", [
     (29.0, "LIMIT_UP"), (30.0, "LIMIT_UP"), (28.9, "OK"),
     (-29.0, "LIMIT_DOWN"), (-30.0, "LIMIT_DOWN"), (-28.9, "OK"),
+    # 하한가는 **차단이 아니라 경고**다 — 진입은 매수이고 하한가엔 매도 물량이 쌓여 있다
     (0.0, "OK"), (None, "OK"),
 ])
 def test_limit_threshold_boundaries(dc, want):
@@ -481,3 +482,19 @@ def test_frontend_shows_attainability_first():
 def test_day_change_is_carried_from_the_ledger():
     """원장에서 안 실어 오면 상한가를 못 거른다."""
     assert "day_change" in S._LEDGER_EXTRA_KEYS
+
+
+
+def test_limit_down_is_a_warning_not_a_block():
+    """방향을 틀리면 안 된다 — 진입은 **매수**다.
+
+    상한가: 매도 물량이 없어 **살 수 없다** → 차단.
+    하한가: 매수 물량이 없어 **팔 수 없다** → 매수는 체결된다. 차단이 아니라
+            "출구가 막힐 수 있다"는 경고다.
+    2026-08-20: abs() 로 묶어 둘을 같이 처리했던 것을 정정했다.
+    """
+    up = S._entry_attainability({"kind": "INTRADAY", "day_change": 29.9})
+    dn = S._entry_attainability({"kind": "INTRADAY", "day_change": -29.9})
+    assert up["attainable"] is False, "상한가는 살 수 없다 — 차단"
+    assert dn["attainable"] is None, "하한가는 살 수 있다 — 경고"
+    assert "출구가 막힐" in dn["attainability_note"]

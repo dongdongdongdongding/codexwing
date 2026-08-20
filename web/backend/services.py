@@ -363,9 +363,14 @@ def _entry_attainability(row, today=None):
                 f"백테스트가 부풀려지는 자리이기도 하다.")
             return out
         if dc <= LIMIT_DOWN_PCT:
-            out["attainable"] = False
+            # **진입은 매수다.** 하한가에는 매도 물량이 쌓여 있어 오히려 체결된다 —
+            # 못 파는 것이지 못 사는 것이 아니다. 2026-08-20 정정: abs() 로 묶어
+            # 상한가와 같이 "체결 불가"로 처리했던 것은 방향을 틀린 것이다.
+            # 다만 하한가 종목을 사는 것은 **출구가 막힐 위험**이라 경고로 남긴다.
+            out["attainable"] = None
             out["attainability"] = "LIMIT_DOWN"
-            out["attainability_note"] = f"하한가(당일 {dc:+.1f}%) — 체결 불가."
+            out["attainability_note"] = (
+                f"하한가(당일 {dc:+.1f}%) — 매수는 체결되나 **매도 물량이 없어 출구가 막힐 수 있다.**")
             return out
     # 진입가가 '스캔일 종가'인 레인인데 매수일이 그 다음날이면, 그 가격은 이미 지나갔다.
     if row.get("kind") == "INTRADAY" and row.get("scan_date") and row.get("buy_date"):
