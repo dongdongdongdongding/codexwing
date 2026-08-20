@@ -245,12 +245,16 @@ def test_frequent_lane_keeps_sizing(monkeypatch):
 
 # ── 5. LANES 밖 레인 (실제로 /api/picks 를 500 으로 만들었다) ────────────────
 
-@pytest.mark.parametrize("lane", ["nasdaq_swing", "b_market_neutral", "", "존재하지않는레인"])
+@pytest.mark.parametrize("lane", ["b_market_neutral", "", "존재하지않는레인", "swing_ensemble"])
 def test_lanes_outside_the_registry_do_not_crash(lane):
     """급소 — LANES 에 없는 레인이 빈도 조회에 닿으면 ledger 가 "" 가 되어
     경로가 디렉터리가 되고 open() 이 IsADirectoryError 를 냈다.
-    `picks()` 는 a_picks + b_picks + nasdaq_picks 를 합치므로 **전체 API 가 죽는다.**
+    `picks()` 는 a_picks + b_picks 를 합치므로 **전체 API 가 죽는다.**
     단위 테스트가 LANES 안 레인만 봐서 못 잡았고, 브라우저로 열어서 잡았다.
+
+    2026-08-20 갱신: `nasdaq_swing` 은 그 뒤 정식 등록돼 더는 "밖"이 아니다.
+    **레인을 등록했으면 그 레인을 밖이라 부르는 테스트도 같이 고쳐야 한다** —
+    안 고쳐서 라이브에서만 깨졌다(런타임 원장이 있어 실제 값이 나왔다).
     """
     assert S._lane_frequency(lane) is None
 
@@ -263,7 +267,7 @@ def test_read_ledger_never_opens_a_directory():
 
 def test_pick_row_survives_a_lane_outside_the_registry():
     """LANES 밖 레인으로도 픽 한 줄은 만들어져야 한다 — 죽으면 전체가 죽는다."""
-    row = S._pick_row("AXTI", "NASDAQ", "nasdaq_swing", entry=10.0, prob=0.8,
+    row = S._pick_row("AXTI", "NASDAQ", "b_market_neutral", entry=10.0, prob=0.8,
                       scan_date="2026-08-20", name="AXT Inc")
     assert row["code"] == "AXTI"
     assert "lane_frequency" not in row, "근거가 없으면 빈도를 지어내지 않는다"
@@ -433,11 +437,36 @@ def test_swing_next_open_entry_is_not_flagged_stale():
 
 
 def test_unfillable_pick_loses_sizing_in_pick_row():
+    """체결 불가는 사이징을 뗀다. **그리고 다른 사유에 가려지지 않아야 한다.**
+
+    2026-08-20: 각 가드가 `size_note` 를 덮어써서 상한가 경고가 폐기선 문구에 가려졌다.
+    `blocks` 로 누적하고 심각도 순으로 정렬한다.
+    """
     row = S._pick_row("001510", "KOSPI", "kospi_intraday", entry=2810.0, prob=0.8,
                       scan_date="2026-08-20", extra={"day_change": 29.79})
     assert row["attainable"] is False
     assert "size_pct_total" not in row
-    assert "체결 불가" in row["size_note"]
+    assert "체결 불가" in row.get("block_labels", []), "사유가 목록에 남아야 한다"
+    assert row["size_note"].startswith("⛔ 체결 불가"), "가장 심각한 사유가 앞에 와야 한다"
+
+
+def test_blockers_accumulate_and_sort_by_severity():
+    """급소 — 사유가 여럿일 때 덜 심각한 것이 더 심각한 것을 덮으면 안 된다."""
+    row = {"size_pct_total": 2.0}
+    S._add_block(row, "kill", "폐기선 아래", "EV -0.19%")
+    S._add_block(row, "unfillable", "체결 불가", "상한가")
+    S._add_block(row, "expired", "만료 7일", "매수일 경과")
+    assert row["block_labels"] == ["체결 불가", "만료 7일", "폐기선 아래"]
+    assert row["size_note"].startswith("⛔ 체결 불가")
+    assert "그 외: 만료 7일, 폐기선 아래" in row["size_note"]
+    assert "size_pct_total" not in row
+
+
+def test_same_blocker_is_not_duplicated():
+    row = {}
+    S._add_block(row, "kill", "폐기선 아래", "x")
+    S._add_block(row, "kill", "폐기선 아래", "y")
+    assert row["block_labels"] == ["폐기선 아래"]
 
 
 def test_frontend_shows_attainability_first():

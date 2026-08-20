@@ -306,8 +306,8 @@ def _apply_operator_ev_floor(row, lane_key):
     ev, win, n = (_lane_forward_ev().get(gate_lane) or (None, None, None))
     if not isinstance(ev, (int, float)):
         if row.get("size_pct_total") is not None:
-            row.pop("size_pct_total", None)
-            row["size_note"] = "⛔ 사이징 보류 — 이 레인의 forward EV 를 게이트 산출에서 찾지 못했다"
+            _add_block(row, "unknown", "근거 없음",
+                       "이 레인의 forward EV 를 게이트 산출에서 찾지 못했다")
         row["operator_verdict"] = "UNKNOWN"
         return row
     row["forward_ev"] = round(float(ev), 2)
@@ -316,9 +316,8 @@ def _apply_operator_ev_floor(row, lane_key):
     row["forward_n"] = n
     if ev <= OPERATOR_EV_KILL_PCT:
         row["operator_verdict"] = "KILL"
-        row.pop("size_pct_total", None)
-        row["size_note"] = (f"⛔ 폐기선 — forward EV {ev:+.2f}% 가 운영자 기준 "
-                            f"+{OPERATOR_EV_KILL_PCT:.0f}% 이하다 (n={n}). 관측만 한다.")
+        _add_block(row, "kill", "폐기선 아래",
+                   f"forward EV {ev:+.2f}% ≤ 운영자 기준 +{OPERATOR_EV_KILL_PCT:.0f}% (n={n})")
     elif ev >= OPERATOR_EV_DEPLOY_PCT and isinstance(win, (int, float)) and win >= OPERATOR_WIN_DEPLOY_PCT:
         row["operator_verdict"] = "DEPLOY"
         row["size_note"] = (f"✅ 즉시적용 기준 충족 — EV {ev:+.2f}% · 승률 {win:.1f}% (n={n}). "
@@ -380,6 +379,27 @@ def _entry_attainability(row, today=None):
     out["attainable"] = True
     out["attainability"] = "OK"
     return out
+
+
+# 픽을 지금 실행할 수 없게 만드는 사유들. **심각도 순** — 앞의 것이 뒤의 것을 가리면 안 된다.
+# 2026-08-20: 각 가드가 `size_note` 를 덮어써서 **상한가 경고가 폐기선 문구에 가려졌다.**
+# 사유가 여럿일 때 가장 심각한 것이 살아남아야 하고, 화면은 전부 볼 수 있어야 한다.
+BLOCK_ORDER = ["unfillable", "expired", "sparse", "kill", "unknown"]
+
+
+def _add_block(row, key, label, detail=""):
+    """사유를 **누적**한다. 덮어쓰지 않는다."""
+    row.pop("size_pct_total", None)
+    blocks = row.setdefault("blocks", [])
+    if not any(b["key"] == key for b in blocks):
+        blocks.append({"key": key, "label": label, "detail": detail})
+    blocks.sort(key=lambda b: BLOCK_ORDER.index(b["key"]) if b["key"] in BLOCK_ORDER else 99)
+    top = blocks[0]
+    rest = [b["label"] for b in blocks[1:]]
+    row["size_note"] = ("⛔ " + top["label"] + (" — " + top["detail"] if top["detail"] else "")
+                        + (" · 그 외: " + ", ".join(rest) if rest else ""))
+    row["block_labels"] = [b["label"] for b in blocks]
+    return row
 
 
 def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name=None, scan_date=None, source="A", extra=None):
@@ -493,26 +513,22 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
     # 체결 가능성 — EV·신선도와 **다른 축**이다. 아무리 EV 가 좋아도 못 사는 가격이면 무의미하다.
     row.update(_entry_attainability(row))
     if row.get("attainable") is False:
-        row.pop("size_pct_total", None)
-        row["size_note"] = "⛔ 체결 불가 — " + row.get("attainability_note", "")
+        _add_block(row, "unfillable", "체결 불가", row.get("attainability_note", ""))
     _apply_operator_ev_floor(row, lane_key)
     # 발화 빈도 — EV 가 좋아도 픽이 안 나오면 거래할 수 없다(운영자 기준 3거래일 1회).
     _fq = _lane_frequency(lane_key)
     if _fq:
         row["lane_frequency"] = _fq
         if not _fq["frequency_ok"]:
-            row.pop("size_pct_total", None)
-            row["size_note"] = (f"⛔ 발화 부족 — 마지막 발화 {_fq['last_fired']} "
-                                f"({_fq['days_since']}거래일 전), 통상 간격 {_fq['median_gap']}거래일. "
-                                f"운영자 기준 {OPERATOR_MAX_GAP_TRADING_DAYS}거래일 1회 미달. "
-                                + (row.get("size_note") or ""))
+            _add_block(row, "sparse", f"발화 부족 {_fq['median_gap']}일간격",
+                       f"마지막 발화 {_fq['last_fired']} ({_fq['days_since']}거래일 전) — "
+                       f"운영자 기준 {OPERATOR_MAX_GAP_TRADING_DAYS}거래일 1회 미달")
     _stale = _pick_is_stale(row.get("buy_date"))
     if _stale:
         row["stale_days"] = _stale
         row["expired"] = True
-        row.pop("size_pct_total", None)
-        row["size_note"] = (f"⏱ 만료 — 매수일 {row.get('buy_date')} 이 {_stale}일 지났다. "
-                            f"이 레인의 마지막 발화가 {row.get('scan_date')} 이다(신규 픽 없음).")
+        _add_block(row, "expired", f"만료 {_stale}일",
+                   f"매수일 {row.get('buy_date')} 이 지났다 — 마지막 발화 {row.get('scan_date')}")
         row["rationale"] = (row.get("rationale") or "") + f" · ⏱만료({_stale}일 경과)"
 
     # §16 tail 사전탐지(swing-main-clbb): tail_p 관측 필드 — 발행/사이징/베토/랭킹 불변.
