@@ -208,6 +208,58 @@ def _pick_is_stale(buy_date, today=None):
     return (td - bd).days if bd < td else 0
 
 
+OPERATOR_MAX_GAP_TRADING_DAYS = 3   # 운영자 기준: 픽은 3거래일에 한 번은 나와야 한다
+
+def _trading_days_between(a, b):
+    """주말 제외 거래일 수(공휴일 미반영 근사 — 게이트 달력과 달리 여기선 표시용)."""
+    import datetime as _dt
+    try:
+        d0 = _dt.date.fromisoformat(str(a)[:10]); d1 = _dt.date.fromisoformat(str(b)[:10])
+    except (ValueError, TypeError):
+        return None
+    if d1 < d0:
+        return 0
+    n = 0; d = d0
+    while d < d1:
+        d += _dt.timedelta(days=1)
+        if d.weekday() < 5:
+            n += 1
+    return n
+
+
+def _lane_frequency(lane_key, today=None):
+    """이 레인이 거래 가능한 빈도로 픽을 내는가 (운영자 기준: 3거래일에 1회).
+
+    **EV 가 좋아도 픽이 안 나오면 거래할 수 없다.** kosdaq_intraday 가 그렇다 —
+    원장 8건이 전부이고 2026-06-29 -> 07-31 한 달 공백이 있다. 유동성 가드
+    (GTE30EOK/GTE100EOK)가 좁아 발화가 드물다. 화면이 이걸 말하지 않으면
+    사용자는 그 레인을 살아있는 레인으로 오해한다.
+    """
+    import datetime as _dt
+    meta = LANES.get(lane_key) or {}
+    led = _read_ledger(meta.get("ledger", ""), meta.get("dir"))
+    if not led:
+        return None
+    want = "KOSPI" if "kospi" in lane_key else ("KOSDAQ" if "kosdaq" in lane_key else "")
+    dates = sorted({str(r.get("date") or r.get("trade_date") or "")[:10] for r in led
+                    if (not want or str(r.get("market", "")).upper() == want or not r.get("market"))
+                    and (r.get("date") or r.get("trade_date"))})
+    dates = [d for d in dates if len(d) == 10]
+    if not dates:
+        return None
+    td = str(today)[:10] if today else _dt.date.today().isoformat()
+    since = _trading_days_between(dates[-1], td)
+    gaps = [g for g in (_trading_days_between(dates[i], dates[i + 1]) for i in range(len(dates) - 1))
+            if g is not None]
+    gaps.sort()
+    median_gap = gaps[len(gaps) // 2] if gaps else None
+    worst_gap = gaps[-1] if gaps else None
+    ok = (since is not None and since <= OPERATOR_MAX_GAP_TRADING_DAYS
+          and (median_gap is None or median_gap <= OPERATOR_MAX_GAP_TRADING_DAYS))
+    return {"last_fired": dates[-1], "days_since": since, "median_gap": median_gap,
+            "worst_gap": worst_gap, "firing_days": len(dates), "frequency_ok": ok}
+
+
 @lru_cache(maxsize=1)
 def _lane_forward_ev():
     """게이트 산출에서 레인별 forward EV/승률/n. 운영자 기준 대조용.
@@ -373,6 +425,16 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
     # 낡은 픽에 "2%/픽" 이 붙어 나가면 사용자가 지난 진입가로 매매한다. 게이트 판정과
     # 무관한 축이라 스트림 제외가 통과해도 여기서 막아야 한다.
     _apply_operator_ev_floor(row, lane_key)
+    # 발화 빈도 — EV 가 좋아도 픽이 안 나오면 거래할 수 없다(운영자 기준 3거래일 1회).
+    _fq = _lane_frequency(lane_key)
+    if _fq:
+        row["lane_frequency"] = _fq
+        if not _fq["frequency_ok"]:
+            row.pop("size_pct_total", None)
+            row["size_note"] = (f"⛔ 발화 부족 — 마지막 발화 {_fq['last_fired']} "
+                                f"({_fq['days_since']}거래일 전), 통상 간격 {_fq['median_gap']}거래일. "
+                                f"운영자 기준 {OPERATOR_MAX_GAP_TRADING_DAYS}거래일 1회 미달. "
+                                + (row.get("size_note") or ""))
     _stale = _pick_is_stale(row.get("buy_date"))
     if _stale:
         row["stale_days"] = _stale

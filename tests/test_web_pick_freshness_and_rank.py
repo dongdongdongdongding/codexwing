@@ -181,3 +181,43 @@ def test_ledger_reader_accepts_the_symbol_key():
     src = inspect.getsource(S._a_picks_ledger)
     assert 'r.get("ticker") or r.get("symbol")' in src
     assert "if not code:" in src, "코드가 없으면 픽을 만들지 않아야 한다"
+
+
+# ── 4. 발화 빈도 (운영자 기준: 3거래일 1회) ──────────────────────────────────
+
+def test_trading_days_skips_weekends():
+    assert S._trading_days_between("2026-08-19", "2026-08-20") == 1
+    assert S._trading_days_between("2026-08-14", "2026-08-18") == 2   # 금->화, 주말 제외
+    assert S._trading_days_between("2026-08-20", "2026-08-19") == 0
+    assert S._trading_days_between("깨진값", "2026-08-20") is None
+
+
+def test_sparse_lane_loses_sizing_even_with_good_ev(monkeypatch):
+    """EV 가 좋아도 픽이 안 나오면 거래할 수 없다.
+
+    kosdaq_intraday 가 실제로 그렇다 — 원장 8건이 전부이고 2026-06-29 -> 07-31
+    한 달 공백이 있다. 화면이 말하지 않으면 살아있는 레인으로 오해한다.
+    """
+    monkeypatch.setattr(S, "_lane_frequency",
+                        lambda lane, today=None: {"last_fired": "2026-08-11", "days_since": 7,
+                                                  "median_gap": 11, "worst_gap": 24,
+                                                  "firing_days": 8, "frequency_ok": False})
+    monkeypatch.setattr(S, "_lane_forward_ev", lambda: {"kosdaq_intraday_t10": (7.0, 85.7, 7)})
+    row = S._pick_row("053110", "KOSDAQ", "kosdaq_intraday", entry=1000.0, prob=0.8,
+                      scan_date="2026-08-20")
+    assert "size_pct_total" not in row, "발화가 드문 레인에 사이징을 주면 안 된다"
+    assert "발화 부족" in row["size_note"]
+    assert row["lane_frequency"]["median_gap"] == 11
+
+
+def test_frequent_lane_keeps_sizing(monkeypatch):
+    """오탐 방지 — 매일 도는 레인까지 막으면 화면이 비어 아무도 안 본다."""
+    monkeypatch.setattr(S, "_lane_frequency",
+                        lambda lane, today=None: {"last_fired": "2026-08-20", "days_since": 0,
+                                                  "median_gap": 1, "worst_gap": 3,
+                                                  "firing_days": 32, "frequency_ok": True})
+    monkeypatch.setattr(S, "_lane_forward_ev", lambda: {"swing_candidate": (2.4, 84.6, 46)})
+    row = S._pick_row("000001", "KOSDAQ", "kosdaq_swing", entry=1000.0, prob=0.8,
+                      scan_date="2026-08-20")
+    assert row.get("size_pct_total") == 2.0
+    assert "발화 부족" not in (row.get("size_note") or "")
