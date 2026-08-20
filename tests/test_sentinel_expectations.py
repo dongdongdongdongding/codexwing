@@ -639,3 +639,47 @@ def test_registered_reopen_keeps_r1_as_the_blocking_condition():
     assert conds["R4"].get("machine_readable") is False
     out = sen.check_prereg_reopen_conditions(cfg)[0]
     assert out["verdict"] == "NOT_REOPENABLE" and "R1" in out["unmet"]
+
+
+def test_kill_after_date_counts_rows_not_distinct_dates(tmp_path):
+    """축소 보고 금지 — 한 날에 100행이 들어오면 100행으로 보고해야 한다.
+
+    라이브에서 실제로 틀렸다: 2026-08-18/19 에 200행이 들어왔는데 서로 다른 날짜 2개를
+    세어 "행 2건" 으로 냈다. 안전 판정기가 위반을 100배 줄여 보고하면 급한 일이
+    급해 보이지 않는다 — 이 리포에서 가장 비쌌던 실패 형태 그대로다.
+    """
+    from multi_agent.tools.report_sentinel_expectations import _kc_no_rows_after
+
+    led = tmp_path / "runtime_state" / "reports" / "experimental" / "dead.jsonl"
+    led.parent.mkdir(parents=True, exist_ok=True)
+    rows = ([{"date": "2026-08-18", "t": "A%d" % i} for i in range(100)]
+            + [{"date": "2026-08-19", "t": "B%d" % i} for i in range(100)]
+            + [{"date": "2026-08-10", "t": "old"}])
+    led.write_text("\n".join(json.dumps(r) for r in rows), encoding="utf-8")
+
+    got = _kc_no_rows_after(tmp_path, {
+        "ledger": "runtime_state/reports/experimental/dead.jsonl",
+        "after": "2026-08-16",
+    })
+
+    assert got["fired"] is True
+    assert got["observed"]["rows_after"] == 200, "행이 아니라 날짜를 세면 200 이 2 로 줄어든다"
+    assert got["observed"]["dates_after"] == 2
+    assert "200" in got["detail"], "머리글에 행 수가 있어야 한다: " + got["detail"]
+    assert got["observed"]["first_date_after"] == "2026-08-18"
+
+
+def test_kill_after_date_stays_quiet_when_nothing_new(tmp_path):
+    """오탐을 만들지 않는다 — 킬 이전 행만 있으면 조용해야 한다."""
+    from multi_agent.tools.report_sentinel_expectations import _kc_no_rows_after
+
+    led = tmp_path / "runtime_state" / "reports" / "experimental" / "dead.jsonl"
+    led.parent.mkdir(parents=True, exist_ok=True)
+    led.write_text(json.dumps({"date": "2026-08-10"}), encoding="utf-8")
+
+    got = _kc_no_rows_after(tmp_path, {
+        "ledger": "runtime_state/reports/experimental/dead.jsonl",
+        "after": "2026-08-16",
+    })
+    assert got["fired"] is False
+    assert got["observed"]["rows_after"] == 0

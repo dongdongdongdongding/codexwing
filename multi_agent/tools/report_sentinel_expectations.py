@@ -348,10 +348,17 @@ def _kc_no_rows_after(root: Path, chk: Dict[str, Any]) -> Dict[str, Any]:
     rows = _kc_rows(root, chk["ledger"])
     after = str(chk["after"])
     dates = [_iso(r.get(chk.get("date_field", "date"))) for r in rows]
-    newer = sorted({d for d in dates if d and d > after})
-    return {"fired": bool(newer), "observed": {"max_date": max(dates) if dates else None,
-                                               "rows_after": len(newer)},
-            "detail": f"킬 선언일 {after} 이후 행 {len(newer)}건"}
+    newer = [d for d in dates if d and d > after]          # 행 단위 — 축소 보고 금지
+    newer_dates = sorted(set(newer))                        # 거래일 단위
+    return {"fired": bool(newer),
+            "observed": {"max_date": max(dates) if dates else None,
+                         "rows_after": len(newer),
+                         "dates_after": len(newer_dates),
+                         "first_date_after": newer_dates[0] if newer_dates else None},
+            "detail": (f"킬 선언일 {after} 이후 행 {len(newer)}건"
+                       f" ({len(newer_dates)}거래일"
+                       + (f", {newer_dates[0]}~{newer_dates[-1]}" if newer_dates else "") + ")"
+                       if newer else f"킬 선언일 {after} 이후 행 0건")}
 
 
 def _kc_field_min(root: Path, chk: Dict[str, Any]) -> Dict[str, Any]:
