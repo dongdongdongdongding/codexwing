@@ -1183,6 +1183,53 @@ prereg_track_gates:
 # 등록이 없으면 누군가 "표본 쌓였으니 다시 켜자" 로 되살린다. 재개봉은 "표본이 쌓이면"이
 # 아니라 **"측정 자체가 유효해지면"** 이다.
 # ---------------------------------------------------------------------------
+  # ── 2026-08-20 anglerfish 등록 ──────────────────────────────────────────────
+  # 최종 목표(75% 정확도 / 15%+ 수익)까지 **가장 짧은 경로**로 실측된 건.
+  # 등록 이유: n 도달 후에 기준을 정하면 눈대중이 된다. 도달 전에 박아 둔다.
+  - id: swing_kosdaq_top1_depth_verdict
+    source: "anglerfish 실측 2026-08-20 (kr_swing_candidate_ledger n=188 채점행, 같은날 p랭킹)"
+    prose: >
+      스윙 KOSDAQ top-1 선별이 발행 가능한 EV 를 갖는가.
+      실측(2026-08-20): n=26 · EV +2.39 · 승률 84.6% · CI(-0.87, 5.08) — CI 가 0 을 포함해 판단 불가.
+      같은 조건 KOSPI 는 EV -0.62 로 음수이며 **표본으로 해결되지 않는다** — 두 시장을 섞으면
+      필요 n 이 46 에서 405 로 늘어난다(혼합이 신호를 죽인다). 그래서 시장별로 나눠 등록한다.
+    kind: one_shot
+    status: pending
+    severity: warn
+    precondition:
+      desc: "KOSDAQ top-1 채점행 46건 (부트스트랩 CI 하한이 0 을 넘기는 데 필요한 n)"
+      met: false
+      # raw 행수(225)로 세면 46 을 넘어 거짓으로 열린다 — 유도 계수를 쓴다
+      check:
+        type: top1_scored
+        file: runtime_state/reports/experimental/kr_swing_candidate_ledger.jsonl
+        market: KOSDAQ
+        score_field: p
+        outcome_field: policy_ret
+        min: 46
+      measured_2026_08_20:
+        rows_now: 26
+        ev: 2.39
+        win_pct: 84.6
+        ci: [-0.87, 5.08]
+        sd: 8.20
+        required_n: 46
+        firing_days: 26
+    adjudication_record: "RESEARCH_LOG.md 스윙 선별깊이 판정 서술 + adjudications.jsonl"
+    criterion_at_termination: >
+      n>=46 시점에 부트스트랩 CI 하한이 0 을 넘지 못하면 **선별깊이 가설을 기각**하고
+      스윙 레인 재연구로 돌린다. 넘으면 발행 형태(top-1 + 기권) 승격을 운영자에게 올린다.
+      **주의**: 이 판정은 EV 로만 한다. 승률 84.6%가 목표 75%를 넘는다는 이유로 승격하지 않는다 —
+      승률이 높고 EV 가 음수인 것이 현행 계약의 실패 형태다(승률 69.3% / EV -0.94).
+    narrowing: >
+      순환논증 금지: 이 등록의 근거가 된 n=26 측정은 판정의 입력이지 결론의 근거가 아니다.
+      추가 20건은 **새 데이터**여야 하며 같은 26건을 재채점해 n 을 늘리지 않는다.
+    notes: >
+      표본 누수가 이 판정을 직접 위협한다 — 하루 약 1건 발화인데
+      report_kr_swing_candidate.py 의 3중 침묵(len(h)<6 / entry<=0 / except Exception)이
+      행을 조용히 버리면 판정이 무기한 밀린다.
+      투고: investigate-003680-unresolved-anglerfish.md
+
 prereg_reopen_conditions:
   - id: kr_ranking_shadow_reopen
     source: "docs/research/KILL_KR_RANKING_SHADOW_2026-08.md §4"

@@ -463,6 +463,45 @@ def _adjudicated_ids(root: Path) -> Dict[str, Dict[str, Any]]:
     return out
 
 
+def _count_top1_scored(root: Path, chk: Dict[str, Any]) -> Dict[str, Any]:
+    """같은날 랭킹 1위이면서 채점까지 끝난 행을 센다.
+
+    **왜 순진한 min_rows 로는 안 되는가**: 이 원장의 raw 행은 225 인데 필요 n 은 46 이다.
+    행 수만 세면 46 을 이미 넘어 관문이 **거짓으로 열린다**. 판정에 쓰이는 표본은
+    "날짜×시장마다 p 최댓값 1건, policy_ret 채점 완료" 이므로 그 정의대로 세야 한다.
+
+    이것은 여전히 **계수**다 — 연구 술어(CI 하한이 0 을 넘는가)는 평가하지 않는다.
+    """
+    path = root / str(chk.get("file", ""))
+    if not path.exists():
+        return {"met": False, "verified": True, "detail": f"{chk.get('file')} 없음"}
+    market = chk.get("market")
+    score = str(chk.get("score_field", "p"))
+    outcome = str(chk.get("outcome_field", "policy_ret"))
+    dfield = str(chk.get("date_field", "date"))
+    best: Dict[Any, Dict[str, Any]] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if market and row.get("market") != market:
+            continue
+        if not isinstance(row.get(score), (int, float)):
+            continue
+        key = (row.get(dfield), row.get("market"))
+        cur = best.get(key)
+        if cur is None or float(row[score]) > float(cur[score]):
+            best[key] = row
+    scored = [r for r in best.values() if isinstance(r.get(outcome), (int, float))]
+    need = int(chk.get("min", 0))
+    return {"met": len(scored) >= need, "verified": True,
+            "detail": f"{market or '전체'} top-1 채점행 {len(scored)}건 "
+                      f"(필요 {need}, 발화일 {len(best)})"}
+
+
 def _precondition_state(root: Path, pre: Any) -> Dict[str, Any]:
     """선행조건. **연구 술어가 아니라 파일·행수만 본다.**
 
@@ -472,6 +511,8 @@ def _precondition_state(root: Path, pre: Any) -> Dict[str, Any]:
     if not isinstance(pre, dict):
         return {"met": True, "verified": False, "detail": "선행조건 미선언 — 즉시 판정 대상"}
     chk = pre.get("check")
+    if isinstance(chk, dict) and chk.get("type") == "top1_scored":
+        return _count_top1_scored(root, chk)
     if isinstance(chk, dict) and chk.get("type") == "min_rows":
         path = root / str(chk.get("file", ""))
         if not path.exists():

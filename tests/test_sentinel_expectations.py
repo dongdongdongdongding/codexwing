@@ -683,3 +683,104 @@ def test_kill_after_date_stays_quiet_when_nothing_new(tmp_path):
     })
     assert got["fired"] is False
     assert got["observed"]["rows_after"] == 0
+
+
+def test_kosdaq_top1_gate_is_registered_and_counts_the_right_rows():
+    """최종 목표까지 가장 짧은 경로를 관문이 실제로 감시하는가.
+
+    등록만 해 두고 아무도 안 돌리는 것이 §40 이 두 달 놓친 형태다. 이 테스트는
+    (1) 등록돼 있고 (2) 선행조건이 기계 판독 가능하고 (3) 아직 미충족임을 고정한다.
+    """
+    import yaml
+    cfg = yaml.safe_load(sen.CONFIG.read_text(encoding="utf-8"))
+    g = {x["id"]: x for x in cfg["prereg_track_gates"]}["swing_kosdaq_top1_depth_verdict"]
+
+    pre = g["precondition"]
+    assert pre["met"] is False, "도달 전에 충족으로 적으면 관문이 바로 열린다"
+    chk = pre["check"]
+    assert chk["type"] == "top1_scored", "raw 행수로 세면 225>=46 이라 거짓으로 열린다"
+    assert chk["min"] == 46, "필요 n 은 부트스트랩에서 유도된 값이다"
+    assert chk["market"] == "KOSDAQ", "시장을 섞으면 필요 n 이 405 로 늘어난다"
+    assert "kr_swing_candidate_ledger" in chk["file"]
+    assert pre["measured_2026_08_20"]["rows_now"] == 26
+
+    # 기준이 EV 로만 판정하도록 못박혀 있는가 — 승률로 승격하면 현행 실패를 반복한다
+    assert "EV" in g["criterion_at_termination"]
+    assert "승률" in g["criterion_at_termination"]
+    assert "순환논증" in g["narrowing"]
+
+
+def test_kosdaq_top1_gate_stays_blocked_until_the_sample_arrives():
+    """n<46 이면 OVERDUE 가 아니라 BLOCKED — 표본이 없는데 판정을 재촉하지 않는다."""
+    import yaml
+    cfg = yaml.safe_load(sen.CONFIG.read_text(encoding="utf-8"))
+    out = {r["id"]: r for r in sen.check_prereg_track_gates(cfg, sen.PROJECT_ROOT)}
+    r = out["swing_kosdaq_top1_depth_verdict"]
+    assert r["verdict"] == "BLOCKED", r
+
+
+def test_top1_counter_does_not_mistake_raw_rows_for_the_sample(tmp_path):
+    """급소 — raw 행수로 세면 관문이 거짓으로 열린다.
+
+    라이브 원장의 raw 행은 225 인데 필요 n 은 46 이다. 순진한 min_rows 였으면
+    첫날부터 충족으로 열렸다. 판정 표본은 '날짜×시장마다 p 최댓값 1건, 채점 완료' 다.
+    """
+    from multi_agent.tools.report_sentinel_expectations import _count_top1_scored
+
+    led = tmp_path / "led.jsonl"
+    rows = []
+    for d in range(3):                       # 3거래일 × 10후보 = raw 30행
+        for i in range(10):
+            rows.append({"date": "2026-08-%02d" % (d + 1), "market": "KOSDAQ",
+                         "p": 0.5 + i / 100.0, "policy_ret": 1.0})
+    led.write_text("\n".join(json.dumps(r) for r in rows), encoding="utf-8")
+
+    got = _count_top1_scored(tmp_path, {"type": "top1_scored", "file": "led.jsonl",
+                                        "market": "KOSDAQ", "min": 5})
+    assert got["verified"] is True
+    assert got["met"] is False, "top-1 은 3건뿐인데 raw 30행으로 세면 충족으로 열린다"
+    assert "3건" in got["detail"], got["detail"]
+
+
+def test_top1_counter_ignores_unscored_and_other_markets(tmp_path):
+    """채점 안 된 top-1 은 표본이 아니다. 다른 시장도 섞지 않는다 —
+    시장을 섞으면 필요 n 이 46 에서 405 로 늘어난다는 것이 등록의 근거다."""
+    from multi_agent.tools.report_sentinel_expectations import _count_top1_scored
+
+    led = tmp_path / "led.jsonl"
+    led.write_text("\n".join(json.dumps(r) for r in [
+        {"date": "2026-08-01", "market": "KOSDAQ", "p": 0.9, "policy_ret": 2.0},   # 계수
+        {"date": "2026-08-02", "market": "KOSDAQ", "p": 0.9, "policy_ret": None},  # 미채점
+        {"date": "2026-08-03", "market": "KOSPI",  "p": 0.9, "policy_ret": 2.0},   # 타시장
+    ]), encoding="utf-8")
+
+    got = _count_top1_scored(tmp_path, {"type": "top1_scored", "file": "led.jsonl",
+                                        "market": "KOSDAQ", "min": 1})
+    assert got["met"] is True
+    assert "1건" in got["detail"], got["detail"]
+
+
+def test_precondition_dispatch_routes_top1_away_from_raw_row_counting(tmp_path):
+    """디스패치까지 고정한다 — 계수기를 직접 부르는 테스트만 있으면
+    `_precondition_state` 가 raw min_rows 로 되돌아가도 안 잡힌다(실제로 안 잡혔다).
+
+    합성 원장: raw 30행 · top-1 은 3건. 필요 5.
+      · 올바른 경로 → 3 < 5 → 미충족
+      · raw 로 세면 → 30 >= 5 → **거짓 충족**, 관문이 열린다
+    """
+    from multi_agent.tools.report_sentinel_expectations import _precondition_state
+
+    led = tmp_path / "led.jsonl"
+    rows = [{"date": "2026-08-%02d" % (d + 1), "market": "KOSDAQ",
+             "p": 0.5 + i / 100.0, "policy_ret": 1.0}
+            for d in range(3) for i in range(10)]
+    led.write_text("\n".join(json.dumps(r) for r in rows), encoding="utf-8")
+
+    pre = {"desc": "합성", "met": False,
+           "check": {"type": "top1_scored", "file": "led.jsonl",
+                     "market": "KOSDAQ", "min": 5}}
+    got = _precondition_state(tmp_path, pre)
+
+    assert got["verified"] is True, "기계 검사 경로를 타야 한다"
+    assert got["met"] is False, "raw 30행으로 세면 충족이 되어 관문이 거짓으로 열린다"
+    assert "top-1" in got["detail"], got["detail"]
