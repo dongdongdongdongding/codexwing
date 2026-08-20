@@ -107,10 +107,17 @@ def _market_of(code, fallback=""):
 
 
 def _read_ledger(fn, subdir=None):
-    """원장 읽기. subdir 가 있으면 그쪽에서 찾는다(나스닥은 us_research/ 에 있다)."""
+    """원장 읽기. subdir 가 있으면 그쪽에서 찾는다(나스닥은 us_research/ 에 있다).
+
+    파일명이 비면 경로가 디렉터리가 되어 open() 이 IsADirectoryError 를 낸다.
+    LANES 에 없는 레인(nasdaq_swing, b_market_neutral)이 여기 닿으면 실제로 그랬다 —
+    /api/picks 전체가 500 이 됐다. 파일이 아니면 빈 목록으로 돌린다.
+    """
+    if not fn:
+        return []
     base = os.path.join(os.path.dirname(EXP.rstrip("/")), subdir) if subdir else EXP
     fp = os.path.join(base, fn)
-    if not os.path.exists(fp):
+    if not os.path.isfile(fp):
         return []
     out = []
     for ln in open(fp):
@@ -236,8 +243,10 @@ def _lane_frequency(lane_key, today=None):
     사용자는 그 레인을 살아있는 레인으로 오해한다.
     """
     import datetime as _dt
-    meta = LANES.get(lane_key) or {}
-    led = _read_ledger(meta.get("ledger", ""), meta.get("dir"))
+    meta = LANES.get(lane_key)
+    if not meta or not meta.get("ledger"):
+        return None                      # LANES 밖 레인 — 빈도를 주장하지 않는다
+    led = _read_ledger(meta["ledger"], meta.get("dir"))
     if not led:
         return None
     want = "KOSPI" if "kospi" in lane_key else ("KOSDAQ" if "kosdaq" in lane_key else "")

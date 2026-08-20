@@ -221,3 +221,31 @@ def test_frequent_lane_keeps_sizing(monkeypatch):
                       scan_date="2026-08-20")
     assert row.get("size_pct_total") == 2.0
     assert "발화 부족" not in (row.get("size_note") or "")
+
+
+# ── 5. LANES 밖 레인 (실제로 /api/picks 를 500 으로 만들었다) ────────────────
+
+@pytest.mark.parametrize("lane", ["nasdaq_swing", "b_market_neutral", "", "존재하지않는레인"])
+def test_lanes_outside_the_registry_do_not_crash(lane):
+    """급소 — LANES 에 없는 레인이 빈도 조회에 닿으면 ledger 가 "" 가 되어
+    경로가 디렉터리가 되고 open() 이 IsADirectoryError 를 냈다.
+    `picks()` 는 a_picks + b_picks + nasdaq_picks 를 합치므로 **전체 API 가 죽는다.**
+    단위 테스트가 LANES 안 레인만 봐서 못 잡았고, 브라우저로 열어서 잡았다.
+    """
+    assert S._lane_frequency(lane) is None
+
+
+def test_read_ledger_never_opens_a_directory():
+    assert S._read_ledger("") == []
+    assert S._read_ledger(None) == []
+    assert S._read_ledger("없는파일.jsonl") == []
+
+
+def test_pick_row_survives_a_lane_outside_the_registry():
+    """LANES 밖 레인으로도 픽 한 줄은 만들어져야 한다 — 죽으면 전체가 죽는다."""
+    row = S._pick_row("AXTI", "NASDAQ", "nasdaq_swing", entry=10.0, prob=0.8,
+                      scan_date="2026-08-20", name="AXT Inc")
+    assert row["code"] == "AXTI"
+    assert "lane_frequency" not in row, "근거가 없으면 빈도를 지어내지 않는다"
+    assert row.get("operator_verdict") == "UNKNOWN"
+    assert "size_pct_total" not in row, "근거 없는 레인에 사이징을 주면 안 된다"
