@@ -97,3 +97,48 @@ def test_gate_reason_is_recorded_in_source():
     """왜 KOSDAQ 을 뺐는지가 코드 옆에 남아 있어야 한다 — 근거 없이 상수만 있으면 되돌려진다."""
     src = __import__("pathlib").Path(swc.__file__).read_text(encoding="utf-8")
     assert "좋은 날을 버렸다" in src and "+0.911" in src and "-1.072" in src
+
+
+# ── [U] 시장약세 게이트 (KOSDAQ) ────────────────────────────────────────────
+
+def test_market_weakness_buys_on_weakness_not_strength():
+    """부호가 급소다 — **약할 때** 산다. 뒤집히면 정확히 반대 규칙이 되고 조용히 통과한다."""
+    hist = list(np.linspace(-2.0, 2.0, 250))          # 중앙값 0.0
+    weak = swc._mkt_weakness_decide(_series(hist + [-1.5]), _series(hist + [-1.5]).index[-1])
+    strong = swc._mkt_weakness_decide(_series(hist + [+1.5]), _series(hist + [+1.5]).index[-1])
+    assert weak["gate"] == "FIRE" and weak["fire"] is True
+    assert strong["gate"] == "ABSTAIN" and strong["fire"] is False
+
+
+def test_market_weakness_threshold_excludes_today():
+    """인과: 오늘 값은 중앙값 계산에 들어가지 않는다."""
+    hist = list(np.linspace(-2.0, 2.0, 250))
+    ser = _series(hist + [-9.9])                       # 오늘이 극단값
+    v = swc._mkt_weakness_decide(ser, ser.index[-1])
+    assert v["gate_threshold"] == pytest.approx(float(np.median(hist)), abs=1e-9)
+    assert v["gate_history_days"] == 250
+
+
+def test_market_weakness_window_is_250_and_drops_older():
+    ancient = [99.0] * 80
+    recent = list(np.linspace(-2.0, 2.0, 250))
+    ser = _series(ancient + recent + [-1.0])
+    v = swc._mkt_weakness_decide(ser, ser.index[-1])
+    assert v["gate_history_days"] == 250
+    assert v["gate_threshold"] == pytest.approx(float(np.median(recent)), abs=1e-9)
+
+
+def test_market_weakness_warmup_abstains():
+    ser = _series(list(np.linspace(-1, 1, 59)) + [-5.0])
+    v = swc._mkt_weakness_decide(ser, ser.index[-1])
+    assert v["gate"] == "WARMUP" and v["fire"] is False
+
+
+def test_each_market_has_exactly_one_gate():
+    """게이트가 시장별로 정확히 하나여야 한다.
+
+    KOSDAQ 에 두 게이트를 같이 걸면 발화가 5.35거래일이 되어 운영자 3일 기준에 걸린다(규율 13:
+    EV 를 사려고 검증가능성을 판다). KOSPI 에 시장약세를 걸면 기여가 +0.234 뿐이고 2026H1 음수 2/6 이다."""
+    assert swc.ABSTAIN_MARKETS == ("KOSPI",)
+    assert swc.MKT_WEAKNESS_MARKETS == ("KOSDAQ",)
+    assert not set(swc.ABSTAIN_MARKETS) & set(swc.MKT_WEAKNESS_MARKETS)

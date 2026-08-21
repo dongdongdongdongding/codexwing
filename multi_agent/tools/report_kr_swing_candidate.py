@@ -74,6 +74,18 @@ GATE_W, GATE_Q, GATE_QUARTERS = 60, 0.7, 3   # 기권 창(거래일) · 분위 �
 # KOSDAQ 2026H1 음수 5/6 은 셀이 아니라 이 기권이 만들었다(빼면 2/6). [S] 측정으로 KOSDAQ 에서는
 # 랜덤 기권이 96.8% 확률로 이보다 낫고 전기간 플라시보 p=0.557 로 무효다. EDGE_BOARD [조정관] 종합 §1.
 ABSTAIN_MARKETS = ("KOSPI",)
+# KOSDAQ 은 대신 [U] 시장약세 게이트를 쓴다. 운영자 결정 2026-08-22.
+# 유니버스(같은 유동성 필터)의 후행 5일 수익 평균이 자기 직전 250거래일 중앙값보다 **낮은** 날에만 산다.
+# 인과적: 임계는 shift(1) 로 당일을 뺀다. 모델 p 가 아니라 가격 패널에 걸리므로 이중모델 문제가 없다.
+# 근거 (6시드 · 조정관이 [U] 결과를 독립 재계산):
+#   절대피처   8년 +0.361 -> +1.375  · 2026H1 음수 0/6 · 발화 2.01일 · 승률 82.1% · 종목 388/771픽
+#   자기정규화B 8년 +0.338 -> +1.010  · 2026H1 +1.418 음수 0/6        <- 다른 랭커에서도 작동
+#   [L] volume>0 정화 후 오히려 +1.375 -> +1.492 (2026H1 음수 여전히 0/6)
+#   순환이동 플라시보 40,000회 z=+4.19 (본페로니 통과) · [T]/조정관이 각각 독립 재현
+# 🔴 KOSPI 에는 걸지 않는다: 기여 +0.234 뿐이고 2026H1 이 음수 2/6 이다.
+# 🔴 KOSDAQ 에 w60q0.7 과 **같이** 걸지 않는다: 발화가 5.35거래일로 운영자 3일 기준에 걸린다(규율 13).
+MKT_WEAKNESS_MARKETS = ("KOSDAQ",)
+MKT_W, MKT_MINP = 250, 60
 EMBARGO_DAYS = 17                  # 라벨이 H=5 세션 앞을 보므로 학습창 꼬리를 잘라낸다
 
 
@@ -126,6 +138,33 @@ def _gate_decide(ser: pd.Series, latest: pd.Timestamp) -> Dict[str, Any]:
             "gate_window": GATE_W, "gate_q": GATE_Q, "gate_history_days": int(len(hist))}
 
 
+def gate_market_weakness(d: pd.DataFrame, latest: pd.Timestamp) -> Dict[str, Any]:
+    """[U] 시장약세 게이트 — 유니버스 후행 5일 수익이 자기 250거래일 중앙값보다 낮은 날에만 산다.
+
+    `d` 는 이미 시장·유동성으로 걸러진 패널이다([U] 의 `inuniv` 와 같은 필터). 모델을 쓰지 않으므로
+    적합 비용이 0 이고, 게이트가 가격 패널에만 걸려 `SPEC_w60q0.7.md` §C 의 표본내외 혼입 문제가 없다."""
+    ser = d.groupby("date")["ret_5d"].mean().sort_index()
+    return _mkt_weakness_decide(ser, latest)
+
+
+def _mkt_weakness_decide(ser: pd.Series, latest: pd.Timestamp) -> Dict[str, Any]:
+    """일별 시장수익 계열 -> 발행/기권. 순수 함수이므로 여기서 규칙을 검정한다.
+
+    임계는 **직전 250거래일 중앙값**이고 당일은 제외한다(인과). 창이 `MKT_MINP` 미만이면 기권한다."""
+    if latest not in ser.index:
+        return {"gate": "NO_SCORE", "fire": False}
+    hist = ser[ser.index < latest].iloc[-MKT_W:]
+    if len(hist) < MKT_MINP:
+        return {"gate": "WARMUP", "fire": False, "gate_history_days": int(len(hist))}
+    thr = float(np.nanmedian(hist.values))
+    today = float(ser.loc[latest])
+    weak = today < thr                       # 약할 때 산다 — 부호를 뒤집지 마라
+    return {"gate": "FIRE" if weak else "ABSTAIN", "fire": bool(weak),
+            "gate_kind": "mkt_weakness", "gate_mkt_ret5": round(today, 4),
+            "gate_threshold": round(thr, 4), "gate_window": MKT_W,
+            "gate_history_days": int(len(hist))}
+
+
 def score_today(top_k: int) -> Dict[str, Any]:
     cols = list(dict.fromkeys(["code", "date", "market", "liq", "close"] + FEATS))
     px = pd.read_parquet(CACHE / "px_long.parquet", columns=cols)
@@ -144,9 +183,12 @@ def score_today(top_k: int) -> Dict[str, Any]:
         if len(tr) < 20000 or te.empty:
             continue
         te["p"] = _fit(tr).predict_proba(te[FEATS].clip(-1e4, 1e4))[:, 1]
-        verdict = (gate_w60q07(d, latest) if mkt in ABSTAIN_MARKETS else
-                   {"gate": "OFF", "fire": True,
-                    "gate_note": "기권 미적용 — 이 시장에서는 좋은 날을 버린다 (운영자 2026-08-22)"})
+        if mkt in ABSTAIN_MARKETS:
+            verdict = gate_w60q07(d, latest)
+        elif mkt in MKT_WEAKNESS_MARKETS:
+            verdict = gate_market_weakness(d, latest)
+        else:
+            verdict = {"gate": "OFF", "fire": True, "gate_note": "이 시장에는 게이트가 없다"}
         out["gate"][mkt] = verdict
         # RISK_OFF flag: swing ranker EV roughly doubles in drawdown states (8y: 0.85 vs
         # 0.49 KOSDAQ, 0.76 vs 0.50 KOSPI touch-exit) — complementary to the intraday lanes.
