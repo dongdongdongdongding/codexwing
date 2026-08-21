@@ -128,6 +128,16 @@ def run_model_lane_scan(market: str, scan_mode: str, *, route: bool = True) -> D
     if bucket is None:
         out["error"] = f"unsupported market/scan_mode: {market}/{mode}"
         return out
+    # 은퇴 레인은 스캔조차 하지 않는다. 단일 출처는 stream_exclusion.RETIRED_LANES 다 —
+    # 여기에 목록을 복제하면 두 곳이 어긋나고, 그게 F1(판정 사본이 둘)이 만든 사고 계열이다.
+    try:
+        from modules.stream_exclusion import RETIRED_LANES
+    except ImportError:
+        from stream_exclusion import RETIRED_LANES
+    if bucket in RETIRED_LANES:
+        out["error"] = f"lane_{RETIRED_LANES[bucket]}: {bucket}"
+        out["note"] = "은퇴한 레인 — 스캔·라우팅 없음 (modules/stream_exclusion.RETIRED_LANES)"
+        return out
     if mode == "INTRADAY":
         block = _intraday_window_block(market)
         if block:

@@ -489,10 +489,13 @@ if [[ "${AG_KOSPI_INTRADAY_ENABLE:-1}" == "1" ]]; then
   # Replaces top2 + 3d-close-hold (win 45%, EV 1.56 CI incl 0). Guards unchanged
   # (>=100억, close_vwap>=0, idx_vol20>=8). Needs KIS minute bars + FDR daily.
   # decision_bucket=kospi_intraday. Codex runs the KOSDAQ 15:00 lane separately.
-  echo "[STEP] report_kospi_intraday_swing"
-  KIS_ENABLE_LIVE_CALLS=1 run_optional "report_kospi_intraday_swing" \
-    python3 multi_agent/tools/report_kospi_intraday_swing.py \
-      --min-liq "${AG_KOSPI_INTRADAY_MIN_LIQ:-100}"
+  # 🔴 2026-08-22 운영자 결정: 이 레인은 죽었다. 스캔하지 않는다.
+  # 사유·근거는 modules/stream_exclusion.py 의 RETIRED_LANES["kospi_intraday"] 옆에 있다 —
+  # 요약하면 측정된 엣지가 **체결 불가능한 진입** 위에 있었다(랭커 top-1 의 19.2% 가 신호일
+  # 상한가 종가 = 매도호가 없음. 체결가능만 남기면 백테 net +1.620 → −0.009, 전진 EV −1.87).
+  # 위 주석의 win 89.0% / EV +4.80 은 그 가드 **없이** 측정된 값이라 더 이상 유효하지 않다.
+  # 되살리려면 체결가능성 가드를 생산자에 배선하고 다시 재라. 레지스트리에서 지우는 것이 스위치다.
+  echo "[SKIP] report_kospi_intraday_swing — 은퇴 (stream_exclusion.RETIRED_LANES)"
 fi
 
 # 코스닥 15:00 번들 일일 재학습 (P1-H2, swing-main-67zc): 정적 번들은 부패(승률 65.5%/EV CI 0포함,

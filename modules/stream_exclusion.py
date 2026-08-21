@@ -79,6 +79,23 @@ GATE_LANE_MAP: Dict[str, str] = {
 #                         2026-08-16 추가 — 두 집합 어디에도 없어 조용히 통과하고 있었다.
 #                         "공백을 코드에 명시한다"는 계약이 Discord 어휘에만 적용됐던 것이라,
 #                         이 커밋이 잡겠다던 근본원인(두 어휘)이 선언 계층에서 재발한 셈이다.
+# 은퇴 레인 — **게이트보다 우선한다.** 게이트가 CONFIRM 을 줘도 여기 있으면 발행하지 않는다.
+# 은퇴는 게이트 판정이 아니라 운영자 결정이고, 게이트는 "기대 정합"을 볼 뿐 "거래 가치"를 못 본다
+# (services.py:44 운영자 EV 기준이 게이트와 다른 축인 이유와 같다).
+RETIRED_LANES: Dict[str, str] = {
+    # 2026-08-22 운영자 결정: 죽인다. 근거는 「EV 가 낮다」가 아니라 **「엣지가 체결 불가능한 진입 위에 있었다」**.
+    #   · 이 레인은 **신호일 종가 진입**인데 랭커 top-1 의 **19.2% 가 신호일 상한가 종가**다
+    #     (유니버스는 0.21% — **91배 농축**). 상한가에는 매도호가가 없어 체결 자체가 안 된다.
+    #   · 체결 가능한 픽만 남기면 백테스트 net 이 **+1.620 → −0.009** 로 사라진다(6시드, 음수시드 3/6).
+    #     즉 **측정된 엣지의 100% 가 아무도 낼 수 없는 진입 위에 있었다.**
+    #   · 전진 실측도 같은 방향이다: n=53 · net EV **−1.87** · 승률 47.2%.
+    #   · 운영자 폐기선(services.py:44 `OPERATOR_EV_KILL_PCT=1.0`)에 **백테·전진 양쪽에서** 걸린다.
+    #   · 같은 병의 원장 증거: `475150.KS 2026-07-23` 은 +30.00% 종가에 잡혀 **실제 ret3d −39.58%** 인데
+    #     원장에는 터치 성공으로 기록돼 있다(`services.py:335 _entry_attainability` docstring).
+    # 과거 픽 해석을 위해 LANES 에는 남긴다 — 레인을 지우면 ledger="" 가 되어 /api/picks 가 죽는다.
+    "kospi_intraday": "killed",
+}
+
 UNGATED_PUBLISHED_LANES = frozenset({
     # nasdaq_swing 은 2026-08-20 에 GATE_LANE_MAP 으로 옮겼다 — 실제로 게이트 원장을 읽는다.
     "nasdaq_session_edge", "b_market_neutral", "swing_ensemble",
@@ -113,6 +130,11 @@ UNGATED_LANE_NOTES: Dict[str, str] = {
                       "발행하려면 게이트 LANES에 이 레인의 원장을 배선해야 한다"),
     "suspended": ("⛔ 발행 제외(관측) — 정지된 레인 "
                   "(b_lane_suspended.json, 2026-08-03 · AG_B_ENGINE_SCAN=0)"),
+    "killed": ("⛔ 발행 제외(관측) — 죽은 레인 (2026-08-22 운영자 결정). "
+               "측정된 엣지가 체결 불가능한 진입 위에 있었다 — 랭커 top-1 의 19.2% 가 신호일 "
+               "상한가 종가(유니버스 0.21%, 91배 농축)라 살 수 없고, 체결 가능한 픽만 남기면 "
+               "백테스트 net 이 +1.620 → −0.009 로 사라진다. 전진도 n=53 EV −1.87. "
+               "복귀하려면 체결가능성 가드를 생산자에 배선한 뒤 다시 재야 한다"),
 }
 
 _missing_kind = UNGATED_PUBLISHED_LANES - frozenset(UNGATED_LANE_KINDS)
@@ -224,6 +246,11 @@ def stream_status(lane_key: Any, *, gate_state: Optional[Dict[str, Any]] = None,
     비-strict 경로(해석 빌더)는 admission 등 임의 decision_bucket을 지나므로 막지 않는다.
     """
     key = str(lane_key or "")
+    # 은퇴가 게이트를 이긴다. 게이트를 먼저 보면 CONFIRM 판정이 은퇴를 덮어쓴다.
+    if key in RETIRED_LANES:
+        kind = RETIRED_LANES[key]
+        return {"gated": False, "excluded": True, "reason": "lane_" + kind,
+                "gate_lane": None, "verdict": None, "ungated_kind": kind}
     gate_lane = GATE_LANE_MAP.get(key)
     if gate_lane is None:
         if key in UNGATED_PUBLISHED_LANES:

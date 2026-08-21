@@ -447,11 +447,20 @@ def test_kis_minute_bar_producers_stay_after_the_session():
     "full session post-close"를 전제한다. 의존 대상이 파일이 아니라 벽시계다.
     """
     pos = _step_positions()
+    # 은퇴한 레인은 스텝 자체가 없다. 목록을 손으로 지우지 않고 **레지스트리에서 파생**시켜,
+    # 레인이 되살아나면 이 순서 검증도 자동으로 함께 돌아오게 한다.
+    from modules.stream_exclusion import RETIRED_LANES
+    STEP_LANE = {"report_kospi_intraday_swing": "kospi_intraday"}
     for step in ("report_kosdaq_intraday_vwap_guard", "report_kospi_intraday_swing"):
+        if STEP_LANE.get(step) in RETIRED_LANES:
+            assert step not in pos, f"{step} 이 은퇴 상태인데 daily_ops 스텝이 살아 있다"
+            continue
+        assert step in pos, f"{step} 스텝이 사라졌는데 은퇴 등록도 안 돼 있다"
         assert pos[step] > pos["intraday_backfill"], (
             f"{step} 이 백필 앞으로 갔다 — 장 마감 전에 돌면 분봉이 없어 픽이 비거나 잘린다")
-    assert pos["report_kospi_intraday_swing"] > pos["build_intraday_3d_panel"], \
-        "코스피는 intraday_3d_panel 을 읽는다 — 패널 빌더보다 앞서면 안 된다"
+    if STEP_LANE["report_kospi_intraday_swing"] not in RETIRED_LANES:
+        assert pos["report_kospi_intraday_swing"] > pos["build_intraday_3d_panel"], \
+            "코스피는 intraday_3d_panel 을 읽는다 — 패널 빌더보다 앞서면 안 된다"
 
 
 def test_kis_producers_declare_their_session_hours():
