@@ -231,14 +231,22 @@ def test_sparse_lane_loses_sizing_even_with_good_ev(monkeypatch):
 
 
 def test_frequent_lane_keeps_sizing(monkeypatch):
-    """오탐 방지 — 매일 도는 레인까지 막으면 화면이 비어 아무도 안 본다."""
+    """오탐 방지 — 매일 도는 레인까지 막으면 화면이 비어 아무도 안 본다.
+
+    스캔일은 **오늘**이어야 한다. 하드코딩된 날짜를 쓰면 이 테스트는 그 하루만 통과하고
+    다음날 벽시계가 넘어가는 순간 신선도 판정에 걸려 깨진다 — 실제로 2026-08-22 에 깨졌다.
+    사이징은 신선한 픽에만 붙으므로(`_pick_is_stale` 은 `today` 인자가 없으면 `date.today()`),
+    「자주 발화하는 레인 + 신선한 픽」이라는 이 테스트의 의도를 날짜 독립적으로 표현한다.
+    (인계 §4-11 「테스트는 순수해야 한다」의 벽시계 판이다.)"""
+    import datetime as dt
+    today = str(dt.date.today())
     monkeypatch.setattr(S, "_lane_frequency",
-                        lambda lane, today=None: {"last_fired": "2026-08-20", "days_since": 0,
+                        lambda lane, today=None: {"last_fired": today, "days_since": 0,
                                                   "median_gap": 1, "worst_gap": 3,
                                                   "firing_days": 32, "frequency_ok": True})
     monkeypatch.setattr(S, "_lane_forward_ev", lambda: {"swing_candidate": (2.4, 84.6, 46)})
     row = S._pick_row("000001", "KOSDAQ", "kosdaq_swing", entry=1000.0, prob=0.8,
-                      scan_date="2026-08-20")
+                      scan_date=today)
     assert row.get("size_pct_total") == 2.0
     assert "발화 부족" not in (row.get("size_note") or "")
 

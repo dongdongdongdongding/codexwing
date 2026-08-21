@@ -16,7 +16,8 @@ Contract (TP5/H5, 불변): signal at close t -> BUY NEXT OPEN (t+1); exit +5% to
 5 sessions (entry day counts) else 5d close. No stop. 계약부는 이미 TP5/H5 라 손대지 않았다.
 
 기권 w60q0.7 (사양: research/SPEC_w60q0.7.md — 보드에서 복원. [Q] 는 재개 불가였다):
-  시장별로, 그날 top-p 가 직전 60거래일 일별 top-p 의 0.7분위 미만이면 그날은 발행하지 않는다.
+  그날 top-p 가 직전 60거래일 일별 top-p 의 0.7분위 미만이면 그날은 발행하지 않는다.
+  🔴 **KOSPI 에만 건다** (`ABSTAIN_MARKETS`). KOSDAQ 에서는 이 기권이 좋은 날을 버린다 — 근거는 상수 옆에.
   인과적(당일 제외). 운영자 2026-08-21 결정 = **이중 모델**: 픽은 매일 재학습 모델 A 가 고르고,
   게이트는 분기 재학습 모델 B 가 판단한다(보드 하네스의 top-p 가 분기 WF 의 표본외 점수이므로
   매일 모델로 과거를 재채점하면 표본내가 되어 과잉기권이 된다). 게이트 이력은 런타임 파일에
@@ -65,6 +66,14 @@ COST = 0.3
 LABEL = "t5_5"                     # P2 계약 라벨 (익일시가 진입 · +5% any-touch · 5세션 · 편측)
 P2_LABEL = CACHE / "p2_label.parquet"   # (code,date) -> t5_5/r5_5. px_long 에는 t5_5 가 없다
 GATE_W, GATE_Q, GATE_QUARTERS = 60, 0.7, 3   # 기권 창(거래일) · 분위 · 게이트 재계산 분기수
+# 🔴 기권은 KOSPI 에만 건다. 운영자 결정 2026-08-22.
+# w60q0.7 은 한 시장에서 도출돼 두 시장에 그대로 걸려 있었는데, 같은 시드·같은 랭커·같은 픽에서
+# 기권만 켜고 끄면 두 시장의 부호가 반대다 (조정관이 [S] 발견을 독립 재계산해 확인):
+#     KOSPI   순기여 8년 +0.270 · 2026H1 +0.747 · 기권이 버린 날 net -1.072  <- 버릴 만했다
+#     KOSDAQ  순기여 8년 -0.019 · 2026H1 -0.736 · 기권이 버린 날 net +0.911  <- 좋은 날을 버렸다
+# KOSDAQ 2026H1 음수 5/6 은 셀이 아니라 이 기권이 만들었다(빼면 2/6). [S] 측정으로 KOSDAQ 에서는
+# 랜덤 기권이 96.8% 확률로 이보다 낫고 전기간 플라시보 p=0.557 로 무효다. EDGE_BOARD [조정관] 종합 §1.
+ABSTAIN_MARKETS = ("KOSPI",)
 EMBARGO_DAYS = 17                  # 라벨이 H=5 세션 앞을 보므로 학습창 꼬리를 잘라낸다
 
 
@@ -135,7 +144,9 @@ def score_today(top_k: int) -> Dict[str, Any]:
         if len(tr) < 20000 or te.empty:
             continue
         te["p"] = _fit(tr).predict_proba(te[FEATS].clip(-1e4, 1e4))[:, 1]
-        verdict = gate_w60q07(d, latest)
+        verdict = (gate_w60q07(d, latest) if mkt in ABSTAIN_MARKETS else
+                   {"gate": "OFF", "fire": True,
+                    "gate_note": "기권 미적용 — 이 시장에서는 좋은 날을 버린다 (운영자 2026-08-22)"})
         out["gate"][mkt] = verdict
         # RISK_OFF flag: swing ranker EV roughly doubles in drawdown states (8y: 0.85 vs
         # 0.49 KOSDAQ, 0.76 vs 0.50 KOSPI touch-exit) — complementary to the intraday lanes.

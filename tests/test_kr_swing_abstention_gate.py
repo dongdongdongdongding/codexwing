@@ -80,3 +80,20 @@ def test_contract_is_still_tp5_h5():
     src = __import__("pathlib").Path(swc.__file__).read_text(encoding="utf-8")
     assert "tgt = entry * 1.05" in src
     assert "win5 = h.iloc[:5]" in src
+
+
+def test_abstention_is_kospi_only():
+    """운영자 2026-08-22: 기권은 KOSPI 에만 건다.
+
+    w60q0.7 은 한 시장에서 도출돼 두 시장에 그대로 걸려 있었다. 같은 시드·같은 랭커·같은 픽에서
+    기권만 켜고 끄면 부호가 반대다 — KOSPI 는 버린 날 net −1.072(버릴 만했다), KOSDAQ 은
+    버린 날 +0.911(좋은 날을 버렸다). KOSDAQ 2026H1 음수 5/6 은 셀이 아니라 이 기권이 만들었다.
+    이 테스트가 깨지면 그 정정이 조용히 되돌아간 것이다."""
+    assert swc.ABSTAIN_MARKETS == ("KOSPI",)
+    assert "KOSDAQ" not in swc.ABSTAIN_MARKETS
+
+
+def test_gate_reason_is_recorded_in_source():
+    """왜 KOSDAQ 을 뺐는지가 코드 옆에 남아 있어야 한다 — 근거 없이 상수만 있으면 되돌려진다."""
+    src = __import__("pathlib").Path(swc.__file__).read_text(encoding="utf-8")
+    assert "좋은 날을 버렸다" in src and "+0.911" in src and "-1.072" in src
