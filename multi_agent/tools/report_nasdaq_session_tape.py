@@ -166,7 +166,21 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
             for k in range(5):
                 if float(win5["High"].iloc[k]) >= tgt:
                     o = float(win5["Open"].iloc[k])
-                    fill = max(tgt, o) if (k > 0 and np.isfinite(o) and o > 0) else tgt
+                    # 갭 보너스는 **모든 세션에** 붙는다 (k=0 포함).
+                    #
+                    # 2026-08-22 수정. 이전 코드는 `k > 0` 을 요구해 1일차 터치에서 보너스를 거부했다.
+                    # 그 가드는 **익일시가 진입 계약에서만 옳다** — 그때는 k=0 의 시가가 곧 진입가라
+                    # 자기 위로 갭업할 수 없다(KR `report_kr_swing_candidate.py:resolve_pending` 이 그 경우다).
+                    # **이 레인은 `close(t)` 진입이다**(위 Contract 줄). `h[h.index > d]` 로 신호일
+                    # **다음** 세션부터 창을 잡으므로 k=0 은 이미 진입 다음 세션이고, 그 시가는 전일
+                    # 종가(=진입가) 위로 얼마든지 갭업한다. 거부하면 실현수익을 깎아 기록하게 된다.
+                    #
+                    # 실측 영향: 정산 48건 중 터치 34건, 그중 21건이 1일차 터치이고 평균 보너스 +1.79pp.
+                    # 21×1.79/48 = **+0.78pp** — 이 레인의 전진 기록 전체가 그만큼 축소돼 있었다
+                    # (+0.23 → 약 +1.01. [X] 가 정본 재채점으로 얻은 +1.01 과 독립 일치).
+                    # ⚠️ 이 수정은 **앞으로 정산할 행에만** 적용된다. 이미 `policy_ret` 이 채워진
+                    # 과거 행은 그대로다 — 원장 소급 재정산은 라이브 데이터 변형이라 OD-20 승인 대상.
+                    fill = max(tgt, o) if (np.isfinite(o) and o > 0) else tgt
                     ret = (fill / entry - 1) * 100
                     touched = 1
                     break
