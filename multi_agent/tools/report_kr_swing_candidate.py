@@ -1,13 +1,26 @@
 #!/usr/bin/env python3
 """KR swing CANDIDATE-pick producer (swing-main-zls0, RESEARCH_LOG §7-A). Observation-only.
 
-Basis: 8y quarterly walk-forward, ft_5_5 LGBM ranker (rolling 2y train), placebo-dead:
-  KOSDAQ EV +0.67/trade net CI(0.41,0.97), 62% of picks touch +5%; KOSPI +0.63 CI(0.35,0.90).
-  Median pick liquidity 76~260억 (tradeable). Honest tier: CANDIDATE — real durable edge,
-  below the +5%/trade PRIMARY bar. Fills "no-pick days" alongside the intraday PRIMARY lane.
+Basis: 8y quarterly walk-forward, t5_5 LGBM ranker (rolling 2y train). 2026-08-21 운영자
+  결정 "2026 관문 우선으로 가고 두 셀 배선해": 라벨을 ft_5_5 -> t5_5 (계약 라벨) 로 바꾸고
+  진입기권 w60q0.7 을 건다. 근거 셀(보드 [H] §4 / [L] §1, [Q] 가 독립 재현):
+  KOSPI 2026 net +1.35 · 최근3년 초과 +1.21 (CI 0 제외) · 발화 3.11일 · 승률 74.5%
+  KOSDAQ 2026 net +1.13 · 최근3년 초과 +1.43 (CI 0 제외) · 발화 2.97일 · 승률 78.1%
+  64칸 중 2026 net 양수는 7칸뿐이고, net·초과가 둘 다 양수인 5칸은 전부 TP5/H5 다.
+  라벨 교체는 결함도 같이 고친다: ft_5_5 는 ±5% 양방향이라 둘 다 안 닿으면 NaN 이고
+  dropna 가 유동성 통과 행의 19.7% 를 학습에서 버렸다. t5_5 는 결측이 없다.
+  감쇠 기울기 ft_5_5 −0.451pp/년 (p=0.006) -> t5_5 +0.181 ([Q]).
+  Honest tier: CANDIDATE. Fills "no-pick days" alongside the intraday PRIMARY lane.
 
-Contract: signal at close t -> BUY NEXT OPEN (t+1); exit +5% touch within 5 sessions
-(entry day counts) else 5d close. No stop. Never routed to production buy lists.
+Contract (TP5/H5, 불변): signal at close t -> BUY NEXT OPEN (t+1); exit +5% touch within
+5 sessions (entry day counts) else 5d close. No stop. 계약부는 이미 TP5/H5 라 손대지 않았다.
+
+기권 w60q0.7 (사양: research/SPEC_w60q0.7.md — 보드에서 복원. [Q] 는 재개 불가였다):
+  시장별로, 그날 top-p 가 직전 60거래일 일별 top-p 의 0.7분위 미만이면 그날은 발행하지 않는다.
+  인과적(당일 제외). 운영자 2026-08-21 결정 = **이중 모델**: 픽은 매일 재학습 모델 A 가 고르고,
+  게이트는 분기 재학습 모델 B 가 판단한다(보드 하네스의 top-p 가 분기 WF 의 표본외 점수이므로
+  매일 모델로 과거를 재채점하면 표본내가 되어 과잉기권이 된다). 게이트 이력은 런타임 파일에
+  쌓지 않고 매 실행 직전 3분기를 재계산한다 — gitignore 된 파일에 의존하면 테스트가 오염된다.
 
 2026-08-03 PKG-C ③ (§40, 사전등록): 랭킹 shadow 보드 — 유동 풀(≥30억/100억) 전수 스코어의
 top-50/시장을 kr_ranking_shadow_ledger.jsonl에 관측 전용 축적, px_long 종가 기반 fwd5 자동 정산.
@@ -49,25 +62,81 @@ FEATS = ["ret_1d","ret_3d","ret_5d","ret_10d","ret_20d","ret_60d","ma5_dist","ma
 LIQ = {"KOSPI": 100e8, "KOSDAQ": 30e8}
 TRAIN_YEARS = 2
 COST = 0.3
+LABEL = "t5_5"                     # P2 계약 라벨 (익일시가 진입 · +5% any-touch · 5세션 · 편측)
+P2_LABEL = CACHE / "p2_label.parquet"   # (code,date) -> t5_5/r5_5. px_long 에는 t5_5 가 없다
+GATE_W, GATE_Q, GATE_QUARTERS = 60, 0.7, 3   # 기권 창(거래일) · 분위 · 게이트 재계산 분기수
+EMBARGO_DAYS = 17                  # 라벨이 H=5 세션 앞을 보므로 학습창 꼬리를 잘라낸다
+
+
+def _fit(tr: pd.DataFrame):
+    """LGBM ranker. 파라미터는 8y WF 하네스와 동일하게 유지한다(바꾸면 근거 셀과 끊긴다)."""
+    import lightgbm as lgb
+    m = lgb.LGBMClassifier(n_estimators=400, learning_rate=0.05, num_leaves=63, min_child_samples=100,
+                           subsample=0.8, colsample_bytree=0.7, reg_lambda=5, random_state=0, verbose=-1)
+    m.fit(tr[FEATS].clip(-1e4, 1e4), tr[LABEL])
+    return m
+
+
+def gate_w60q07(d: pd.DataFrame, latest: pd.Timestamp) -> Dict[str, Any]:
+    """진입기권 w60q0.7 — 게이트 전용 모델 B (분기 재학습, 전부 표본외).
+
+    사양 research/SPEC_w60q0.7.md. 그날 top-p 가 직전 60거래일 일별 top-p 의 0.7분위 미만이면
+    기권한다. 분위는 당일을 제외해 계산한다(인과). 직전 3분기(약 185거래일)를 매 실행 재계산하므로
+    창 60 이 항상 차고, 런타임 파일에 의존하지 않는다. 창이 안 차면 보수적으로 기권한다."""
+    q0 = pd.Timestamp(latest).to_period("Q").start_time
+    tops: List[pd.Series] = []
+    for k in range(GATE_QUARTERS - 1, -1, -1):
+        qs = q0 - pd.DateOffset(months=3 * k)
+        tr = d[(d["date"] < qs - pd.Timedelta(days=EMBARGO_DAYS))
+               & (d["date"] >= qs - pd.DateOffset(years=TRAIN_YEARS))].dropna(subset=[LABEL])
+        te = d[(d["date"] >= qs) & (d["date"] < qs + pd.DateOffset(months=3))
+               & (d["date"] <= latest)].dropna(subset=FEATS[:6])
+        if len(tr) < 20000 or te.empty:
+            continue
+        p = _fit(tr).predict_proba(te[FEATS].clip(-1e4, 1e4))[:, 1]
+        tops.append(pd.DataFrame({"date": te["date"].values, "p": p}).groupby("date")["p"].max())
+    if not tops:
+        return {"gate": "NO_MODEL", "fire": False}
+    ser = pd.concat(tops).sort_index()
+    return _gate_decide(ser[~ser.index.duplicated(keep="last")], latest)
+
+
+def _gate_decide(ser: pd.Series, latest: pd.Timestamp) -> Dict[str, Any]:
+    """일별 top-p 계열 -> 발행/기권 판정. 순수 함수(모델·파일 없음)이므로 여기서 규칙을 검정한다.
+
+    창은 **직전 60거래일**이고 당일은 제외한다. 창이 안 차면 기권한다(보수적)."""
+    if latest not in ser.index:
+        return {"gate": "NO_SCORE", "fire": False}
+    hist = ser[ser.index < latest].iloc[-GATE_W:]          # 인과: 당일 제외
+    if len(hist) < GATE_W:
+        return {"gate": "WARMUP", "fire": False, "gate_history_days": int(len(hist))}
+    thr = float(np.quantile(hist.values, GATE_Q))          # linear 보간 (사양 미확정 B, 고정 기록)
+    top_p = float(ser.loc[latest])
+    return {"gate": "FIRE" if top_p >= thr else "ABSTAIN", "fire": bool(top_p >= thr),
+            "gate_top_p": round(top_p, 4), "gate_threshold": round(thr, 4),
+            "gate_window": GATE_W, "gate_q": GATE_Q, "gate_history_days": int(len(hist))}
 
 
 def score_today(top_k: int) -> Dict[str, Any]:
-    import lightgbm as lgb
-    cols = list(dict.fromkeys(["code", "date", "market", "liq", "ft_5_5", "close"] + FEATS))
+    cols = list(dict.fromkeys(["code", "date", "market", "liq", "close"] + FEATS))
     px = pd.read_parquet(CACHE / "px_long.parquet", columns=cols)
     px["date"] = pd.to_datetime(px["date"])
     latest = px["date"].max()
-    out: Dict[str, Any] = {"as_of": str(latest.date()), "picks": []}
+    lab = pd.read_parquet(P2_LABEL, columns=["code", "date", LABEL])
+    lab["date"] = pd.to_datetime(lab["date"])
+    # left join: 라벨은 H=5 세션 뒤에야 확정되므로 최근 행은 결측이다. 학습에서만 dropna 한다.
+    px = px.merge(lab, on=["code", "date"], how="left")
+    out: Dict[str, Any] = {"as_of": str(latest.date()), "picks": [], "gate": {}}
     for mkt in ("KOSPI", "KOSDAQ"):
         d = px[(px["market"] == mkt) & (px["liq"] >= LIQ[mkt])]
-        tr = d[(d["date"] < latest) & (d["date"] >= latest - pd.DateOffset(years=TRAIN_YEARS))].dropna(subset=["ft_5_5"])
+        tr = d[(d["date"] < latest - pd.Timedelta(days=EMBARGO_DAYS))
+               & (d["date"] >= latest - pd.DateOffset(years=TRAIN_YEARS))].dropna(subset=[LABEL])
         te = d[d["date"] == latest].dropna(subset=FEATS[:6]).copy()
         if len(tr) < 20000 or te.empty:
             continue
-        m = lgb.LGBMClassifier(n_estimators=400, learning_rate=0.05, num_leaves=63, min_child_samples=100,
-                               subsample=0.8, colsample_bytree=0.7, reg_lambda=5, random_state=0, verbose=-1)
-        m.fit(tr[FEATS].clip(-1e4, 1e4), tr["ft_5_5"])
-        te["p"] = m.predict_proba(te[FEATS].clip(-1e4, 1e4))[:, 1]
+        te["p"] = _fit(tr).predict_proba(te[FEATS].clip(-1e4, 1e4))[:, 1]
+        verdict = gate_w60q07(d, latest)
+        out["gate"][mkt] = verdict
         # RISK_OFF flag: swing ranker EV roughly doubles in drawdown states (8y: 0.85 vs
         # 0.49 KOSDAQ, 0.76 vs 0.50 KOSPI touch-exit) — complementary to the intraday lanes.
         try:
@@ -82,8 +151,10 @@ def score_today(top_k: int) -> Dict[str, Any]:
                  "ticker": str(r["code"]) + (".KS" if mkt == "KOSPI" else ".KQ"),
                  "p": round(float(r["p"]), 4), "close": float(r["close"]),
                  "liq_eok": round(float(r["liq"]) / 1e8, 1)})
+        if not verdict.get("fire"):
+            continue          # 기권 w60q0.7: 그날은 사지 않는다 (순위 강등이 아니다)
         for _, r in te.nlargest(top_k, "p").iterrows():
-            out["picks"].append({"date": str(latest.date()), "market": mkt, **state,
+            out["picks"].append({"date": str(latest.date()), "market": mkt, **state, **verdict,
                                  "ticker": str(r["code"]) + (".KS" if mkt == "KOSPI" else ".KQ"),
                                  "p": round(float(r["p"]), 4), "close": float(r["close"]),
                                  "ret_5d": round(float(r["ret_5d"]), 2) if pd.notna(r.get("ret_5d")) else None,
@@ -272,12 +343,17 @@ def main() -> None:
         except Exception as exc:
             rank_summary = {"error": repr(exc)[:200]}
     report = {"generated_at": now.isoformat(), "as_of": scored["as_of"], "tier": "CANDIDATE",
-              "expectation": "8y walk-forward: ~60-62% touch +5%, EV ~+0.65/trade net — honest modest edge",
+              "label": LABEL, "abstention": f"w{GATE_W}q{GATE_Q}", "gate": scored.get("gate"),
+              "expectation": "근거 셀은 분기 WF 단일모델 기준 2026 net KOSPI +1.35 / KOSDAQ +1.13. "
+                             "운영자 결정(이중모델)은 게이트와 픽이 다른 모델이므로 그 수치를 그대로 "
+                             "기대하면 안 된다 — 전진 실측으로 다시 잰다 (SPEC_w60q0.7.md)",
               "picks": scored["picks"], "forward_summary": summary, "routed": routed,
               "ranking_shadow": rank_summary}
     REPORT_JSON.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    gtxt = " / ".join(f"{k} {v.get('gate')}" for k, v in (scored.get("gate") or {}).items())
     lines = [f"# KR swing CANDIDATE picks — {scored['as_of']}", "",
-             f"- tier: CANDIDATE (후보픽) | forward: {summary}", "",
+             f"- tier: CANDIDATE (후보픽) | label: {LABEL} | 기권 w{GATE_W}q{GATE_Q}: {gtxt or 'n/a'}",
+             f"- forward: {summary}", "",
              "| Market | Ticker | p | liq(억) | close |", "|---|---|---:|---:|---:|"]
     for p in scored["picks"]:
         lines.append(f"| {p['market']} | {p['ticker']} | {p['p']} | {p['liq_eok']} | {p['close']} |")
