@@ -525,7 +525,8 @@ def route_live_intraday(picks: List[Dict[str, Any]], *, run_id: str, recommended
             "market_type": "KOSDAQ",
             "scan_mode": "INTRADAY",
             "recommended_at": recommended_at,
-            "horizon": "3D",
+            # 모듈이 선언한 승격 계약(§7-E: TP+10%/H5)을 따라간다. "3D" 는 구 계약의 잔재였다.
+            "horizon": f"{int(pick.get('hold_days') or 5)}D",
             "scanner_timeframe_profile": "INTRADAY_1500",
             "feature_snapshot": {
                 "candidate_id": CANDIDATE_ID,
@@ -569,6 +570,19 @@ def route_live_intraday(picks: List[Dict[str, Any]], *, run_id: str, recommended
             "generated_at": recommended_at,
             "entry_reference_price": pick.get("entry_reference_price"),
             "selection_alignment": {"analysis_section": "Top5", "analysis_section_rank": rank},
+            # 🔴 2026-08-21: `trade_plan` 이 없어서 카드가 폴백(TP5/H3)으로 나가고 있었다.
+            # 모듈은 §7-E 승격 계약 TP+10%/H5 를 선언하는데(`kosdaq_intraday_vwap_guard.py:344-346`)
+            # `candidate_interpretation.py:407-414` 의 `or 5.0` / `profile["horizon_days"]` 가 덮었다.
+            # → 라벨 TP5/H3 · 채점 TP5/H3 · 선언 TP10/H5 · **표시 TP5/H3** 로 4갈래였고,
+            #   사용자는 모듈이 승격한 것과 다른 계약을 안내받고 있었다.
+            "trade_plan": {
+                "entry_price": pick.get("entry_reference_price"),
+                "target_tp_pct": pick.get("target_tp_pct"),
+                "stop_sl_pct": pick.get("stop_sl_pct"),
+                "hold_days": pick.get("hold_days"),
+                "hold_note": (f"15:00 진입 · +{pick.get('target_tp_pct')}% 터치 익절 · "
+                              f"{pick.get('hold_days')}세션 내 미터치 시 종가 청산 · 손절 없음"),
+            },
         }
         row["candidate_interpretation"] = build_candidate_interpretation(row)
         deep_rows.append(row)
