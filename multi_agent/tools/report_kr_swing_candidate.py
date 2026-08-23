@@ -73,7 +73,7 @@ GATE_W, GATE_Q, GATE_QUARTERS = 60, 0.7, 3   # 기권 창(거래일) · 분위 �
 #     KOSDAQ  순기여 8년 -0.019 · 2026H1 -0.736 · 기권이 버린 날 net +0.911  <- 좋은 날을 버렸다
 # KOSDAQ 2026H1 음수 5/6 은 셀이 아니라 이 기권이 만들었다(빼면 2/6). [S] 측정으로 KOSDAQ 에서는
 # 랜덤 기권이 96.8% 확률로 이보다 낫고 전기간 플라시보 p=0.557 로 무효다. EDGE_BOARD [조정관] 종합 §1.
-ABSTAIN_MARKETS = ("KOSPI",)
+ABSTAIN_MARKETS = ()   # 2026-08-23 비움. `gate_w60q07` 은 되돌릴 때를 위해 남겨 둔다
 # KOSDAQ 은 대신 [U] 시장약세 게이트를 쓴다. 운영자 결정 2026-08-22.
 # 유니버스(같은 유동성 필터)의 후행 5일 수익 평균이 자기 직전 250거래일 중앙값보다 **낮은** 날에만 산다.
 # 인과적: 임계는 shift(1) 로 당일을 뺀다. 모델 p 가 아니라 가격 패널에 걸리므로 이중모델 문제가 없다.
@@ -84,9 +84,30 @@ ABSTAIN_MARKETS = ("KOSPI",)
 #   순환이동 플라시보 40,000회 z=+4.19 (본페로니 통과) · [T]/조정관이 각각 독립 재현
 # 🔴 KOSPI 에는 걸지 않는다: 기여 +0.234 뿐이고 2026H1 이 음수 2/6 이다.
 # 🔴 KOSDAQ 에 w60q0.7 과 **같이** 걸지 않는다: 발화가 5.35거래일로 운영자 3일 기준에 걸린다(규율 13).
-MKT_WEAKNESS_MARKETS = ("KOSDAQ",)
+# 🟩 2026-08-23: **KOSPI 도 시장약세 게이트로 옮긴다.** `w60q0.7` 은 더 이상 쓰이지 않는다.
+# 근거([Y] 사다리, 현행 프로덕션 랭커 고정, 전기간 세션당 EV):
+#     현행(w60q0.7·TP5/H5·top3) 0.1433  →  [U]Q0.40·TP5/H10·top3 **0.1898 (+32%)**
+#     OOS23 0.2692 · 거래당 승률 최악시드 78.90% · net·초과 블록CI **6/6** · 버린날 초과 **-0.191**
+#     시드별 `p_max` 0.00102(전기간) / **≤2e-5(OOS23)** — OOS23 은 [Y] 전체 탐색격자
+#     1,838셀 본페로니(α=2.7e-5)를 **통과한다. 이 함대에서 처음이다.**
+# 부수 효과: `w60q0.7` 이 요구하던 **이중모델(분기 재학습 B)이 통째로 사라진다** — 하루 4 fit -> 1 fit.
+#
+# 분위가 시장별로 다르다. **격자 최댓값이 아니다** — 세션당 EV 가 Q 에 **단조**라(0.374@Q0.25 ->
+# 0.077@Q0.70) 봉우리가 없고, 선택 규칙이 **운영자의 기존 발화 기준**이다:
+#     "세 창(전기간/OOS23/2026H1) 전부에서 발화 <=3거래일을 만족하는 가장 조인 0.05격자 분위"
+#     Q0.30 -> 3.25/3.50/2.93 ✗ · Q0.35 -> 2.83/**3.04**/2.86 ✗ · **Q0.40 -> 2.52/2.66/2.67 ✅**
+# KOSDAQ 은 [U] 사전지정값 0.50 을 유지한다 — Q 조임을 KOSDAQ 에서 **검정하지 않았고**,
+# [V] §9 상 KOSDAQ 프론티어엔 무릎이 있어 같은 이득이 안 날 것으로 본다. 규율 3(옮기면 다시 검정).
+MKT_WEAKNESS_MARKETS = ("KOSPI", "KOSDAQ")
+MKT_WEAKNESS_Q = {"KOSPI": 0.40, "KOSDAQ": 0.50}
 MKT_W, MKT_MINP = 250, 60
-EMBARGO_DAYS = 17                  # 라벨이 H=5 세션 앞을 보므로 학습창 꼬리를 잘라낸다
+EMBARGO_DAYS = 17                  # 라벨이 H 세션 앞을 보므로 학습창 꼬리를 잘라낸다
+# 계약 보유창이 시장별로 다르다. TP(+5%)는 공통이고 H 만 다르다.
+# KOSPI H=10: [Y] 가 위 셀에서 검증한 계약. KOSDAQ H=5: [U] 게이트가 검증된 계약이고
+# H 조임을 KOSDAQ 에서 다시 재지 않았다([V] 고원 TP4~7/H3~10 안이긴 하나 세션당으로는 미측정).
+# **검증된 계약 밖으로 시장을 끌고 가지 않는다.**
+CONTRACT_H = {"KOSPI": 10, "KOSDAQ": 5}
+CONTRACT_TP = 0.05
 
 
 def _fit(tr: pd.DataFrame):
@@ -138,16 +159,16 @@ def _gate_decide(ser: pd.Series, latest: pd.Timestamp) -> Dict[str, Any]:
             "gate_window": GATE_W, "gate_q": GATE_Q, "gate_history_days": int(len(hist))}
 
 
-def gate_market_weakness(d: pd.DataFrame, latest: pd.Timestamp) -> Dict[str, Any]:
+def gate_market_weakness(d: pd.DataFrame, latest: pd.Timestamp, q: float = 0.5) -> Dict[str, Any]:
     """[U] 시장약세 게이트 — 유니버스 후행 5일 수익이 자기 250거래일 중앙값보다 낮은 날에만 산다.
 
     `d` 는 이미 시장·유동성으로 걸러진 패널이다([U] 의 `inuniv` 와 같은 필터). 모델을 쓰지 않으므로
     적합 비용이 0 이고, 게이트가 가격 패널에만 걸려 `SPEC_w60q0.7.md` §C 의 표본내외 혼입 문제가 없다."""
     ser = d.groupby("date")["ret_5d"].mean().sort_index()
-    return _mkt_weakness_decide(ser, latest)
+    return _mkt_weakness_decide(ser, latest, q=q)
 
 
-def _mkt_weakness_decide(ser: pd.Series, latest: pd.Timestamp) -> Dict[str, Any]:
+def _mkt_weakness_decide(ser: pd.Series, latest: pd.Timestamp, q: float = 0.5) -> Dict[str, Any]:
     """일별 시장수익 계열 -> 발행/기권. 순수 함수이므로 여기서 규칙을 검정한다.
 
     임계는 **직전 250거래일 중앙값**이고 당일은 제외한다(인과). 창이 `MKT_MINP` 미만이면 기권한다."""
@@ -156,12 +177,12 @@ def _mkt_weakness_decide(ser: pd.Series, latest: pd.Timestamp) -> Dict[str, Any]
     hist = ser[ser.index < latest].iloc[-MKT_W:]
     if len(hist) < MKT_MINP:
         return {"gate": "WARMUP", "fire": False, "gate_history_days": int(len(hist))}
-    thr = float(np.nanmedian(hist.values))
+    thr = float(np.nanquantile(hist.values, q))
     today = float(ser.loc[latest])
     weak = today < thr                       # 약할 때 산다 — 부호를 뒤집지 마라
     return {"gate": "FIRE" if weak else "ABSTAIN", "fire": bool(weak),
             "gate_kind": "mkt_weakness", "gate_mkt_ret5": round(today, 4),
-            "gate_threshold": round(thr, 4), "gate_window": MKT_W,
+            "gate_threshold": round(thr, 4), "gate_window": MKT_W, "gate_q": q,
             "gate_history_days": int(len(hist))}
 
 
@@ -186,7 +207,7 @@ def score_today(top_k: int) -> Dict[str, Any]:
         if mkt in ABSTAIN_MARKETS:
             verdict = gate_w60q07(d, latest)
         elif mkt in MKT_WEAKNESS_MARKETS:
-            verdict = gate_market_weakness(d, latest)
+            verdict = gate_market_weakness(d, latest, q=MKT_WEAKNESS_Q[mkt])
         else:
             verdict = {"gate": "OFF", "fire": True, "gate_note": "이 시장에는 게이트가 없다"}
         out["gate"][mkt] = verdict
@@ -213,7 +234,9 @@ def score_today(top_k: int) -> Dict[str, Any]:
                                  "ret_5d": round(float(r["ret_5d"]), 2) if pd.notna(r.get("ret_5d")) else None,
                                  "atr_pct": round(float(r["atr_pct"]), 2) if pd.notna(r.get("atr_pct")) else None,
                                  "liq_eok": round(float(r["liq"]) / 1e8, 1),
-                                 "contract": "buy next open; +5% touch exit within 5 sessions else 5d close"})
+                                 "contract_h": CONTRACT_H.get(mkt, 5),
+                                 "contract": f"buy next open; +{CONTRACT_TP*100:.0f}% touch exit within "
+                                             f"{CONTRACT_H.get(mkt, 5)} sessions else close"})
     # §29 출구혼합 shadow: 당일 픽 내 ATR 3분위 밴드 → 출구 플랜 스탬프 (계약 불변, 병행채점용)
     atrs = [p["atr_pct"] for p in out["picks"] if p.get("atr_pct") is not None]
     if len(atrs) >= 3:
@@ -286,7 +309,13 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
         if row.get("policy_ret") is not None:
             continue
         d = pd.to_datetime(row.get("date"), errors="coerce")
-        if pd.isna(d) or (today - d).days < 10:
+        # 🔴 **발행 당시 계약으로 채점한다.** 픽은 자기가 발행된 계약을 `contract_h` 로 들고 다닌다.
+        # 계약을 바꾸면서 미정산 과거 픽까지 새 H 로 채점하면, 그 픽이 약속하지 않은 창으로 재는 것이고
+        # 전진 기록이 소급 변조된다. `contract_h` 가 없는 행 = 2026-08-23 이전 발행 = H 5 계약이다.
+        _H_row = int(row.get("contract_h") or 5)
+        # 창이 끝나기 전에 정산하면 미완성 계약을 채점한다. H 가 픽별이므로 대기도 픽별이다.
+        _wait = 10 if _H_row <= 5 else 18
+        if pd.isna(d) or (today - d).days < _wait:
             continue
         try:
             bare = str(row["ticker"]).split(".")[0]
@@ -297,11 +326,14 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
             entry = float(h["Open"].iloc[0])
             if not np.isfinite(entry) or entry <= 0:
                 continue
-            tgt = entry * 1.05
-            win5 = h.iloc[:5]
+            _H = _H_row      # 발행 당시 계약 (위 참조)
+            if len(h) < _H + 1:
+                continue
+            tgt = entry * (1.0 + CONTRACT_TP)
+            win5 = h.iloc[:_H]
             ret = float((win5["Close"].iloc[-1] / entry - 1) * 100)
             touched = 0
-            for k in range(5):
+            for k in range(_H):
                 hi = float(win5["High"].iloc[k])
                 if np.isfinite(hi) and hi >= tgt:
                     o = float(win5["Open"].iloc[k])
@@ -310,6 +342,7 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
                     touched = 1
                     break
             row["entry_open"] = round(entry, 2)
+            row["contract_h"] = _H
             row["ft_touch5"] = touched
             row["policy_ret"] = round(ret, 2)
             # §29 출구혼합 shadow 병행채점 (계약 불변): 밴드별 대체 출구의 실현수익

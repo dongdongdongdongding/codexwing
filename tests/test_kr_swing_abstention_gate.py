@@ -75,21 +75,24 @@ def test_spec_constants_are_pinned():
     assert swc.LABEL == "t5_5"
 
 
-def test_contract_is_still_tp5_h5():
-    """계약부는 배선 대상이 아니었다 — TP5/H5 가 그대로인지 못박는다."""
+def test_target_is_still_plus_five_percent():
+    """목표는 +5% 로 불변이다. **H 만 시장별로 갈렸다**(2026-08-23) — TP 까지 같이 움직이면
+    두 시장 다 검증 밖으로 나간다."""
     src = __import__("pathlib").Path(swc.__file__).read_text(encoding="utf-8")
-    assert "tgt = entry * 1.05" in src
-    assert "win5 = h.iloc[:5]" in src
+    assert "tgt = entry * (1.0 + CONTRACT_TP)" in src
+    assert swc.CONTRACT_TP == 0.05
+    assert "win5 = h.iloc[:_H]" in src, "보유창이 시장별 H 를 따라야 한다"
 
 
-def test_abstention_is_kospi_only():
-    """운영자 2026-08-22: 기권은 KOSPI 에만 건다.
+def test_kosdaq_never_gets_the_p_abstention():
+    """운영자 2026-08-22: 기권은 KOSDAQ 에 걸지 않는다. (2026-08-23 에 KOSPI 에서도 뺐다.)
 
     w60q0.7 은 한 시장에서 도출돼 두 시장에 그대로 걸려 있었다. 같은 시드·같은 랭커·같은 픽에서
     기권만 켜고 끄면 부호가 반대다 — KOSPI 는 버린 날 net −1.072(버릴 만했다), KOSDAQ 은
     버린 날 +0.911(좋은 날을 버렸다). KOSDAQ 2026H1 음수 5/6 은 셀이 아니라 이 기권이 만들었다.
-    이 테스트가 깨지면 그 정정이 조용히 되돌아간 것이다."""
-    assert swc.ABSTAIN_MARKETS == ("KOSPI",)
+    이 테스트가 깨지면 그 정정이 조용히 되돌아간 것이다. KOSPI 는 2026-08-23 에 시장약세
+    게이트로 옮겨가며 함께 빠졌으므로 `ABSTAIN_MARKETS` 는 지금 비어 있다 — 그러나
+    **KOSDAQ 이 다시 들어오는 일은 어떤 경우에도 없어야 한다.**"""
     assert "KOSDAQ" not in swc.ABSTAIN_MARKETS
 
 
@@ -135,10 +138,70 @@ def test_market_weakness_warmup_abstains():
 
 
 def test_each_market_has_exactly_one_gate():
-    """게이트가 시장별로 정확히 하나여야 한다.
+    """게이트가 시장별로 정확히 하나여야 한다. 두 개를 겹쳐 걸면 발화가 무너진다 —
+    KOSDAQ 에서 두 게이트를 같이 걸었을 때 5.35거래일로 운영자 3일 기준을 깼다(규율 13)."""
+    both = set(swc.ABSTAIN_MARKETS) & set(swc.MKT_WEAKNESS_MARKETS)
+    assert not both, f"두 게이트가 겹쳐 걸린 시장: {both}"
+    for mkt in ("KOSPI", "KOSDAQ"):
+        n = int(mkt in swc.ABSTAIN_MARKETS) + int(mkt in swc.MKT_WEAKNESS_MARKETS)
+        assert n == 1, f"{mkt} 의 게이트가 {n} 개다 (정확히 1개여야 한다)"
 
-    KOSDAQ 에 두 게이트를 같이 걸면 발화가 5.35거래일이 되어 운영자 3일 기준에 걸린다(규율 13:
-    EV 를 사려고 검증가능성을 판다). KOSPI 에 시장약세를 걸면 기여가 +0.234 뿐이고 2026H1 음수 2/6 이다."""
-    assert swc.ABSTAIN_MARKETS == ("KOSPI",)
-    assert swc.MKT_WEAKNESS_MARKETS == ("KOSDAQ",)
-    assert not set(swc.ABSTAIN_MARKETS) & set(swc.MKT_WEAKNESS_MARKETS)
+
+# ── 2026-08-23 배선: 시장별 게이트 분위 + 시장별 계약 ────────────────────────
+
+def test_both_markets_use_the_market_weakness_gate_now():
+    """`w60q0.7` 은 더 이상 쓰이지 않는다. 두 시장 다 시장약세 게이트다.
+
+    부수 효과가 크다 — `w60q0.7` 이 요구하던 이중모델(분기 재학습 B)이 통째로 사라져
+    하루 4 fit 이 1 fit 이 된다. `gate_w60q07` 코드와 위 테스트들은 되돌리기를 위해 남겨 둔다."""
+    assert swc.ABSTAIN_MARKETS == ()
+    assert set(swc.MKT_WEAKNESS_MARKETS) == {"KOSPI", "KOSDAQ"}
+
+
+def test_gate_quantile_is_per_market():
+    """KOSPI 0.40 / KOSDAQ 0.50.
+
+    KOSPI 0.40 은 격자 최댓값이 아니다 — 세션당 EV 가 Q 에 단조(0.374@0.25 → 0.077@0.70)라
+    봉우리가 없고, **운영자의 기존 발화 기준(≤3거래일)을 세 창 전부에서 만족하는 가장 조인
+    0.05격자 값**이다(Q0.35 는 OOS23 에서 3.04 로 깨진다).
+    KOSDAQ 은 [U] 사전지정값 0.50 을 유지한다 — Q 조임을 KOSDAQ 에서 검정하지 않았다(규율 3)."""
+    assert swc.MKT_WEAKNESS_Q == {"KOSPI": 0.40, "KOSDAQ": 0.50}
+
+
+def test_quantile_actually_changes_the_threshold():
+    """분위 인자가 실제로 문턱을 옮기는지. 상수만 있고 안 쓰이면 조용히 통과한다."""
+    hist = list(np.linspace(-2.0, 2.0, 250))
+    ser = _series(hist + [0.0])
+    v40 = swc._mkt_weakness_decide(ser, ser.index[-1], q=0.40)
+    v50 = swc._mkt_weakness_decide(ser, ser.index[-1], q=0.50)
+    assert v40["gate_threshold"] < v50["gate_threshold"], "낮은 분위는 더 조인 문턱이어야 한다"
+    assert v40["gate_threshold"] == pytest.approx(float(np.quantile(hist, 0.40)), abs=1e-9)
+    # 조이면 발화가 준다 — 오늘이 중앙값이면 Q0.5 는 경계, Q0.4 는 미달이라 기권
+    assert v50["fire"] is False and v40["fire"] is False
+
+
+def test_contract_horizon_is_per_market():
+    """KOSPI 10세션 / KOSDAQ 5세션. 각 시장이 **자기가 검증된 계약**을 쓴다.
+
+    두 시장을 한 H 로 묶으면 한쪽이 검증 밖으로 나간다 — KOSDAQ 의 [U] 게이트는 H=5 에서
+    검증됐고 H 조임을 KOSDAQ 에서 다시 재지 않았다."""
+    assert swc.CONTRACT_H == {"KOSPI": 10, "KOSDAQ": 5}
+    assert swc.CONTRACT_TP == 0.05
+
+
+def test_settlement_waits_for_the_longer_window():
+    """H=10 계약을 10일 뒤에 정산하면 **미완성 창**을 채점한다. 대기도 시장별이어야 한다."""
+    src = __import__("pathlib").Path(swc.__file__).read_text(encoding="utf-8")
+    assert "_wait = 10 if _H_row <= 5 else 18" in src
+    assert "if pd.isna(d) or (today - d).days < _wait:" in src
+
+
+def test_pending_picks_are_scored_under_the_contract_they_were_issued_with():
+    """계약을 바꿔도 **미정산 과거 픽은 발행 당시 계약으로** 채점해야 한다.
+
+    2026-08-23 에 KOSPI 계약이 H5 → H10 이 됐다. 그 순간 원장에 남아 있던 미정산 KOSPI 픽을
+    H10 으로 채점하면, 그 픽이 약속하지 않은 창으로 재는 것이고 **전진 기록이 소급 변조된다.**
+    `contract_h` 가 없는 행은 2026-08-23 이전 발행이므로 H=5 다."""
+    src = __import__("pathlib").Path(swc.__file__).read_text(encoding="utf-8")
+    assert '_H_row = int(row.get("contract_h") or 5)' in src
+    assert "_H = _H_row" in src, "채점 창이 시장 현행값이 아니라 픽의 발행 계약을 따라야 한다"
