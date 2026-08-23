@@ -278,10 +278,17 @@ if [[ "${AG_KR_SWING_CANDIDATE_ENABLE:-1}" == "1" ]]; then
   # Observation-only swing CANDIDATE picks (RESEARCH_LOG §7-A/D): 8y ft_5_5 ranker,
   # rolling 2y train on px_long, next-open entry / +5% touch-exit contract, fdr auto-scoring.
   # Honest modest edge (EV ~+0.65/trade, 60-62% touch). Never routed to buy lists.
+  # 깊이는 **시장별**이다(생산자 `TOP_K`: KOSPI 3 / KOSDAQ 1 — 운영자 2026-08-23).
+  # 여기서 `--top-k` 를 항상 넘기면 두 시장이 같은 값으로 덮여 KOSDAQ 이 top-3 로 돌아간다.
+  # AG_KR_SWING_CANDIDATE_TOPK 가 설정된 경우에만 강제한다(수동 실행·검정용).
+  KR_SWING_TOPK_ARGS=()
+  if [[ -n "${AG_KR_SWING_CANDIDATE_TOPK:-}" ]]; then
+    KR_SWING_TOPK_ARGS=(--top-k "${AG_KR_SWING_CANDIDATE_TOPK}")
+  fi
   echo "[STEP] report_kr_swing_candidate"
   run_optional "report_kr_swing_candidate" \
     python3 multi_agent/tools/report_kr_swing_candidate.py \
-      --top-k "${AG_KR_SWING_CANDIDATE_TOPK:-3}"
+      ${KR_SWING_TOPK_ARGS[@]+"${KR_SWING_TOPK_ARGS[@]}"}
 fi
 if [[ "${AG_INTRADAY_BACKFILL:-1}" == "1" && -f "${HOME}/research_cache/intraday_backfill.py" ]]; then
   # 분봉 minute bars: incremental KIS backfill of today's full session (post-close). Only fetches

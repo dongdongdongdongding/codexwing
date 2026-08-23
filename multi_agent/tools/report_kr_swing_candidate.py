@@ -40,7 +40,7 @@ import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -108,6 +108,19 @@ EMBARGO_DAYS = 17                  # 라벨이 H 세션 앞을 보므로 학습�
 # **검증된 계약 밖으로 시장을 끌고 가지 않는다.**
 CONTRACT_H = {"KOSPI": 10, "KOSDAQ": 5}
 CONTRACT_TP = 0.05
+# 발행 깊이도 **시장별**이다. 운영자 결정 2026-08-23.
+# 깊이의 효과가 두 시장에서 정반대다([Z] 측정, 계약·게이트·유니버스·기간 고정하고 k 만 훑음):
+#   KOSDAQ  k=3 -> k=1 : 세션당 +0.3388 -> **+0.6363 (+88%)** · 승률 77.9 -> 81.4% · 발화 1.99 -> 2.06일
+#           사다리 분해로 이득의 **87% 가 깊이**다(Δ+0.2974, 블록CI (+0.157,+0.437) 0 제외).
+#           계약 H 는 근거가 없다(H5->H3 Δ+0.0552, CI 0 포함, 게다가 승률을 72.8% 로 떨군다).
+#   KOSPI   k=1 은 `p_max` **0.207 로 랜덤과 구별되지 않는다**. k=2 에서 0.00030, k=3 에서 0.00000.
+#           **k=3 을 유지한다.**
+# 집중도(규율 9) 확인 — KOSDAQ k=1 이 k=3 보다 나쁘지 않다:
+#   최대단일 1.02%(보드 프로파일 2.3%/1.3%보다 낮다) · jackknife 최악1종목 제거 **−1.9%**(k=3 은 −2.3%) ·
+#   최대연속손실 **3일/4건**(k=3 은 7일/9건) · 필요 슬롯 **13 -> 5개(자본 요구 −62%)**
+# ⚠️ 미측정: **슬리피지.** k=1 은 하루 한 종목에 자본이 3배 몰린다. 라이브 원장 체결가로만 잴 수 있다.
+# ⚠️ 대가: 판정 표본이 1/3 로 준다(13,312 -> 4,303픽).
+TOP_K = {"KOSPI": 3, "KOSDAQ": 1}
 
 
 def _fit(tr: pd.DataFrame):
@@ -186,7 +199,7 @@ def _mkt_weakness_decide(ser: pd.Series, latest: pd.Timestamp, q: float = 0.5) -
             "gate_history_days": int(len(hist))}
 
 
-def score_today(top_k: int) -> Dict[str, Any]:
+def score_today(top_k: Optional[int] = None) -> Dict[str, Any]:
     cols = list(dict.fromkeys(["code", "date", "market", "liq", "close"] + FEATS))
     px = pd.read_parquet(CACHE / "px_long.parquet", columns=cols)
     px["date"] = pd.to_datetime(px["date"])
@@ -227,14 +240,16 @@ def score_today(top_k: int) -> Dict[str, Any]:
                  "liq_eok": round(float(r["liq"]) / 1e8, 1)})
         if not verdict.get("fire"):
             continue          # 기권 w60q0.7: 그날은 사지 않는다 (순위 강등이 아니다)
-        for _, r in te.nlargest(top_k, "p").iterrows():
+        # `top_k` 가 명시되면 두 시장 다 그 값(수동 실행·검정용). 아니면 시장별 `TOP_K`.
+        _k = top_k if top_k is not None else TOP_K.get(mkt, 3)
+        for _, r in te.nlargest(_k, "p").iterrows():
             out["picks"].append({"date": str(latest.date()), "market": mkt, **state, **verdict,
                                  "ticker": str(r["code"]) + (".KS" if mkt == "KOSPI" else ".KQ"),
                                  "p": round(float(r["p"]), 4), "close": float(r["close"]),
                                  "ret_5d": round(float(r["ret_5d"]), 2) if pd.notna(r.get("ret_5d")) else None,
                                  "atr_pct": round(float(r["atr_pct"]), 2) if pd.notna(r.get("atr_pct")) else None,
                                  "liq_eok": round(float(r["liq"]) / 1e8, 1),
-                                 "contract_h": CONTRACT_H.get(mkt, 5),
+                                 "contract_h": CONTRACT_H.get(mkt, 5), "top_k": _k,
                                  "contract": f"buy next open; +{CONTRACT_TP*100:.0f}% touch exit within "
                                              f"{CONTRACT_H.get(mkt, 5)} sessions else close"})
     # §29 출구혼합 shadow: 당일 픽 내 ATR 3분위 밴드 → 출구 플랜 스탬프 (계약 불변, 병행채점용)
@@ -389,7 +404,8 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="KR swing CANDIDATE producer (observation-only).")
-    ap.add_argument("--top-k", type=int, default=3)
+    ap.add_argument("--top-k", type=int, default=None,
+                    help="두 시장 공통 강제값. 생략하면 시장별 TOP_K (KOSPI 3 / KOSDAQ 1)")
     args = ap.parse_args()
     now = datetime.now(timezone.utc)
     scored = score_today(args.top_k)

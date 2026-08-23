@@ -235,7 +235,9 @@ def run_model_lane_scan(market: str, scan_mode: str, *, route: bool = True) -> D
             # 픽 탭(8y first-touch 랭커)과 다른 종목을 라우팅하던 버그. 이제 본선 랭커를 실행.
             from report_kr_swing_candidate import score_today as swing_score
             from report_swing_ensemble import _route_live
-            scored = swing_score(3)
+            # 깊이를 여기서 넘기지 않는다 — 생산자의 시장별 `TOP_K` 를 그대로 따른다.
+            # 하드코딩 3 을 두면 09:35 자동스캔만 KOSDAQ 을 top-3 로 발행해 daily ops 와 어긋난다.
+            scored = swing_score()
             picks = [{"ticker": p["ticker"], "market": p["market"],
                       "p": p["p"] if p["p"] <= 1.5 else p["p"] / 100.0,
                       "entry_reference_price": p["close"], "liq억": p.get("liq_eok"),

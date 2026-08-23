@@ -205,3 +205,34 @@ def test_pending_picks_are_scored_under_the_contract_they_were_issued_with():
     src = __import__("pathlib").Path(swc.__file__).read_text(encoding="utf-8")
     assert '_H_row = int(row.get("contract_h") or 5)' in src
     assert "_H = _H_row" in src, "채점 창이 시장 현행값이 아니라 픽의 발행 계약을 따라야 한다"
+
+
+def test_publish_depth_is_per_market():
+    """KOSPI 3 / KOSDAQ 1. 깊이의 효과가 두 시장에서 **정반대**다.
+
+    KOSDAQ: k=3→1 이 세션당 +88%, 승률 +3.5pp, 발화 불변. 사다리로 이득의 87% 가 깊이다.
+    KOSPI:  k=1 은 `p_max` 0.207 로 랜덤과 구별되지 않는다(k=3 에서 0.00000).
+    한 값으로 묶으면 반드시 한 시장이 손해다."""
+    assert swc.TOP_K == {"KOSPI": 3, "KOSDAQ": 1}
+
+
+def test_depth_defaults_to_the_per_market_map():
+    """`--top-k` 를 안 주면 시장별 값을 써야 한다. 기본값이 숫자면 두 시장이 덮인다."""
+    import inspect
+    assert inspect.signature(swc.score_today).parameters["top_k"].default is None
+    src = __import__("pathlib").Path(swc.__file__).read_text(encoding="utf-8")
+    assert "_k = top_k if top_k is not None else TOP_K.get(mkt, 3)" in src
+
+
+def test_both_publishers_respect_the_per_market_depth():
+    """발행 경로가 둘이다. 한쪽만 고치면 09:35 자동스캔과 daily ops 가 어긋난다.
+
+    과거에 같은 계열의 사고가 있었다 — 두 소비자가 서로 다른 어휘를 써서 한쪽만 게이트를 읽었다
+    (`stream_exclusion` F1). 여기서는 **둘 다 깊이를 넘기지 않고** 생산자 기본값을 따라야 한다."""
+    import pathlib
+    scan = pathlib.Path("modules/model_lane_scan.py").read_text(encoding="utf-8")
+    assert "swing_score()" in scan, "자동스캔이 깊이를 하드코딩하면 안 된다"
+    assert "swing_score(3)" not in scan
+    ops = pathlib.Path("multi_agent/tools/run_daily_ops.sh").read_text(encoding="utf-8")
+    assert '--top-k "${AG_KR_SWING_CANDIDATE_TOPK:-3}"' not in ops, "항상 넘기면 시장별 값이 덮인다"
+    assert 'KR_SWING_TOPK_ARGS[@]+"${KR_SWING_TOPK_ARGS[@]}"' in ops, "bash 3.2 빈 배열 확장 보호"
