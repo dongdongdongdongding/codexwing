@@ -27,112 +27,50 @@ from typing import Any, Dict, List, Optional
 
 warnings.filterwarnings("ignore")
 import numpy as np
+import re
 import pandas as pd
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-HOURD = os.path.expanduser("~/research_cache/us_daily/hourly")
+# 🔴 2026-08-24 원천 교체 — 시간봉 351종목 고정 캐시 → 일별 패널 3,932종목.
+# 왜: `glob(hourly/*.parquet)` 로 잡던 유니버스가 **2025-08 유동성으로 한 번 뽑힌 351종목 고정 목록**
+# 이었다(파일 내용은 매일 갱신되는데 구성이 안 바뀐다). 새로 유동해진 종목은 영원히 못 들어오고,
+# 그 목록으로 과거를 백테스트한 것이 오라클이다(고ATR 선택 프리미엄 +6.17pp · 이후 이탈률 0.3%
+# vs 캐시밖 45.0%). 사양: research/X/SOURCE_SWAP_SPEC.md ([X] 작성, 조정관 이식).
+# ⚠️ 시간봉 세션피처 9종(`s_day_ret` 등)은 사라진다. 대가는 [X] §6 에서 쟀다.
+PANELD = os.path.expanduser("~/research_cache/us_daily/NASDAQ")
+PANEL_PREFIX = "daily_features_"
+T1_PATH = os.path.expanduser("~/research_cache/T1_nasdaq_listing_snapshots.parquet")
+# 부정목록 — 워런트·유닛·우선주·채권성만 뺀다. **ADR·Ordinary Shares 는 남긴다**([X] §6-D).
+# 🔴 `"Common Stock"` 정확일치로 거르지 마라 — 원장에 `"Common stock"`(소문자 s)이 섞여 있어
+# UPST·RGTI 가 통째로 빠진다. [X] 가 1차에 밟은 함정이고 부정목록 방식이 정본이다.
+T1_EXCLUDE = re.compile(
+    r"warrant|right(s)?\s|[- ]unit(s)?\b|\sunit$|preferred|"
+    r"depositary share.*preferred|notes?\s+due|debenture|contingent value|subordinated",
+    re.IGNORECASE)
+MIN_CLOSE = 5.0          # [M] §6 — 현행 라이브엔 없었다. 실측 48픽 중 7건 위반, 최저 $3.38
+MIN_LIQ20 = 1e8
+ADMIT_Q = 0.10           # 편입자격: `univ_frac250` 의 **그날 횡단면 분위**. 절대컷 아님(규율 3)
+UNIV_W, UNIV_MINP = 250, 60
+CONTRACT_H = 20          # TP +5% / H=20세션 (기존 5세션에서 교체)
 USR = PROJECT_ROOT / "runtime_state" / "reports" / "us_research"
 LEDGER = USR / "nasdaq_session_tape_ledger.jsonl"
 REPORT_JSON = USR / "nasdaq_session_tape_latest.json"
 REPORT_MD = USR / "nasdaq_session_tape_latest.md"
 COST = 0.25
-STF = ["s_day_ret", "s_h1_ret", "s_last_ret", "s_close_loc", "s_range", "s_vwap_dist", "s_up_frac", "s_accel", "s_vol_z"]
-DLF = ["ret_1d", "ret_3d", "ret_5d", "ret_10d", "ret_20d", "ret_60d", "ma20_dist", "ma60_dist", "ma120_dist",
-       "ma20_slope", "rsi14", "dist_hi20", "dist_hi60", "dist_lo20", "pos20", "bb_pctb", "atr_pct",
-       "vol_ratio", "turn_z", "liq20"]
-FEAT = STF + DLF
+def _features():
+    """생산 피처 49종. `research_nasdaq_daily_edge.FEATURES` 를 단일 출처로 쓴다 —
+    복제하면 두 곳이 어긋나고, 이 리포는 그 실패 계열을 반복해서 겪었다."""
+    from research_nasdaq_daily_edge import FEATURES
+    return list(FEATURES)
 
 
-def _rsi(s: pd.Series, n: int = 14) -> pd.Series:
-    d = s.diff()
-    up = d.clip(lower=0).rolling(n).mean()
-    dn = (-d.clip(upper=0)).rolling(n).mean()
-    return 100 - 100 / (1 + up / (dn + 1e-9))
 
 
-def build_symbol(fp: str) -> Optional[pd.DataFrame]:
-    """Hourly file -> per-day rows: 9 session features + 20 daily-context features + y label."""
-    sym = os.path.basename(fp).replace(".parquet", "")
-    try:
-        h = pd.read_parquet(fp)
-    except Exception:
-        return None
-    if h.empty or "Close" not in h.columns:
-        return None
-    h.index = pd.to_datetime(h.index)
-    try:
-        h.index = h.index.tz_convert("America/New_York")
-    except Exception:
-        return None
-    tt = h.index.time
-    h = h[(tt >= pd.Timestamp("09:30").time()) & (tt <= pd.Timestamp("16:00").time())]
-    if len(h) < 500:
-        return None
-    h["_d"] = h.index.normalize().tz_localize(None)
-    # daily bars from hourly
-    dly = h.groupby("_d").agg(o=("Open", "first"), hi=("High", "max"), lo=("Low", "min"),
-                              c=("Close", "last"), v=("Volume", "sum"))
-    c, hi, lo, v = dly["c"], dly["hi"], dly["lo"], dly["v"]
-    f = pd.DataFrame(index=dly.index)
-    for n in (1, 3, 5, 10, 20, 60):
-        f[f"ret_{n}d"] = c.pct_change(n) * 100
-    for n in (20, 60, 120):
-        f[f"ma{n}_dist"] = (c / c.rolling(n).mean() - 1) * 100
-    f["ma20_slope"] = (c.rolling(20).mean() / c.rolling(20).mean().shift(5) - 1) * 100
-    f["rsi14"] = _rsi(c)
-    f["dist_hi20"] = (c / hi.rolling(20).max() - 1) * 100
-    f["dist_hi60"] = (c / hi.rolling(60).max() - 1) * 100
-    f["dist_lo20"] = (c / lo.rolling(20).min() - 1) * 100
-    f["pos20"] = (c - lo.rolling(20).min()) / (hi.rolling(20).max() - lo.rolling(20).min() + 1e-9)
-    m20, s20 = c.rolling(20).mean(), c.rolling(20).std()
-    f["bb_pctb"] = (c - (m20 - 2 * s20)) / (4 * s20 + 1e-9)
-    tr = pd.concat([hi - lo, (hi - c.shift()).abs(), (lo - c.shift()).abs()], axis=1).max(axis=1)
-    f["atr_pct"] = tr.rolling(14).mean() / c * 100
-    f["vol_ratio"] = v / v.rolling(20).mean()
-    f["turn_z"] = (v - v.rolling(60).mean()) / (v.rolling(60).std() + 1e-9)
-    f["liq20"] = (c * v).rolling(20).mean()
-    # session features per day
-    srows = {}
-    volhist = dly["v"]
-    for day, g in h.groupby("_d"):
-        if len(g) < 5:
-            continue
-        o = float(g["Open"].iloc[0]); cc = float(g["Close"].iloc[-1])
-        dhi = float(g["High"].max()); dlo = float(g["Low"].min())
-        if o <= 0 or cc <= 0:
-            continue
-        vv = g["Volume"].values.astype(float)
-        vwap = float((g["Close"].values * vv).sum() / (vv.sum() + 1))
-        r = g["Close"].pct_change().dropna()
-        vh = volhist.loc[:day].iloc[-21:-1]
-        vz = float((vv.sum() - vh.mean()) / (vh.std() + 1e-9)) if len(vh) >= 5 else 0.0
-        pm = float(g["Close"].iloc[len(g) // 2])
-        srows[day] = {"s_day_ret": (cc / o - 1) * 100, "s_h1_ret": (float(g["Close"].iloc[0]) / o - 1) * 100,
-                      "s_last_ret": (cc / float(g["Close"].iloc[-2]) - 1) * 100 if len(g) >= 2 else 0.0,
-                      "s_close_loc": (cc - dlo) / (dhi - dlo + 1e-9), "s_range": (dhi / dlo - 1) * 100,
-                      "s_vwap_dist": (cc / vwap - 1) * 100, "s_up_frac": float((r > 0).mean()),
-                      "s_accel": ((cc / pm - 1) - (pm / o - 1)) * 100, "s_vol_z": vz}
-    if not srows:
-        return None
-    S = pd.DataFrame.from_dict(srows, orient="index")
-    out = S.join(f, how="inner")
-    # label: +5% touch within next 5 sessions from close (for training)
-    tgt = c * 1.05
-    touched = pd.Series(0.0, index=dly.index)
-    fwd_ok = pd.Series(False, index=dly.index)
-    for k in range(1, 6):
-        hk = hi.shift(-k)
-        touched = np.maximum(touched, (hk >= tgt).astype(float).fillna(0))
-        if k == 5:
-            fwd_ok = hk.notna()
-    out["y"] = touched.where(fwd_ok, np.nan)
-    out["close"] = c
-    out["symbol"] = sym
-    return out.reset_index().rename(columns={"index": "date", "_d": "date"})
-
+# `build_symbol()` 삭제(2026-08-24): 시간봉 → 일별 재구성 81줄. 이제 일별 패널을 그대로 읽는다.
+# 시간봉 캐시는 지우지 않는다 — 롤백 경로이자 [X] 의 오라클 진단 근거다.
 
 def _read_ledger() -> List[Dict[str, Any]]:
     if not LEDGER.exists():
@@ -148,7 +86,12 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
         if row.get("policy_ret") is not None:
             continue
         d = pd.to_datetime(row.get("date"), errors="coerce")
-        if pd.isna(d) or (today - d).days < 10:
+        # 🔴 **발행 당시 계약으로 채점한다.** 계약을 H5 → H20 으로 바꾸면서 원장의 미정산 과거 픽까지
+        # 새 창으로 재면 그 픽이 약속하지 않은 창으로 채점하는 것이고 전진 기록이 소급 변조된다.
+        # `contract_h` 가 없는 행 = 2026-08-24 이전 발행 = H5 계약이다. (KR 레인에서 같은 조치를 했다)
+        _H = int(row.get("contract_h") or 5)
+        _wait = 10 if _H <= 5 else 32     # 창이 끝나기 전에 정산하면 미완성 계약을 채점한다
+        if pd.isna(d) or (today - d).days < _wait:
             continue
         try:
             h = yf.download(row["symbol"], start=str(d.date()), progress=False, auto_adjust=False)
@@ -156,14 +99,14 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
                 continue
             h.columns = [c[0] if isinstance(c, tuple) else c for c in h.columns]
             h = h[h.index > d]
-            if len(h) < 5:
+            if len(h) < _H:
                 continue
             entry = float(row["entry"])
             tgt = entry * 1.05
-            win5 = h.iloc[:5]
+            win5 = h.iloc[:_H]
             ret = (float(win5["Close"].iloc[-1]) / entry - 1) * 100
             touched = 0
-            for k in range(5):
+            for k in range(_H):
                 if float(win5["High"].iloc[k]) >= tgt:
                     o = float(win5["Open"].iloc[k])
                     # 갭 보너스는 **모든 세션에** 붙는다 (k=0 포함).
@@ -185,6 +128,7 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
                     touched = 1
                     break
             row["touch5"] = touched
+            row["contract_h"] = _H
             row["policy_ret"] = round(ret, 2)
             changed = True
         except Exception:
@@ -199,15 +143,73 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
             "ev_net_avg": round(float(np.mean(rets)), 2), "worst": round(float(np.min(rets)), 2)}
 
 
+def _latest_panel() -> str:
+    """소비자와 **같은 규칙**으로 고른다: `{prefix}_*.parquet` glob → `_latest_` 제외 → mtime 최신.
+    `_latest_` 파일로 판정하면 소비자가 절대 안 여는 파일을 보게 된다(seaslug f2639e0 의 교훈)."""
+    fs = [p for p in glob.glob(os.path.join(PANELD, PANEL_PREFIX + "*.parquet")) if "_latest_" not in p]
+    if not fs:
+        raise FileNotFoundError(f"no daily panel under {PANELD}")
+    return max(fs, key=os.path.getmtime)
+
+
+def _listed_pit(P: pd.DataFrame) -> pd.Series:
+    """시점기준 상장 여부. 각 (symbol, date) 에 대해 **`snapshot_ts <= date` 인 최신 스냅샷**을 보고
+    거기 있으면서 `test_issue=N ∧ etf=N ∧ 부정목록 미해당` 이면 True.
+
+    이것이 오라클을 없애는 부품이다 — 오늘의 종목 목록으로 과거를 거래하지 않는다.
+    ⚠️ 스냅샷 간격 중앙 45일·최대 273일이라 **상폐 종목이 최대 273일 남을 수 있다.**
+    방향은 보수적이다(죽은 종목을 더 오래 살려두므로 EV 를 낮추는 쪽)."""
+    t1 = pd.read_parquet(T1_PATH, columns=["snapshot_ts", "symbol", "security_name", "test_issue", "etf"])
+    t1["snapshot_ts"] = pd.to_datetime(t1["snapshot_ts"])
+    ok = (t1["test_issue"].astype(str).str.upper().isin(["N", "FALSE", "0"])
+          & t1["etf"].astype(str).str.upper().isin(["N", "FALSE", "0"])
+          & ~t1["security_name"].astype(str).str.contains(T1_EXCLUDE, na=False))
+    t1 = t1.loc[ok, ["snapshot_ts", "symbol"]].assign(_pit=True).sort_values("snapshot_ts")
+    # 🔴 `merge_asof` 는 왼쪽을 `on` 키로 정렬해야 한다. 정렬한 결과를 그대로 돌려주면
+    # 호출부(=(symbol,date) 정렬)와 **행 순서가 어긋나** 엉뚱한 종목에 판정이 붙는다.
+    # 첫 이식에서 이 버그로 AAPL 이 탈락했다(검증벡터 2/10). 원본 인덱스를 들고 다녀 복원한다.
+    left = P[["date", "symbol"]].copy()
+    left["_ix"] = np.arange(len(left))
+    left = left.sort_values("date")
+    out = pd.merge_asof(left, t1, left_on="date", right_on="snapshot_ts",
+                        by="symbol", direction="backward")
+    pit = out["_pit"].fillna(False).to_numpy()
+    restored = np.empty(len(P), dtype=bool)
+    restored[out["_ix"].to_numpy()] = pit
+    return restored
+
+
+def _admit(P: pd.DataFrame) -> pd.DataFrame:
+    """5조건 편입 + `univ_frac250` 편입자격. `P` 는 (symbol, date) 정렬 가정.
+
+    `univ_frac250` 은 **자기 자격 이력의 비율**이고 `shift(1)` 로 당일을 뺀다 — 안 그러면 자기참조다.
+    `min_periods=60` 이라 자격 이력 60거래일 미만은 NaN = 편입 불가(웜업).
+    편입은 **절대컷이 아니라 그날 횡단면 분위**다(규율 3 · [!][P] 절대임계 함정 5번째 사례 회피)."""
+    P = P.sort_values(["symbol", "date"]).reset_index(drop=True)
+    elig = ((P["liq20"] >= MIN_LIQ20) & (P["close"] >= MIN_CLOSE)
+            & (P["feature_ready"] == 1) & _listed_pit(P)).astype(float)
+    P["tradable"] = elig.to_numpy() > 0
+    P["univ_frac250"] = (elig.groupby(P["symbol"], sort=False)
+                         .transform(lambda x: x.shift(1).rolling(UNIV_W, min_periods=UNIV_MINP).mean()))
+    return P
+
+
 def main() -> None:
     import lightgbm as lgb
-    files = sorted(glob.glob(os.path.join(HOURD, "*.parquet")))
-    parts = [b for b in (build_symbol(fp) for fp in files) if b is not None]
-    P = pd.concat(parts, ignore_index=True)
+    FEAT = _features()
+    panel = _latest_panel()
+    P = pd.read_parquet(panel, columns=list(dict.fromkeys(
+        ["symbol", "date", "close", "liq20", "feature_ready", "fwd_high_ret_20d"] + FEAT)))
     P["date"] = pd.to_datetime(P["date"])
+    P = _admit(P)
     latest = P["date"].max()
-    tr = P.dropna(subset=["y"] + STF)
-    te = P[(P["date"] == latest) & (P["liq20"] >= 1e8)].dropna(subset=STF).copy()
+    # 라벨 교체: +5% 터치/5세션 → `t_15_20` = 20세션 내 최고가가 +15% 이상 ([J] §12-3)
+    P["y"] = (P["fwd_high_ret_20d"] >= 15).astype(float).where(P["fwd_high_ret_20d"].notna())
+    tr = P.dropna(subset=["y"] + FEAT)
+    # 편입: 5조건 통과 ∧ 그날 횡단면 분위 >= ADMIT_Q. NaN 은 자동 탈락.
+    te = P[(P["date"] == latest) & P["tradable"]].dropna(subset=FEAT).copy()
+    te["xq"] = te["univ_frac250"].rank(pct=True, method="average")
+    te = te[te["xq"] >= ADMIT_Q]
     m = lgb.LGBMClassifier(n_estimators=400, learning_rate=0.05, num_leaves=31, min_child_samples=60,
                            subsample=0.8, colsample_bytree=0.7, reg_lambda=3, random_state=0, verbose=-1)
     m.fit(tr[FEAT].clip(-1e6, 1e6), tr["y"])
@@ -216,7 +218,9 @@ def main() -> None:
     now = datetime.now(timezone.utc)
     picks = [{"date": str(latest.date()), "symbol": str(r["symbol"]), "p": round(float(r["p"]), 4),
               "entry": round(float(r["close"]), 2), "tier": "SHADOW",
-              "contract": "+5% touch within 5 sessions else 5d close (close entry)"}
+              "contract": f"+5% touch within {CONTRACT_H} sessions else {CONTRACT_H}d close (close entry)",
+              "contract_h": CONTRACT_H, "univ_frac250": round(float(r["univ_frac250"]), 4),
+              "xq": round(float(r["xq"]), 4), "panel": os.path.basename(panel)}
              for _, r in top.iterrows()]
     existing = {(r.get("date"), r.get("symbol")) for r in _read_ledger()}
     LEDGER.parent.mkdir(parents=True, exist_ok=True)
