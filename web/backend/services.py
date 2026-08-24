@@ -43,6 +43,7 @@ LANES = {
 # 운영자 수익 기준 (2026-08-20 지시): EV<=+1% 폐기 · EV>=+15%+승률>=75% 즉시적용.
 # 재귀게이트와 **다른 축**이다 — 게이트는 기대 정합을, 이것은 거래 가치를 본다.
 # nasdaq_session_tape 가 그 차이를 드러낸다: 게이트 CONFIRM 인데 fwd_ev +0.09 다.
+COST_PCT = 0.30          # 전진 집계에서 차감하는 왕복비용
 OPERATOR_EV_KILL_PCT = 1.0
 OPERATOR_EV_DEPLOY_PCT = 15.0
 OPERATOR_WIN_DEPLOY_PCT = 75.0
@@ -291,6 +292,46 @@ def _lane_forward_ev():
     return out
 
 
+def _forward_epoch(lane_key, market=None):
+    """전진 기록을 **구성 전환 경계**로 가른다. 판정을 바꾸지 않고 「무엇을 채점 중인지」만 드러낸다.
+
+    왜 필요한가 (2026-08-25 운영자 지적): 화면의 `forward EV -0.33% (n=206)` 은
+    **구성을 바꾸기 전 셀의 기록**이다. 새 셀은 2026-08-21 에 첫 픽을 냈다. 그런데 화면만 보면
+    **새 셀이 -0.33% 를 낸 것처럼 읽힌다.** 우리가 교체한 이유가 된 숫자를 교체 결과로 보여주는 것이다.
+
+    경계 표지는 `gate` 필드다 — 새 생산자가 발행 시점에 쓴다(`gate_kind`/`gate_q` 동반).
+    ⚠️ `contract_h` 는 경계가 아니다 — `resolve_pending` 이 **정산 시점에** 찍으므로
+    전환 이전 픽에도 붙는다(실측: 2026-08-12 행에도 있다).
+
+    풀링도 같이 가른다. `GATE_LANE_MAP` 이 두 스윙 레인을 `swing_candidate` 하나로 묶어
+    **KOSDAQ 이 KOSPI 의 손실을 나눠 지고 있다**(실측 KOSPI −0.68 / KOSDAQ +0.05 / 풀링 −0.33).
+    여기서는 시장별로 갈라 보여주기만 한다 — 게이트 어휘는 정지점이라 건드리지 않는다.
+    """
+    meta = LANES.get(lane_key) or {}
+    led = meta.get("ledger")
+    if not led:
+        return None
+    path = os.path.join(REPO, "runtime_state/reports", meta.get("dir") or "experimental", led)
+    try:
+        with open(path, encoding="utf-8") as fh:
+            rows = [json.loads(l) for l in fh if l.strip()]
+    except Exception:
+        return None
+    if market:
+        rows = [r for r in rows if str(r.get("market") or "") == market]
+    out = {}
+    for tag, sel in (("current", lambda r: r.get("gate") is not None),
+                     ("previous", lambda r: r.get("gate") is None)):
+        grp = [r for r in rows if sel(r)]
+        done = [r for r in grp if isinstance(r.get("policy_ret"), (int, float))]
+        nets = [float(r["policy_ret"]) - COST_PCT for r in done]
+        out[tag] = {"picks": len(grp), "resolved": len(done),
+                    "ev": round(sum(nets) / len(nets), 2) if nets else None,
+                    "win": round(100.0 * sum(1 for v in nets if v > 0) / len(nets), 1) if nets else None,
+                    "since": min((r.get("date") for r in grp), default=None)}
+    return out
+
+
 def _apply_operator_ev_floor(row, lane_key):
     """운영자 수익 기준(2026-08-20)을 발행 경로에 집행한다.
 
@@ -314,10 +355,23 @@ def _apply_operator_ev_floor(row, lane_key):
     if isinstance(win, (int, float)):
         row["forward_win"] = round(float(win), 1)
     row["forward_n"] = n
+    # 구성 전환 경계 — 판정은 게이트가 내리고, 여기서는 **그 판정이 무엇을 채점했는지** 덧붙인다.
+    ep = _forward_epoch(lane_key, market=row.get("market"))
+    epoch_note = ""
+    if ep:
+        row["forward_epoch"] = ep
+        cur, prev = ep["current"], ep["previous"]
+        if cur["picks"] and cur["resolved"] < 30:
+            epoch_note = (f" ※ 이 판정은 **구성 전환 이전** 픽 기준이다"
+                          f"(정산 {prev['resolved']}건). 현행 구성은 {cur['since']} 시작 · "
+                          f"픽 {cur['picks']}건 · 정산 {cur['resolved']}건 — **아직 판정 표본이 아니다**")
+        elif cur["resolved"] >= 30 and cur["ev"] is not None:
+            epoch_note = (f" ※ 현행 구성 정산 {cur['resolved']}건 EV {cur['ev']:+.2f}% "
+                          f"승률 {cur['win']}% ({cur['since']}~)")
     if ev <= OPERATOR_EV_KILL_PCT:
         row["operator_verdict"] = "KILL"
         _add_block(row, "kill", "폐기선 아래",
-                   f"forward EV {ev:+.2f}% ≤ 운영자 기준 +{OPERATOR_EV_KILL_PCT:.0f}% (n={n})")
+                   f"forward EV {ev:+.2f}% ≤ 운영자 기준 +{OPERATOR_EV_KILL_PCT:.0f}% (n={n})" + epoch_note)
     elif ev >= OPERATOR_EV_DEPLOY_PCT and isinstance(win, (int, float)) and win >= OPERATOR_WIN_DEPLOY_PCT:
         row["operator_verdict"] = "DEPLOY"
         row["size_note"] = (f"✅ 즉시적용 기준 충족 — EV {ev:+.2f}% · 승률 {win:.1f}% (n={n}). "
