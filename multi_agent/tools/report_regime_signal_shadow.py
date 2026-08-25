@@ -33,7 +33,7 @@ from modules.regime_conditional_scorer import compute_regime_score
 LEDGER = PROJECT_ROOT / "runtime_state" / "reports" / "experimental" / "regime_signal_shadow_ledger.jsonl"
 REPORT_JSON = PROJECT_ROOT / "runtime_state" / "reports" / "experimental" / "regime_signal_shadow_latest.json"
 REPORT_MD = PROJECT_ROOT / "runtime_state" / "reports" / "experimental" / "regime_signal_shadow_latest.md"
-COST_PCT = 0.6  # KR round-trip
+from modules.trading_costs import ROUNDTRIP_COST_PCT as COST_PCT  # 단일 출처(0.215)
 
 
 # ---------------------------------------------------------------------------

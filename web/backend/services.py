@@ -43,7 +43,7 @@ LANES = {
 # 운영자 수익 기준 (2026-08-20 지시): EV<=+1% 폐기 · EV>=+15%+승률>=75% 즉시적용.
 # 재귀게이트와 **다른 축**이다 — 게이트는 기대 정합을, 이것은 거래 가치를 본다.
 # nasdaq_session_tape 가 그 차이를 드러낸다: 게이트 CONFIRM 인데 fwd_ev +0.09 다.
-COST_PCT = 0.30          # 전진 집계에서 차감하는 왕복비용
+from modules.trading_costs import ROUNDTRIP_COST_PCT as COST_PCT  # 단일 출처(0.215)
 OPERATOR_EV_KILL_PCT = 1.0
 OPERATOR_EV_DEPLOY_PCT = 15.0
 OPERATOR_WIN_DEPLOY_PCT = 75.0

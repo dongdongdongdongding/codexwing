@@ -58,7 +58,11 @@ def test_epoch_splits_by_market_so_one_lane_does_not_carry_the_other(tmp_path, m
     kp = S._forward_epoch("t_lane", market="KOSPI")["previous"]
     kq = S._forward_epoch("t_lane", market="KOSDAQ")["previous"]
     assert kp["ev"] != kq["ev"], "시장을 안 가르면 한 레인이 다른 레인의 손실을 진다"
-    assert kp["ev"] == pytest.approx(-5.30) and kq["ev"] == pytest.approx(4.70)
+    # 비용은 `modules.trading_costs` 단일 출처에서 온다 — 여기 박아 두면
+    # 비용이 바뀔 때마다 깨지고, 이 값들이 비용에 딸린 값이라는 사실도 가려진다.
+    # `ev` 는 표시용이라 소수 2자리로 반올림돼 나온다.
+    assert kp["ev"] == round(-5.0 - S.COST_PCT, 2)
+    assert kq["ev"] == round(5.0 - S.COST_PCT, 2)
 
 
 def test_kill_note_says_it_is_judging_the_previous_configuration(tmp_path, monkeypatch):

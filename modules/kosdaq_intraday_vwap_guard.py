@@ -15,7 +15,7 @@ MODEL_PATH = Path("models/kr_intraday_3d_t5/kosdaq_liq30_1500_lgbm_isotonic_vwap
 ENTRY_TIME_KST = "15:00"
 ENTRY_INPUT_HOUR = "150000"
 TARGET_COLUMN = "target_touch3d_t5"
-ROUNDTRIP_COST_PCT = 0.33
+from modules.trading_costs import ROUNDTRIP_COST_PCT  # noqa: F401  단일 출처(0.215)
 
 INTRADAY_FEATURES = [
     "gap_open_pct",
