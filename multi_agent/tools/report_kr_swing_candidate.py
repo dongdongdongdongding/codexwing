@@ -129,8 +129,14 @@ TOP_K = {"KOSPI": 3, "KOSDAQ": 1}
 def _fit(tr: pd.DataFrame):
     """LGBM ranker. 파라미터는 8y WF 하네스와 동일하게 유지한다(바꾸면 근거 셀과 끊긴다)."""
     import lightgbm as lgb
+    # ⚠️ `subsample=0.8` 은 **무효다** — LightGBM 은 `subsample_freq=0`(기본값)이면 배깅을 아예
+    #    안 돈다. 아래에 그 0 을 명시해 둔 것은 값을 바꾸려는 게 아니라, 다음 사람이 이 줄을
+    #    「배깅이 켜져 있다」로 읽지 않게 하려는 것이다.
+    #    **켜지 마라.** 8y WF 근거 셀이 전부 이 무효 상태에서 나왔다 — 켜면 셀과 끊긴다.
+    #    바꾸려면 하네스와 함께 바꾸고 전 셀을 재검정해야 한다.
     m = lgb.LGBMClassifier(n_estimators=400, learning_rate=0.05, num_leaves=63, min_child_samples=100,
-                           subsample=0.8, colsample_bytree=0.7, reg_lambda=5, random_state=0, verbose=-1)
+                           subsample=0.8, subsample_freq=0, colsample_bytree=0.7, reg_lambda=5,
+                           random_state=0, verbose=-1)
     m.fit(tr[FEATS].clip(-1e4, 1e4), tr[LABEL])
     return m
 
@@ -234,6 +240,69 @@ def _drop_unconfirmed_session(px: pd.DataFrame, now=None) -> pd.DataFrame:
     return px
 
 
+# 학습 라벨이 엠바고 너머로 얼마나 더 낡아도 되는가. 분기(약 63거래일)를 넘으면
+# 가장 최근 폴드가 **새 데이터를 한 줄도 못 본 채** 적합된다 — walk-forward 재적합
+# 주기가 분기이므로 그 지점이 「한 주기 통째로 뒤처졌다」는 선이다.
+LABEL_STALENESS_HARD_DAYS = 63
+
+
+def _label_staleness(label_max, as_of) -> int:
+    """라벨이 **엠바고가 허용하는 것보다** 며칠 더 낡았나. 0 이면 정상이다.
+
+    라벨은 계약이 끝나야 확정되므로 항상 `as_of - EMBARGO_DAYS` 근처에서 끝난다.
+    그 너머의 지연은 **아무도 라벨을 다시 안 짓고 있다**는 뜻이다.
+
+    실제로 그랬다(2026-08-26 발견): `px_long`(피처)은 일일 운영이 매일 재구축하는데
+    `marcap → px_delisted → p2_label` 사슬은 **일일 운영 어디에도 없다.** 라벨이
+    2026-07-24 에 멈춰 있었고 매일 하루씩 더 벌어지고 있었다. 아무것도 그걸 보지 않았다.
+    """
+    allowed = pd.Timestamp(as_of) - pd.Timedelta(days=EMBARGO_DAYS)
+    return max(0, (allowed - pd.Timestamp(label_max)).days)
+
+
+# 유니버스 무결성을 재는 창(거래일). 롤링 자기분위로 판정하므로 절대 임계가 없다.
+UNIVERSE_CHECK_WINDOW = 60
+
+
+def _universe_integrity(px, latest) -> Dict[str, Any]:
+    """오늘 패널에서 종목이 **조용히 사라졌는지** 본다.
+
+    왜 이게 1차 위험인가: [W10] 실측으로 758종목 KOSPI 유니버스에서 **한 종목**
+    (042700)만 빠져도 세션당 EV 가 0.2440 → 0.1762 로 움직인다. **−0.068 은
+    6시드 전체 폭(0.0686)과 거의 같다.** 그리고 [W7] 이 파이프라인이 실제로 종목을
+    조용히 빠뜨리는 것을 관측했다(`build_px_long` 의 `pull()` 실패 → 로그상 2659↔2660).
+
+    문턱은 발명하지 않는다. 원 패널의 일간 종목수는 실측으로 거의 불변이다
+    (최근 120일: KOSDAQ 변화 정확히 0, KOSPI 최소 −4). 그래서 **직전 창에서
+    관측된 최대 부족분**을 기준으로 삼는다 — 그보다 더 빠졌으면 전례 없는 일이다.
+
+    **중단하지 않고 기록만 한다.** 대량 상폐나 휴장 같은 정상 사건도 같은 모양이라
+    발행을 막으면 오탐으로 레인을 죽인다. 목적은 **보이게 하는 것**이다.
+    """
+    out: Dict[str, Any] = {}
+    hist = px[px["date"] > latest - pd.Timedelta(days=UNIVERSE_CHECK_WINDOW * 2)]
+    for mkt in ("KOSPI", "KOSDAQ"):
+        g = hist[hist["market"] == mkt].groupby("date")["code"].nunique().sort_index()
+        if len(g) < 10 or latest not in g.index:
+            continue
+        prior = g[g.index < latest]
+        if prior.empty:
+            continue
+        ref = float(prior.median())
+        worst_before = float((ref - prior).max())        # 전례상 가장 많이 빠졌던 폭
+        short = ref - float(g.loc[latest])
+        rec = {"count": int(g.loc[latest]), "median": ref,
+               "shortfall": round(short, 1), "worst_before": round(worst_before, 1),
+               "anomalous": bool(short > worst_before)}
+        out[mkt] = rec
+        if rec["anomalous"]:
+            print(f"[경고] {mkt} 유니버스에서 {short:.0f}종목이 빠졌다 "
+                  f"(중앙 {ref:.0f} → {rec['count']}). 직전 {UNIVERSE_CHECK_WINDOW}거래일 최대 부족분은 "
+                  f"{worst_before:.0f} 이었다 — 전례 없는 폭이다. "
+                  f"한 종목이 세션당 EV 를 0.068 움직인다.", flush=True)
+    return out
+
+
 def score_today(top_k: Optional[int] = None) -> Dict[str, Any]:
     cols = list(dict.fromkeys(["code", "date", "market", "liq", "close"] + FEATS))
     px = pd.read_parquet(CACHE / "px_long.parquet", columns=cols)
@@ -242,9 +311,24 @@ def score_today(top_k: Optional[int] = None) -> Dict[str, Any]:
     latest = px["date"].max()
     lab = pd.read_parquet(P2_LABEL, columns=["code", "date", LABEL])
     lab["date"] = pd.to_datetime(lab["date"])
+    _stale = _label_staleness(lab["date"].max(), latest)
+    if _stale > LABEL_STALENESS_HARD_DAYS:
+        raise SystemExit(
+            f"[라벨 신선도] 학습 라벨이 엠바고 너머로 {_stale}일 더 낡았다"
+            f"(라벨 최종 {lab['date'].max().date()} · 채점일 {latest.date()}).\n"
+            f"  분기 재적합 주기({LABEL_STALENESS_HARD_DAYS}일)를 넘었다 — 가장 최근 폴드가\n"
+            f"  새 데이터를 한 줄도 못 보고 적합된다. 픽을 내지 않는다.\n"
+            f"  사슬을 다시 지어라: marcap → build_px_delisted.py → build_p2_label.py\n"
+            f"  (일일 운영에 이 사슬이 없다. px_long 만 매일 돈다.)")
+    if _stale:
+        print(f"[경고] 학습 라벨이 엠바고 너머로 {_stale}일 더 낡았다 "
+              f"(라벨 최종 {lab['date'].max().date()}). 사슬 재구축이 필요하다.", flush=True)
     # left join: 라벨은 H=5 세션 뒤에야 확정되므로 최근 행은 결측이다. 학습에서만 dropna 한다.
     px = px.merge(lab, on=["code", "date"], how="left")
-    out: Dict[str, Any] = {"as_of": str(latest.date()), "picks": [], "gate": {}}
+    out: Dict[str, Any] = {"as_of": str(latest.date()), "picks": [], "gate": {},
+                           "label_stale_days": _stale,
+                           "label_max": str(lab["date"].max().date()),
+                           "universe": _universe_integrity(px, latest)}
     for mkt in ("KOSPI", "KOSDAQ"):
         d = px[(px["market"] == mkt) & (px["liq"] >= LIQ[mkt])]
         tr = d[(d["date"] < latest - pd.Timedelta(days=EMBARGO_DAYS))

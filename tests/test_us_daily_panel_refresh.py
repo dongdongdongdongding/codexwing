@@ -218,7 +218,17 @@ def test_retention_disabled_keeps_everything(paths):
 # --------------------------------------------------------------------------
 
 def _panel_frame(max_date):
-    idx = pd.bdate_range(end=pd.Timestamp(max_date), periods=3)
+    """최대일이 **요청한 날짜 그대로**인 패널을 만든다.
+
+    `bdate_range(end=...)` 만 쓰면 요청일이 주말일 때 금요일로 물러나서, 나이가
+    요청한 것보다 하루 커진다. `_today_minus(4)` 로 경계를 시험하는 테스트가
+    **오늘이 무슨 요일이냐에 따라** 통과/실패했다(수요일이면 today-4 가 토요일).
+    간격은 달력일 산술이라 요일과 무관해야 한다 — 마지막 행을 요청일로 고정한다.
+    """
+    end = pd.Timestamp(max_date)
+    idx = pd.bdate_range(end=end, periods=3)
+    if idx[-1] != end:                       # 주말·휴일이면 물러난 만큼을 되돌린다
+        idx = idx.append(pd.DatetimeIndex([end]))
     return pd.DataFrame({"date": idx, "symbol": "AAA", "close": 1.0})
 
 
@@ -257,7 +267,11 @@ def test_fresh_panel_is_reported_current(paths):
 
 
 def test_weekend_and_holiday_gap_is_still_current(paths):
-    """금요일 패널이 화요일(연휴)까지는 최신으로 취급돼야 한다 — 오탐 방지."""
+    """허용 지연 경계(4일)에 정확히 걸친 패널은 최신이어야 한다 — 오탐 방지.
+
+    동기가 된 실제 상황: 금요일 패널 · 월요일 연휴 · 화요일 조회 = 4일.
+    판정은 달력일 산술(`age <= limit`)이라 오늘이 무슨 요일이든 같아야 한다.
+    """
     _write_latest_panel(paths, "20260816_010101", _today_minus(4))
 
     assert bf.panel_status(paths, output_prefix="daily_features")["current"] is True
