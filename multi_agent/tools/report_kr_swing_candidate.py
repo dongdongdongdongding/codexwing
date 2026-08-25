@@ -262,44 +262,52 @@ def _label_staleness(label_max, as_of) -> int:
 
 # 유니버스 무결성을 재는 창(거래일). 롤링 자기분위로 판정하므로 절대 임계가 없다.
 UNIVERSE_CHECK_WINDOW = 60
+# 「최근 수준」을 정하는 짧은 창. 오늘을 여기에 견준다.
+UNIVERSE_REF_DAYS = 5
 
 
 def _universe_integrity(px, latest) -> Dict[str, Any]:
-    """오늘 패널에서 종목이 **조용히 사라졌는지** 본다.
+    """오늘 패널에서 종목이 **갑자기** 사라졌는지 본다.
 
     왜 이게 1차 위험인가: [W10] 실측으로 758종목 KOSPI 유니버스에서 **한 종목**
-    (042700)만 빠져도 세션당 EV 가 0.2440 → 0.1762 로 움직인다. **−0.068 은
+    (042700)만 빠져도 8년 세션당 EV 가 0.2440 → 0.1762 로 움직인다. **−0.068 은
     6시드 전체 폭(0.0686)과 거의 같다.** 그리고 [W7] 이 파이프라인이 실제로 종목을
     조용히 빠뜨리는 것을 관측했다(`build_px_long` 의 `pull()` 실패 → 로그상 2659↔2660).
 
-    문턱은 발명하지 않는다. 원 패널의 일간 종목수는 실측으로 거의 불변이다
-    (최근 120일: KOSDAQ 변화 정확히 0, KOSPI 최소 −4). 그래서 **직전 창에서
-    관측된 최대 부족분**을 기준으로 삼는다 — 그보다 더 빠졌으면 전례 없는 일이다.
+    🔴 **긴 창의 중앙값에 견주면 안 된다.** 첫 판을 그렇게 짰다가 실물에서 오탐이 났다:
+    KOSPI 가 최근 5일 915·915·915·915·914 로 **안정적인데** 60일 중앙값이 931 이라
+    「17종목 결손」으로 읽혔다. 몇 주 전 수준 이동(상폐·재분류 같은 정상 감소)을
+    오늘의 사고로 오독한 것이고, 그러면 **매일 경고가 떠서 아무도 안 읽는다.**
 
-    **중단하지 않고 기록만 한다.** 대량 상폐나 휴장 같은 정상 사건도 같은 모양이라
-    발행을 막으면 오탐으로 레인을 죽인다. 목적은 **보이게 하는 것**이다.
+    그래서 **최근 수준**(직전 {UNIVERSE_REF_DAYS}거래일 중앙)에 견주고, 문턱은
+    **같은 모양으로 잰 전례의 최대 부족분**으로 잡는다 — 절대 임계를 발명하지 않는다.
+    급락은 잡고 느린 정상 감소는 안 잡는다.
+
+    **중단하지 않고 기록만 한다.** 대량 상폐나 휴장도 같은 모양이라 발행을 막으면
+    오탐으로 레인을 죽인다. 목적은 **보이게 하는 것**이다.
     """
     out: Dict[str, Any] = {}
     hist = px[px["date"] > latest - pd.Timedelta(days=UNIVERSE_CHECK_WINDOW * 2)]
     for mkt in ("KOSPI", "KOSDAQ"):
         g = hist[hist["market"] == mkt].groupby("date")["code"].nunique().sort_index()
-        if len(g) < 10 or latest not in g.index:
+        if len(g) < UNIVERSE_REF_DAYS * 3 or latest not in g.index:
             continue
-        prior = g[g.index < latest]
-        if prior.empty:
+        # 각 날을 「그 날 직전 K일의 중앙」에 견준 부족분. 오늘도 과거도 같은 자로 잰다.
+        ref = g.shift(1).rolling(UNIVERSE_REF_DAYS, min_periods=UNIVERSE_REF_DAYS).median()
+        short = (ref - g).dropna()
+        if latest not in short.index or len(short) < 10:
             continue
-        ref = float(prior.median())
-        worst_before = float((ref - prior).max())        # 전례상 가장 많이 빠졌던 폭
-        short = ref - float(g.loc[latest])
-        rec = {"count": int(g.loc[latest]), "median": ref,
-               "shortfall": round(short, 1), "worst_before": round(worst_before, 1),
-               "anomalous": bool(short > worst_before)}
+        today = float(short.loc[latest])
+        worst_before = float(short[short.index < latest].max())
+        rec = {"count": int(g.loc[latest]), "recent_level": float(ref.loc[latest]),
+               "shortfall": round(today, 1), "worst_before": round(worst_before, 1),
+               "anomalous": bool(today > worst_before)}
         out[mkt] = rec
         if rec["anomalous"]:
-            print(f"[경고] {mkt} 유니버스에서 {short:.0f}종목이 빠졌다 "
-                  f"(중앙 {ref:.0f} → {rec['count']}). 직전 {UNIVERSE_CHECK_WINDOW}거래일 최대 부족분은 "
-                  f"{worst_before:.0f} 이었다 — 전례 없는 폭이다. "
-                  f"한 종목이 세션당 EV 를 0.068 움직인다.", flush=True)
+            print(f"[경고] {mkt} 유니버스에서 {today:.0f}종목이 갑자기 빠졌다 "
+                  f"(최근 수준 {rec['recent_level']:.0f} → {rec['count']}). 직전 "
+                  f"{UNIVERSE_CHECK_WINDOW}거래일에서 관측된 최대 급락은 {worst_before:.0f} 이었다 — "
+                  f"전례 없는 폭이다. 한 종목이 세션당 EV 를 0.068 움직인다.", flush=True)
     return out
 
 
@@ -321,13 +329,26 @@ def score_today(top_k: Optional[int] = None) -> Dict[str, Any]:
             f"  사슬을 다시 지어라: marcap → build_px_delisted.py → build_p2_label.py\n"
             f"  (일일 운영에 이 사슬이 없다. px_long 만 매일 돈다.)")
     if _stale:
+        # 하드스톱이 **언제** 터지는지 매일 같이 말한다. 안 그러면 이 가드는 결함을
+        # 고치지 않고 시한폭탄을 거는 것이 된다 — 어느 날 갑자기 레인이 죽는다.
+        _deadline = (lab["date"].max() + pd.Timedelta(days=EMBARGO_DAYS)
+                     + pd.Timedelta(days=LABEL_STALENESS_HARD_DAYS)).date()
+        _left = (pd.Timestamp(_deadline) - latest).days
         print(f"[경고] 학습 라벨이 엠바고 너머로 {_stale}일 더 낡았다 "
-              f"(라벨 최종 {lab['date'].max().date()}). 사슬 재구축이 필요하다.", flush=True)
+              f"(라벨 최종 {lab['date'].max().date()}). "
+              f"사슬(marcap → px_delisted → p2_label)이 일일 운영에 없다.\n"
+              f"        재구축 없이 두면 {_deadline} 부터 이 도구가 픽을 아예 못 낸다 "
+              f"(남은 {_left}일).", flush=True)
+    out_deadline = None
+    if _stale:
+        out_deadline = str((lab["date"].max() + pd.Timedelta(days=EMBARGO_DAYS)
+                            + pd.Timedelta(days=LABEL_STALENESS_HARD_DAYS)).date())
     # left join: 라벨은 H=5 세션 뒤에야 확정되므로 최근 행은 결측이다. 학습에서만 dropna 한다.
     px = px.merge(lab, on=["code", "date"], how="left")
     out: Dict[str, Any] = {"as_of": str(latest.date()), "picks": [], "gate": {},
                            "label_stale_days": _stale,
                            "label_max": str(lab["date"].max().date()),
+                           "label_hard_stop_on": out_deadline,
                            "universe": _universe_integrity(px, latest)}
     for mkt in ("KOSPI", "KOSDAQ"):
         d = px[(px["market"] == mkt) & (px["liq"] >= LIQ[mkt])]
@@ -591,7 +612,8 @@ def main() -> None:
     if scored.get("label_stale_days"):
         health.append(f"🔴 학습 라벨이 엠바고 너머로 **{scored['label_stale_days']}일** 더 낡았다"
                       f"(최종 {scored.get('label_max')}). `marcap → px_delisted → p2_label` 사슬이"
-                      f" 일일 운영에 없다 — 재구축이 필요하다")
+                      f" 일일 운영에 없다 — 재구축이 필요하다."
+                      f" **{scored.get('label_hard_stop_on')} 부터는 픽을 아예 못 낸다**")
     for _m, _u in (scored.get("universe") or {}).items():
         if _u.get("anomalous"):
             health.append(f"🔴 {_m} 유니버스에서 **{_u['shortfall']:.0f}종목**이 빠졌다"

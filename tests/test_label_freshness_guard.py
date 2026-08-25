@@ -51,3 +51,34 @@ class TestHardStop:
         allowed = as_of - dt.timedelta(days=R.EMBARGO_DAYS)
         dead = allowed - dt.timedelta(days=R.LABEL_STALENESS_HARD_DAYS + 1)
         assert _stale(str(dead), str(as_of)) > R.LABEL_STALENESS_HARD_DAYS
+
+
+class TestTheDeadlineIsAnnounced:
+    """가드가 결함을 고치지 않고 **시한폭탄**이 되는 것을 막는다.
+
+    [W12] 지적: 하드스톱은 라벨을 안 고치면 2026-10-12 에 `SystemExit` 으로 레인을
+    죽인다. 어느 날 갑자기 죽는 것과, 매일 남은 날짜를 세어 주는 것은 다른 물건이다.
+    """
+
+    def test_the_report_carries_the_date_the_lane_would_stop(self):
+        import inspect
+
+        src = inspect.getsource(R)
+        assert "label_hard_stop_on" in src
+
+    def test_the_deadline_is_label_max_plus_embargo_plus_the_hard_limit(self):
+        """실측 상황: 라벨 2026-07-24 · 엠바고 17 · 한계 63 → 2026-10-12."""
+        deadline = (pd.Timestamp("2026-07-24")
+                    + pd.Timedelta(days=R.EMBARGO_DAYS)
+                    + pd.Timedelta(days=R.LABEL_STALENESS_HARD_DAYS)).date()
+        assert str(deadline) == "2026-10-12"
+        # 그 전날까지는 살아 있고, 그날 넘어가면 한계를 넘는다
+        assert _stale("2026-07-24", "2026-10-11") <= R.LABEL_STALENESS_HARD_DAYS
+        assert _stale("2026-07-24", "2026-10-13") > R.LABEL_STALENESS_HARD_DAYS
+
+    def test_a_healthy_label_announces_no_deadline(self):
+        """정상일 때 마감일이 뜨면 다음부터 아무도 안 읽는다."""
+        import inspect
+
+        src = inspect.getsource(R.score_today)
+        assert "out_deadline = None" in src
