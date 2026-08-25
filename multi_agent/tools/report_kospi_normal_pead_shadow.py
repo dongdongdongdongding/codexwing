@@ -58,7 +58,7 @@ LEDGER = PROJECT_ROOT / "runtime_state" / "reports" / "experimental" / "kospi_no
 REPORT_JSON = PROJECT_ROOT / "runtime_state" / "reports" / "experimental" / "kospi_normal_pead_shadow_latest.json"
 REPORT_MD = PROJECT_ROOT / "runtime_state" / "reports" / "experimental" / "kospi_normal_pead_shadow_latest.md"
 
-COST = 0.6  # round-trip cost (%) subtracted from market-excess, matches research
+from modules.trading_costs import KR_ROUNDTRIP_COST_PCT as COST  # 단일 출처(0.215)
 RAW = ["ret_5d", "ret_20d", "ma20_dist", "ma60_dist", "dist_hi20", "dist_lo20"]
 FLOW = ["frgn_acc5_r", "orgn_acc5_r", "smart_acc5_r", "both_buy", "frgn_int"]
 PEAD = ["days_since", "post_earn", "reaction", "post_x_react"]

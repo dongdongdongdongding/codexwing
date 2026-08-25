@@ -36,7 +36,11 @@ def test_resolve_pending_retries_missing_primary_panel_capw(tmp_path, monkeypatc
     summary = shadow.resolve_pending("2026-06-15")
 
     saved = json.loads(ledger.read_text(encoding="utf-8").strip())
-    assert saved["panel_capw_excess"] == 5.4
+    # 수익 +10% − 시장 4.0 − 비용. 비용은 `modules.trading_costs` 단일 출처에서
+    # 오므로 여기 박아 두면 비용이 바뀔 때마다 깨지고, 이 값이 비용에 딸린 값이라는
+    # 사실도 가려진다.
+    expected = round(10.0 - 4.0 - shadow.COST, 3)
+    assert saved["panel_capw_excess"] == expected
     assert saved["ks11_excess"] == 1.23
     assert summary["resolved"] == 1
-    assert summary["panel_capw_excess_avg"] == 5.4
+    assert summary["panel_capw_excess_avg"] == expected

@@ -16,14 +16,20 @@ SCANNED = ("modules", "web", "multi_agent")
 
 
 def test_single_definition_exists():
-    from modules.trading_costs import ROUNDTRIP_COST_PCT
+    from modules.trading_costs import KR_ROUNDTRIP_COST_PCT, US_ROUNDTRIP_COST_PCT
 
-    assert ROUNDTRIP_COST_PCT == 0.215
+    assert KR_ROUNDTRIP_COST_PCT == 0.215
+    # US 는 KR 실측치를 쓰면 안 된다 — 세금 구조가 다르다.
+    assert US_ROUNDTRIP_COST_PCT != KR_ROUNDTRIP_COST_PCT
 
 
 def test_no_other_module_defines_its_own_cost():
-    """`X_COST_PCT = <숫자>` 형태의 정의는 단일 출처 파일에만 있어야 한다."""
-    pat = re.compile(r"^\s*[A-Z_]*COST_PCT\s*=\s*[0-9]", re.M)
+    """`...COST...= <숫자>` 형태의 정의는 단일 출처 파일에만 있어야 한다.
+
+    첫 판에서는 정규식이 `_PCT` 접미사를 요구해 `COST = 0.3` 세 개를 놓쳤다.
+    이름이 아니라 **역할**로 잡아야 한다.
+    """
+    pat = re.compile(r"^\s*[A-Z_]*COST[A-Z_]*\s*=\s*[0-9]", re.M)
     offenders = []
     for top in SCANNED:
         for path in (REPO / top).rglob("*.py"):

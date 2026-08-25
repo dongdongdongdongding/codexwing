@@ -59,7 +59,7 @@ USR = PROJECT_ROOT / "runtime_state" / "reports" / "us_research"
 LEDGER = USR / "nasdaq_session_tape_ledger.jsonl"
 REPORT_JSON = USR / "nasdaq_session_tape_latest.json"
 REPORT_MD = USR / "nasdaq_session_tape_latest.md"
-COST = 0.25
+from modules.trading_costs import US_ROUNDTRIP_COST_PCT as COST  # 🔴 US 는 실측 아님(가정치)
 def _features():
     """생산 피처 49종. `research_nasdaq_daily_edge.FEATURES` 를 단일 출처로 쓴다 —
     복제하면 두 곳이 어긋나고, 이 리포는 그 실패 계열을 반복해서 겪었다."""

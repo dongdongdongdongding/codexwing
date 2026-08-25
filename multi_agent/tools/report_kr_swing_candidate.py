@@ -40,9 +40,12 @@ import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
+import datetime as dt
+from zoneinfo import ZoneInfo
+
 import pandas as pd
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -62,7 +65,7 @@ FEATS = ["ret_1d","ret_3d","ret_5d","ret_10d","ret_20d","ret_60d","ma5_dist","ma
          "close_loc","gap","vol_ratio","vol_trend","turn_z","obv_slope","cmf20","idx_mom20","idx_vol20"]
 LIQ = {"KOSPI": 100e8, "KOSDAQ": 30e8}
 TRAIN_YEARS = 2
-COST = 0.3
+from modules.trading_costs import KR_ROUNDTRIP_COST_PCT as COST  # 단일 출처(0.215)
 LABEL = "t5_5"                     # P2 계약 라벨 (익일시가 진입 · +5% any-touch · 5세션 · 편측)
 P2_LABEL = CACHE / "p2_label.parquet"   # (code,date) -> t5_5/r5_5. px_long 에는 t5_5 가 없다
 GATE_W, GATE_Q, GATE_QUARTERS = 60, 0.7, 3   # 기권 창(거래일) · 분위 · 게이트 재계산 분기수
@@ -199,10 +202,43 @@ def _mkt_weakness_decide(ser: pd.Series, latest: pd.Timestamp, q: float = 0.5) -
             "gate_history_days": int(len(hist))}
 
 
+KST = ZoneInfo("Asia/Seoul")
+KRX_CLOSE = dt.time(15, 30)
+# 종가 확정까지의 여유. 장 종료 직후 몇 분은 데이터가 아직 정리 중이다.
+SETTLE_MINUTES = 10
+
+
+def _drop_unconfirmed_session(px: pd.DataFrame, now=None) -> pd.DataFrame:
+    """세션이 안 끝났으면 그 날 봉을 버린다.
+
+    `px_long` 은 하루에도 여러 번 재구축되고(`PX_REBUILD=1`), 장중에 돌면 **오늘의
+    미완성 봉**이 들어온다. 그걸 그대로 채점하면 아직 바뀔 종가로 픽을 낸다 —
+    실측으로 정산 212건 중 48건(22.6%)이 그렇게 매겨졌고, 그 행들의 `close` 가
+    확정 종가와 맞은 비율은 **5.8%** 였다.
+
+    떨어뜨리는 것이 맞지 그 전날로 물러서는 것이 답이 아닌 이유: 이 레인의 계약은
+    **신호봉 다음 시가 진입**이다. D-1 종가로 신호를 내면 진입은 D 시가여야 하는데
+    장중 실행 시점에 그건 이미 지났다. 즉 **장중 실행은 원래 새 픽을 만들 수 없다.**
+    미확정 봉을 버리면 마지막 확정 세션이 남고, 그 세션 픽이 이미 원장에 있으면
+    중복 방지가 걸러 아무 일도 일어나지 않는다 — 그게 옳은 동작이다.
+    """
+    if px.empty:
+        return px
+    now = now or dt.datetime.now(KST)
+    latest = px["date"].max()
+    same_day = latest.date() == now.date()
+    before_settle = (dt.datetime.combine(now.date(), KRX_CLOSE, tzinfo=KST)
+                     + dt.timedelta(minutes=SETTLE_MINUTES)) > now
+    if same_day and before_settle:
+        return px[px["date"] < latest]
+    return px
+
+
 def score_today(top_k: Optional[int] = None) -> Dict[str, Any]:
     cols = list(dict.fromkeys(["code", "date", "market", "liq", "close"] + FEATS))
     px = pd.read_parquet(CACHE / "px_long.parquet", columns=cols)
     px["date"] = pd.to_datetime(px["date"])
+    px = _drop_unconfirmed_session(px)
     latest = px["date"].max()
     lab = pd.read_parquet(P2_LABEL, columns=["code", "date", LABEL])
     lab["date"] = pd.to_datetime(lab["date"])
@@ -411,15 +447,28 @@ def main() -> None:
     scored = score_today(args.top_k)
     # append only new (date, ticker) rows
     existing = set()
+    # 🔴 `(date,ticker)` 만으로는 계약 깊이가 안 지켜진다. 랭커는 실행마다 다른 종목을
+    # 낼 수 있고(같은 레시피·시드로도 원장 top3 재현율 42.7%/54.4%), 그러면 재실행이
+    # **같은 날에 픽을 더 얹는다.** 실측: 정산 212건 중 33건(15.6%)이 계약 깊이를
+    # 넘었고 9개 일자는 실효 깊이가 5~6 이었다. EV 를 −0.128 끌었다.
+    # 계약은 「(날짜, 시장)당 TOP_K 건」이므로 원장이 그 한도를 직접 지킨다.
+    filled: Dict[Tuple[Any, Any], int] = {}
     if LEDGER.exists():
         for l in LEDGER.read_text(encoding="utf-8").splitlines():
             if l.strip():
                 r = json.loads(l)
                 existing.add((r.get("date"), r.get("ticker")))
+                k = (r.get("date"), r.get("market"))
+                filled[k] = filled.get(k, 0) + 1
     LEDGER.parent.mkdir(parents=True, exist_ok=True)
     with LEDGER.open("a", encoding="utf-8") as fh:
         for p in scored["picks"]:
+            slot = (p["date"], p.get("market"))
+            quota = TOP_K.get(p.get("market"), 1)
+            if filled.get(slot, 0) >= quota:
+                continue          # 이 날·이 시장은 이미 계약만큼 찼다
             if (p["date"], p["ticker"]) not in existing:
+                filled[slot] = filled.get(slot, 0) + 1
                 fh.write(json.dumps({**p, "ft_touch5": None, "policy_ret": None,
                                      "logged_at": now.isoformat()}, ensure_ascii=False) + "\n")
     # P3 교체 스위치 (기본 OFF): AG_SWING_CANDIDATE_ROUTE=1이면 후보픽을 라이브 라우팅 —
