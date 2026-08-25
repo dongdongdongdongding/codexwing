@@ -586,14 +586,32 @@ def main() -> None:
               "ranking_shadow": rank_summary}
     REPORT_JSON.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     gtxt = " / ".join(f"{k} {v.get('gate')}" for k, v in (scored.get("gate") or {}).items())
-    lines = [f"# KR swing CANDIDATE picks — {scored['as_of']}", "",
-             f"- tier: CANDIDATE (후보픽) | label: {LABEL} | 기권 w{GATE_W}q{GATE_Q}: {gtxt or 'n/a'}",
-             f"- forward: {summary}", "",
-             "| Market | Ticker | p | liq(억) | close |", "|---|---|---:|---:|---:|"]
+    # 데이터 건강 상태를 픽 **위에** 적는다. 아래에 적으면 안 읽는다.
+    health = []
+    if scored.get("label_stale_days"):
+        health.append(f"🔴 학습 라벨이 엠바고 너머로 **{scored['label_stale_days']}일** 더 낡았다"
+                      f"(최종 {scored.get('label_max')}). `marcap → px_delisted → p2_label` 사슬이"
+                      f" 일일 운영에 없다 — 재구축이 필요하다")
+    for _m, _u in (scored.get("universe") or {}).items():
+        if _u.get("anomalous"):
+            health.append(f"🔴 {_m} 유니버스에서 **{_u['shortfall']:.0f}종목**이 빠졌다"
+                          f"(중앙 {_u['median']:.0f} → {_u['count']}, 전례 최대 {_u['worst_before']:.0f})."
+                          f" 한 종목이 세션당 EV 를 0.068 움직인다")
+    lines = [f"# KR swing CANDIDATE picks — {scored['as_of']}", ""]
+    if health:
+        lines += ["> **데이터 건강 경고**"] + [f"> - {h}" for h in health] + [""]
+    lines += [f"- tier: CANDIDATE (후보픽) | label: {LABEL} | 기권 w{GATE_W}q{GATE_Q}: {gtxt or 'n/a'}",
+              f"- forward: {summary}", "",
+              "| Market | Ticker | p | liq(억) | close |", "|---|---|---:|---:|---:|"]
     for p in scored["picks"]:
         lines.append(f"| {p['market']} | {p['ticker']} | {p['p']} | {p['liq_eok']} | {p['close']} |")
     REPORT_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(json.dumps({"as_of": scored["as_of"], "picks": len(scored["picks"]), "forward": summary}, ensure_ascii=False))
+    # 일일 운영이 잡는 것은 이 한 줄뿐이다. 건강 필드를 여기 안 실으면 아무도 못 본다.
+    print(json.dumps({"as_of": scored["as_of"], "picks": len(scored["picks"]), "forward": summary,
+                      "label_stale_days": scored.get("label_stale_days"),
+                      "universe_anomalous": sorted(m for m, u in (scored.get("universe") or {}).items()
+                                                   if u.get("anomalous"))},
+                     ensure_ascii=False))
 
 
 if __name__ == "__main__":
