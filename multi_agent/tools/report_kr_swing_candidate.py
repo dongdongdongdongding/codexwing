@@ -269,10 +269,14 @@ UNIVERSE_REF_DAYS = 5
 def _universe_integrity(px, latest) -> Dict[str, Any]:
     """오늘 패널에서 종목이 **갑자기** 사라졌는지 본다.
 
-    왜 이게 1차 위험인가: [W10] 실측으로 758종목 KOSPI 유니버스에서 **한 종목**
-    (042700)만 빠져도 8년 세션당 EV 가 0.2440 → 0.1762 로 움직인다. **−0.068 은
-    6시드 전체 폭(0.0686)과 거의 같다.** 그리고 [W7] 이 파이프라인이 실제로 종목을
-    조용히 빠뜨리는 것을 관측했다(`build_px_long` 의 `pull()` 실패 → 로그상 2659↔2660).
+    왜 보는가: [W7] 이 파이프라인이 실제로 종목을 조용히 빠뜨리는 것을 관측했다
+    (`build_px_long` 의 `pull()` 실패 → 로그상 2659↔2660). **입력이 말없이 줄어드는 것은
+    그 자체로 알아야 할 사건이다** — 없는 데이터로 채점하게 된다.
+
+    ⚠️ **EV 영향의 크기는 주장하지 않는다.** [W10] 이 한 종목 제거에서 −0.068 을 관측했으나
+    [W11] 이 짝지은 부트스트랩으로 재니 **p=0.227** 로 잡음과 구별되지 않는다(56칸 중 유의 0).
+    표본오차가 섭동 효과를 압도한다([W10] 성분분해: sd 0.073/0.155 vs 0.033/0.070).
+    **이 가드의 근거는 「EV 가 얼마 움직인다」가 아니라 「데이터가 사라졌다」다.**
 
     🔴 **긴 창의 중앙값에 견주면 안 된다.** 첫 판을 그렇게 짰다가 실물에서 오탐이 났다:
     KOSPI 가 최근 5일 915·915·915·915·914 로 **안정적인데** 60일 중앙값이 931 이라
@@ -307,7 +311,7 @@ def _universe_integrity(px, latest) -> Dict[str, Any]:
             print(f"[경고] {mkt} 유니버스에서 {today:.0f}종목이 갑자기 빠졌다 "
                   f"(최근 수준 {rec['recent_level']:.0f} → {rec['count']}). 직전 "
                   f"{UNIVERSE_CHECK_WINDOW}거래일에서 관측된 최대 급락은 {worst_before:.0f} 이었다 — "
-                  f"전례 없는 폭이다. 한 종목이 세션당 EV 를 0.068 움직인다.", flush=True)
+                  f"전례 없는 폭이다. 입력이 말없이 줄었다는 뜻이다.", flush=True)
     return out
 
 
@@ -616,9 +620,9 @@ def main() -> None:
                       f" **{scored.get('label_hard_stop_on')} 부터는 픽을 아예 못 낸다**")
     for _m, _u in (scored.get("universe") or {}).items():
         if _u.get("anomalous"):
-            health.append(f"🔴 {_m} 유니버스에서 **{_u['shortfall']:.0f}종목**이 빠졌다"
-                          f"(중앙 {_u['median']:.0f} → {_u['count']}, 전례 최대 {_u['worst_before']:.0f})."
-                          f" 한 종목이 세션당 EV 를 0.068 움직인다")
+            health.append(f"🔴 {_m} 유니버스에서 **{_u['shortfall']:.0f}종목**이 갑자기 빠졌다"
+                          f"(최근 수준 {_u['recent_level']:.0f} → {_u['count']},"
+                          f" 전례 최대 {_u['worst_before']:.0f}) — 입력이 말없이 줄었다")
     lines = [f"# KR swing CANDIDATE picks — {scored['as_of']}", ""]
     if health:
         lines += ["> **데이터 건강 경고**"] + [f"> - {h}" for h in health] + [""]
