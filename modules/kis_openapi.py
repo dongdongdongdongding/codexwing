@@ -804,6 +804,23 @@ class KISOpenAPIClient:
             },
         )
 
+    def asking_price(self, symbol: str, *, market_div: str = "J") -> Dict[str, Any]:
+        """호가 잔량 스냅샷(10단계 매수/매도 + 예상체결).
+
+        `asking_price` 엔드포인트는 2026-08-26 까지 **선언만 돼 있고 호출되지 않았다.**
+        보드 §2153 이 「다시 판다면 가격 밖이어야 한다」며 지목한 축이 이것이다 —
+        랭커의 35피처가 전부 가격·거래량 파생이라([W6] 실측: 차트이력 20열이 |corr|≥0.5 로
+        7/20 이 기존 열의 재부호화) 호가는 **몇 안 되는 진짜 다른 축**이다.
+
+        ⚠️ **스냅샷 TR 이라 과거를 못 받는다.** 오늘 수집을 시작하지 않으면 6개월 뒤에도
+        표본이 0 이다. 그래서 「검정한 뒤 켠다」가 성립하지 않는 축이다 — 켜 두고 쌓아야 잰다.
+        """
+        code = normalize_kr_stock_code(symbol)
+        return self._request_json(
+            "asking_price",
+            params={"FID_COND_MRKT_DIV_CODE": market_div, "FID_INPUT_ISCD": code},
+        )
+
     def daily_minute_bars(
         self,
         symbol: str,

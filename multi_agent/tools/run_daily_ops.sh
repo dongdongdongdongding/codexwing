@@ -207,6 +207,16 @@ fi
 # --- Research-cache data refresh (keep the model lanes fresh) ------------------------------------
 # These run BEFORE the model producers so swing/intraday train + build their universe on current
 # data. Sources live in ~/research_cache (outside the repo). Both are date-incremental/idempotent.
+# 호가 잔량 스냅샷. 2026-08-26 추가.
+# 랭커의 35피처가 전부 가격·거래량 파생이고, 차트이력 20열을 얹어 봤더니 같은 축의 재부호화였다.
+# 호가는 몇 안 되는 진짜 다른 축인데 **엔드포인트가 선언만 돼 있고 호출된 적이 없었다.**
+# 🔴 스냅샷 TR 이라 과거를 못 받는다 — 「검정한 뒤 켠다」가 성립하지 않는다. 켜 두고 쌓아야 잰다.
+# 아무것도 바꾸지 않는다: 캐시에 쓰기만 하고 픽 경로를 안 건드린다.
+# ⚠️ 이 스텝은 마감 후에 돈다 → 시간외 호가다. 장중 스냅샷은 launchd 슬롯이 필요하다(운영자 결정).
+if [[ "${AG_ORDERBOOK_SNAPSHOT:-1}" == "1" && -f "${HOME}/research_cache/collect_orderbook.py" ]]; then
+  echo "[STEP] orderbook_snapshot (호가 잔량)"
+  run_optional "orderbook_snapshot" python3 "${HOME}/research_cache/collect_orderbook.py"
+fi
 # 학습 라벨 사슬 (marcap -> px_delisted -> p2_label). 2026-08-26 추가.
 # 이게 없어서 랭커가 그날 피처로 채점하면서 **한 달 된 라벨로 학습**하고 있었다 —
 # px_long 만 매일 돌고 라벨 사슬은 어디에도 없었으며, 아무것도 그걸 보지 않았다.
