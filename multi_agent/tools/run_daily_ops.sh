@@ -207,6 +207,15 @@ fi
 # --- Research-cache data refresh (keep the model lanes fresh) ------------------------------------
 # These run BEFORE the model producers so swing/intraday train + build their universe on current
 # data. Sources live in ~/research_cache (outside the repo). Both are date-incremental/idempotent.
+# 학습 라벨 사슬 (marcap -> px_delisted -> p2_label). 2026-08-26 추가.
+# 이게 없어서 랭커가 그날 피처로 채점하면서 **한 달 된 라벨로 학습**하고 있었다 —
+# px_long 만 매일 돌고 라벨 사슬은 어디에도 없었으며, 아무것도 그걸 보지 않았다.
+# 방치하면 신선도 가드가 발동해 레인이 픽을 아예 못 낸다.
+# 멱등이다: marcap 이 안 늘면 아무것도 안 하고 끝난다. 보통 수십 초, 갱신 시 ~20초 재구축.
+if [[ "${AG_LABEL_CHAIN_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/refresh_label_chain.py" ]]; then
+  echo "[STEP] label_chain_refresh (marcap → px_delisted → p2_label)"
+  run_optional "label_chain_refresh" python3 "${HOME}/research_cache/refresh_label_chain.py"
+fi
 if [[ "${AG_PX_LONG_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/build_px_long.py" ]]; then
   # 일봉 px_long: full rebuild to today (PX_REBUILD writes a .tmp then atomic-swaps, so readers keep
   # the old panel until it finishes). Heavy (~30-60min). Disable with AG_PX_LONG_REFRESH=0.
