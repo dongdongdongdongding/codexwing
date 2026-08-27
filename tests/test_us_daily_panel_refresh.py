@@ -71,7 +71,19 @@ def test_stale_raw_is_detected(paths):
 
 
 def test_fresh_raw_is_not_flagged(paths):
-    _write_raw(paths, "AAA", _raw_frame("AAA", _today_minus(10), 5))
+    """최신봉이 어제인 raw 는 신선하다 — 오늘이 무슨 요일이든.
+
+    시작일을 고정하고 영업일 N 개를 세면 최신봉 나이가 요일에 따라 4~6일을 오간다.
+    한계가 5일이라 특정 요일에만 깨졌다(같은 병을 `_panel_frame` 에서 이미 고쳤다).
+    검사 대상은 「최신봉이 얼마나 낡았나」이므로 **끝을 어제로 고정**해서 짓는다.
+    """
+    end = pd.Timestamp(_today_minus(1))
+    idx = pd.bdate_range(end=end, periods=5)
+    if idx[-1] != end:                      # 어제가 주말이면 물러난 만큼 되돌린다
+        idx = idx.append(pd.DatetimeIndex([end]))
+    frame = _raw_frame("AAA", str(idx[0].date()), len(idx))
+    frame["date"] = idx
+    _write_raw(paths, "AAA", frame)
 
     assert bf._raw_stale_reason(bf._raw_path(paths, "AAA")) is None
 

@@ -316,7 +316,7 @@ def _universe_integrity(px, latest) -> Dict[str, Any]:
 
 
 def score_today(top_k: Optional[int] = None) -> Dict[str, Any]:
-    cols = list(dict.fromkeys(["code", "date", "market", "liq", "close"] + FEATS))
+    cols = list(dict.fromkeys(["code", "date", "market", "liq", "close", "volume"] + FEATS))
     px = pd.read_parquet(CACHE / "px_long.parquet", columns=cols)
     px["date"] = pd.to_datetime(px["date"])
     px = _drop_unconfirmed_session(px)
@@ -359,6 +359,13 @@ def score_today(top_k: Optional[int] = None) -> Dict[str, Any]:
         tr = d[(d["date"] < latest - pd.Timedelta(days=EMBARGO_DAYS))
                & (d["date"] >= latest - pd.DateOffset(years=TRAIN_YEARS))].dropna(subset=[LABEL])
         te = d[d["date"] == latest].dropna(subset=FEATS[:6]).copy()
+        # 신호일에 거래가 없던 종목은 **후보에서** 뺀다(학습에서는 안 뺀다 — 함정 3).
+        # 유동성 필터가 롤링 `liq` 라 거래정지 시작 후에도 한참 통과한다. 실측([E4]·원장 검증):
+        # 정지일 픽이 백테 4,632건 중 98건(거래당 −3.94 vs 정상 +1.57)이고 **라이브 원장에도
+        # 이미 6건이 나가 평균 −5.75%** 였다. 신호일 거래량은 채점 시점에 관측 가능하므로
+        # 미래정보가 아니다. `px_long` 은 정지일 open/high/low 를 종가로 평탄화하므로
+        # 그 봉 위의 피처는 합성값이다 — 채점 대상이 아니라 학습 재료로만 쓴다.
+        te = te[te["volume"].fillna(0) > 0]
         if len(tr) < 20000 or te.empty:
             continue
         te["p"] = _fit(tr).predict_proba(te[FEATS].clip(-1e4, 1e4))[:, 1]
