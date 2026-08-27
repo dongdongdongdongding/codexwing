@@ -233,6 +233,14 @@ if [[ "${AG_PX_LONG_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/build_px_l
   run_optional "px_long_refresh" \
     env PX_REBUILD=1 PX_END="${DATE_TARGET}" python3 "${HOME}/research_cache/build_px_long.py"
 fi
+# 빈티지 매니페스트. 2026-08-27 추가. 기준선이 세 라운드 연속 실행 중인 에이전트 아래에서
+# 말없이 움직였다 — 라벨 사슬이 매일 돌게 되면서 이제 구조적으로 매일 움직인다.
+# 이 스텝은 「지금 입력이 무엇인지」를 몇 초에 기록해, 에이전트가 낡은 기준선을
+# 40분 뒤가 아니라 시작 전에 감지하게 한다. 재계산 의무(규율 17)는 그대로다.
+if [[ "${AG_VINTAGE_MANIFEST:-1}" == "1" && -f "${HOME}/research_cache/write_vintage_manifest.py" ]]; then
+  echo "[STEP] vintage_manifest"
+  run_optional "vintage_manifest" python3 "${HOME}/research_cache/write_vintage_manifest.py"
+fi
 # 경량 증분 업데이터 (수급/신용/공시) — 2026-07-08: 분봉 백필이 KIS 스로틀링으로 5h+ 걸리며
 # 뒤 스텝들을 며칠씩 굶기던 문제(수급 7/6, 신용 7/3 정지) → 무거운 백필 "앞"으로 이동.
 if [[ "${AG_FLOW_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/flow_update.py" ]]; then
