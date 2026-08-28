@@ -138,9 +138,32 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
     res = [r for r in rows if r.get("policy_ret") is not None]
     if not res:
         return {"resolved": 0}
-    rets = [float(r["policy_ret"]) - COST for r in res]
-    return {"resolved": len(res), "touch5_pct": round(float(np.mean([r["touch5"] for r in res])) * 100, 1),
-            "ev_net_avg": round(float(np.mean(rets)), 2), "worst": round(float(np.min(rets)), 2)}
+
+    def _stats(sub):
+        if not sub:
+            return {"resolved": 0}
+        r = [float(x["policy_ret"]) - COST for x in sub]
+        return {"resolved": len(sub),
+                "touch5_pct": round(float(np.mean([x["touch5"] for x in sub])) * 100, 1),
+                "ev_net_avg": round(float(np.mean(r)), 2), "worst": round(float(np.min(r)), 2)}
+
+    # 구성 전환 경계. 표지는 `xq` 다 — **편입자격 컷(A1)이 발행 시점에 쓰는 필드**이고
+    # 그 코드가 들어오기 전 픽에는 없다. `contract_h` 는 표지가 아니다: KR 레인에서 확인했듯
+    # 정산 시점에도 찍힐 수 있어 전환 이전 픽에 붙는다.
+    #
+    # 왜 필요한가: 전체를 뭉치면 옛 배선(터치 계약 5세션·편입컷 없음)의 성적이 A1 셀의
+    # 성적처럼 읽힌다. 실측 시점 기준 정산 56건 중 **55건이 전환 이전**이었다.
+    cur = [r for r in res if r.get("xq") is not None]
+    prev = [r for r in res if r.get("xq") is None]
+    out = dict(_stats(res))
+    out["epoch"] = {"current": _stats(cur), "previous": _stats(prev),
+                    "current_picks": sum(1 for r in rows if r.get("xq") is not None)}
+    if len(cur) < 30:
+        out["epoch_note"] = (
+            f"위 수치는 **구성 전환 이전** 픽이 지배한다(정산 {len(prev)}건). "
+            f"현행 A1 구성은 픽 {out['epoch']['current_picks']}건 · 정산 {len(cur)}건 — "
+            f"**아직 판정 표본이 아니다**(레인 자체 승격 기준: forward n>=30).")
+    return out
 
 
 def _latest_panel() -> str:
