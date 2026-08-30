@@ -112,7 +112,15 @@ export const api = {
   opsStatus: () => j<any>(`/api/ops/status`),
   scanStatus: () => j<{ status: string; progress: number; current: string; target?: string; steps: Array<{ step: string; ok: boolean; note: string }>; finished_at?: string }>(`/api/ops/scan`),
   scanTargets: () => j<{ targets: Array<{ key: string; label: string }> }>(`/api/ops/scan-targets`),
-  scanStart: async (target = "all") => fetch(`${await baseP}/api/ops/scan?target=${target}`, { method: "POST", headers: authHeaders }).then((r) => r.json()),
+  // POST 만 `r.ok` 를 안 봐서 403(원격 트리거 차단)이 **정상 결과처럼 resolve** 됐다 —
+  // 화면에는 「버튼을 눌러도 아무 일 없음」으로만 나타났다. 서버가 `detail` 에 이유를
+  // 적어 보내므로 그걸 그대로 띄운다.
+  scanStart: async (target = "all") => {
+    const r = await fetch(`${await baseP}/api/ops/scan?target=${target}`, { method: "POST", headers: authHeaders });
+    const body = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(body?.detail || `스캔 시작 실패 (${r.status})`);
+    return body;
+  },
   market: () => j<any>(`/api/market`),
   theme: () => j<any>(`/api/theme`),
   scans: (source = "", market = "") => j<{ count: number; scans: ScanPost[] }>(`/api/scans?source=${source}&market=${market}&limit=60`),

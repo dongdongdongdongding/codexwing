@@ -13,8 +13,21 @@ export function Ops() {
   const refresh = () => { api.opsStatus().then(setStatus).catch(() => {}); api.scanStatus().then(setScan).catch(() => {}); };
   useEffect(() => { refresh(); api.scanTargets().then((d) => setTargets(d.targets)).catch(() => {}); const t = setInterval(() => api.scanStatus().then(setScan).catch(() => {}), 3000); return () => clearInterval(t); }, []);
 
+  const [err, setErr] = useState<string>("");
+
   const running = scan?.status === "running";
-  const start = async () => { await api.scanStart(target); setTimeout(refresh, 500); };
+  // 버튼이 「안 눌리는」 것처럼 보이던 이유: `scanStart` 가 던져도 아무것도 안 보였다.
+  // 서버는 403 에 이유를 담아 보낸다(원격 트리거 차단 — `require_loopback`). 그걸 버리면
+  // 화면에는 「눌러도 아무 일 없음」으로만 남는다. 실패를 말하게 한다.
+  const start = async () => {
+    setErr("");
+    try {
+      await api.scanStart(target);
+      setTimeout(refresh, 500);
+    } catch (e: any) {
+      setErr(e?.message || String(e) || "스캔 시작 실패");
+    }
+  };
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
@@ -38,6 +51,12 @@ export function Ops() {
             </div>
           )}
         </div>
+        {err && (
+          <div style={{ marginTop: 10, fontSize: 12, color: C.down, background: `${C.down}1A`,
+                        border: `1px solid ${C.down}44`, borderRadius: 8, padding: "8px 12px" }}>
+            ✗ {err}
+          </div>
+        )}
         {scan?.steps?.length > 0 && (
           <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
             {scan.steps.map((s: any, i: number) => (

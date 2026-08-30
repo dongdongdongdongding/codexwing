@@ -827,16 +827,30 @@ def nasdaq_picks():
     return _a_picks_ledger("nasdaq_swing")
 
 
+# 만료 픽을 화면에서 내리는 문턱(운영자 결정 2026-08-31). 매수일이 이 일수보다 더 지나면 뺀다.
+# `expired` 마킹은 그대로 둔다 — 하루이틀 지난 픽은 「왜 못 사는지」가 정보이지만,
+# 닷새 넘게 지난 픽은 정보가 아니라 잡동사니다.
+# ⚠️ 숨긴 개수는 반드시 센다. `overview` 주석이 「빼면 왜 없는지 알 수 없다」고 적어 둔
+# 그 원칙을 지키려면, 조용히 사라지는 게 아니라 **몇 건이 만료로 내려갔는지**가 보여야 한다.
+EXPIRED_HIDE_DAYS = 5
+
+
+def _drop_long_expired(rows):
+    """(남길 행, 숨긴 수). `stale_days` 는 `_pick_is_stale` 이 채운다."""
+    kept = [r for r in rows if (r.get("stale_days") or 0) <= EXPIRED_HIDE_DAYS]
+    return kept, len(rows) - len(kept)
+
+
 def picks(lane=None):
     if lane == "b_market_neutral":
-        return b_picks()
+        return _drop_long_expired(b_picks())[0]
     # nasdaq_swing 특례를 없앴다 — LANES 에 등록됐으니 a_picks 가 그대로 처리한다.
     # 특례가 남아 있으면 그 레인만 순위·만료·EV기준을 다른 경로로 받게 된다.
     if lane:
-        return a_picks(lane)
+        return _drop_long_expired(a_picks(lane))[0]
     # 전체: KR(A) + B + NASDAQ. 확률(p) 기준 통일 정렬 → 개요와 픽 순서 일치.
     # nasdaq_swing 은 LANES 에 등록돼 a_picks() 가 이미 낸다 — 다시 더하면 중복이다.
-    allp = a_picks() + b_picks()
+    allp, _ = _drop_long_expired(a_picks() + b_picks())
     return sorted(allp, key=lambda x: (x.get("prob") is None, -(x.get("prob") or 0)))
 
 
@@ -1712,6 +1726,8 @@ def pick_blockers(p):
 
 
 def overview(top=6):
+    # 숨긴 개수를 세려면 필터 **전** 목록이 필요하다 — `picks()` 는 이미 걸러서 준다.
+    _raw, _hidden = _drop_long_expired(a_picks() + b_picks())
     allp = picks()
     for p in allp:
         p["blockers"] = pick_blockers(p)
@@ -1732,7 +1748,10 @@ def overview(top=6):
                        "B": len([p for p in allp if p["signal_class"] == "B"]),
                        # 총 건수만 내놓으면 화면이 그걸 '살 수 있는 픽 수'로 읽는다.
                        "actionable": len(actionable),
-                       "blocked": len(allp) - len(actionable)}}
+                       "blocked": len(allp) - len(actionable),
+                       # 조용히 사라지지 않게 — 만료 N일 초과로 화면에서 내린 수.
+                       "hidden_expired": _hidden},
+            "hidden_expired_days": EXPIRED_HIDE_DAYS}
 
 
 # ── 매수 타이밍 (§26 후속, 운영자 요청): "지금 가격에 사도 되나" — 계약 오버레이 판단 ──
