@@ -841,17 +841,30 @@ def _drop_long_expired(rows):
     return kept, len(rows) - len(kept)
 
 
+def _with_blockers(rows):
+    """모든 픽에 차단 사유를 같은 함수로 붙인다.
+
+    실측 결함(2026-09-02): `/api/picks` 는 AXTI 에 `blockers` 키를 **아예 안 붙였고**
+    `/api/overview` 는 같은 픽에서 2건(관측전용·폐기선 아래)을 찾았다 — 조립 경로마다
+    붙이는 곳이 달라서 생긴 일이다. **픽 페이지 쪽이 더 관대해서**, 개요가 차단이라고
+    말하는 픽을 살 수 있는 것처럼 보여주고 있었다. 화면이 스스로 모순되면 안 된다.
+    """
+    for r in rows:
+        r["blockers"] = pick_blockers(r)
+    return rows
+
+
 def picks(lane=None):
     if lane == "b_market_neutral":
-        return _drop_long_expired(b_picks())[0]
+        return _with_blockers(_drop_long_expired(b_picks())[0])
     # nasdaq_swing 특례를 없앴다 — LANES 에 등록됐으니 a_picks 가 그대로 처리한다.
     # 특례가 남아 있으면 그 레인만 순위·만료·EV기준을 다른 경로로 받게 된다.
     if lane:
-        return _drop_long_expired(a_picks(lane))[0]
+        return _with_blockers(_drop_long_expired(a_picks(lane))[0])
     # 전체: KR(A) + B + NASDAQ. 확률(p) 기준 통일 정렬 → 개요와 픽 순서 일치.
     # nasdaq_swing 은 LANES 에 등록돼 a_picks() 가 이미 낸다 — 다시 더하면 중복이다.
     allp, _ = _drop_long_expired(a_picks() + b_picks())
-    return sorted(allp, key=lambda x: (x.get("prob") is None, -(x.get("prob") or 0)))
+    return _with_blockers(sorted(allp, key=lambda x: (x.get("prob") is None, -(x.get("prob") or 0))))
 
 
 # ── 실시간 시세 (KIS, 타임아웃 가드 — 행 방지) ──────────────
@@ -1728,9 +1741,10 @@ def pick_blockers(p):
 def overview(top=6):
     # 숨긴 개수를 세려면 필터 **전** 목록이 필요하다 — `picks()` 는 이미 걸러서 준다.
     _raw, _hidden = _drop_long_expired(a_picks() + b_picks())
-    allp = picks()
-    for p in allp:
-        p["blockers"] = pick_blockers(p)
+    # 붙이는 규칙은 `_with_blockers` 한 곳에만 둔다(여기서 다시 짜면 또 갈라진다).
+    # 그래도 **가정하지는 않는다** — `picks` 를 갈아끼우는 호출자가 있으면 KeyError 로 화면이 죽는다.
+    # 멱등이라 두 번 불러도 같다.
+    allp = _with_blockers(picks())
     # 확률 순서를 그대로 자르면 **살 수 없는 픽이 첫 화면 맨 위**에 온다.
     # 실측(2026-08-20): 만료 1일 지난 08-18 장중 픽이 08-20 스윙 픽들보다 위였다.
     # 실행 가능한 것을 먼저 세우고 그 안에서 확률로 정렬한다. 차단된 픽을 숨기지는 않는다 —
