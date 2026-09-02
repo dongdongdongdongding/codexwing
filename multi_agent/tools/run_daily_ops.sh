@@ -447,7 +447,11 @@ fi
 #   이름 하나·기본값 하나·기록 한 곳으로 정리한다. 기본값 1 은 종전 실효 동작(항상 ON)을
 #   그대로 옮긴 것이며, 운영자 결정도 이 레인은 수리해 존속이다. 끄려면 =0 을 주면 되고
 #   그때는 아래 else 가 [SKIP] 을 남긴다(꺼진 사실이 로그에 보여야 한다).
-if [[ "${AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE:-1}" == "1" ]]; then
+# 🔴 기본값 0 (2026-09-02 운영자 결정: 은퇴). 후계 `report_nasdaq_session_tape`(A1)가 감사를 통과했고,
+# 이 레인은 42거래일간 0픽이다 — 수집은 정상인데 승격 게이트가 표본 부족으로 막혀 있고,
+# 그 원인이 `multi_year_overnight_provider_not_loaded`(유료 영역)라 이 데이터로는 안 풀린다.
+# 되살리려면 `AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE=1` 을 명시해야 한다.
+if [[ "${AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE:-0}" == "1" ]]; then
   # NASDAQ regular-close session edge lane (2026-06-30): promotes the strongest recent
   # regular_close session candidate into the operator-enabled new-web scan lane. It still
   # carries sample-limit trace metadata until multi-year 04:00-20:00 ET plus 20:00-04:00 ET

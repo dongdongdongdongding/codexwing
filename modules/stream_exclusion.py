@@ -94,6 +94,19 @@ RETIRED_LANES: Dict[str, str] = {
     #     원장에는 터치 성공으로 기록돼 있다(`services.py:335 _entry_attainability` docstring).
     # 과거 픽 해석을 위해 LANES 에는 남긴다 — 레인을 지우면 ledger="" 가 되어 /api/picks 가 죽는다.
     "kospi_intraday": "killed",
+
+    # 2026-09-02 운영자 결정: 은퇴. 근거는 「엣지가 없다」가 아니라 **「이 데이터로는 검증이 끝나지 않는다」**.
+    #   · 후계 레인 `nasdaq_session_tape`(A1: 편입자격 0.10 · TP5/H20)가 **감사를 통과했다** —
+    #     [F4] 가 [U]류 결함(시드-0·이산널 중복추출·풀링)을 찾으러 들어가 하나도 못 찾았고,
+    #     새 패널 6시드 전면 재측정에서 net +1.431 · CI 6/6 · 형태일치 널 본페로니 통과.
+    #   · 반면 이 레인은 **42거래일간 0픽**이다. 수집은 정상인데(42,520행·120종목·오류 0)
+    #     자기 승격 게이트가 `missing_n · missing_days · missing_ret5` 로 막혀 있다.
+    #   · 막힌 이유가 구조적이다: `sample_limit_warning = recent_60d_yfinance_5m_intraday_only;
+    #     multi_year_overnight_provider_not_loaded`. **다년 장중 공급원 없이는 표본이 안 찬다** — 유료 영역.
+    #   · 전진 원장은 2026-06-26 한 행에서 멈춰 있고 파일 mtime 만 매일 새로 찍혔다
+    #     (「append 0 에도 전량 재기록」 함정 — 센티넬이 내용 신선도로 잡아냈다).
+    # 과거 픽 해석을 위해 LANES 에는 남긴다 — 레인을 지우면 ledger="" 가 되어 /api/picks 가 죽는다.
+    "nasdaq_session_edge": "retired",
 }
 
 UNGATED_PUBLISHED_LANES = frozenset({
