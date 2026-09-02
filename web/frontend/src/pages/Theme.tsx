@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import { useApi } from "../components/useApi";
+import { LoadFail } from "../components/LoadFail";
 import { C } from "../theme";
 import { Card } from "../components/ui";
 
 // ⑥ 테마 네트워크 — primary_theme 그룹. 오늘 픽이 겹친 '주도 테마' 상단. (가치사슬 그래프는 후속)
 export function Theme() {
-  const [d, setD] = useState<any>(null);
   const [open, setOpen] = useState<string | null>(null);
-  useEffect(() => { api.theme().then(setD).catch(() => {}); }, []);
+  const { data: d, err } = useApi<any>(() => api.theme());
+  if (err) return <LoadFail err={err} what="테마 네트워크" />;
   if (!d) return <div style={{ height: 200, background: C.surface, borderRadius: 12, opacity: .5 }} />;
   const max = Math.max(...d.themes.map((t: any) => t.size), 1);
   return (

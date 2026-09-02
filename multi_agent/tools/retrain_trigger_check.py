@@ -58,7 +58,13 @@ def _count_outcomes_since(cutoff: datetime | None) -> int:
                 row = json.loads(line)
             except Exception:
                 continue
-            ts_raw = row.get("recorded_at") or row.get("outcome_recorded_at") or row.get("created_at")
+            # 🔴 2026-09-02: 여기서 `recorded_at`/`outcome_recorded_at`/`created_at` 만 봤는데
+            #    실제 행에는 **셋 다 0건**이고 `updated_at` 이 3,430건이다. 모든 행이 건너뛰어져
+            #    카운트가 **영원히 0** 이었다 — 모델이 2026-07-03 이후 재학습된 적이 없고,
+            #    고치지 않으면 성과가 아무리 쌓여도 영영 안 된다. 센티넬은 산출물 신선도로만
+            #    잡아서 「재학습 불필요」라는 정상 응답과 구분되지 않았다.
+            ts_raw = (row.get("updated_at") or row.get("recorded_at")
+                      or row.get("outcome_recorded_at") or row.get("created_at"))
             if not ts_raw:
                 continue
             try:
@@ -68,7 +74,11 @@ def _count_outcomes_since(cutoff: datetime | None) -> int:
             if row_ts.tzinfo is None:
                 row_ts = row_ts.replace(tzinfo=timezone.utc)
             if cutoff is None or row_ts > cutoff:
-                count += 1
+                # 한 행 = 한 성과가 아니라 **한 실행의 요약**이다
+                # (`run_id`·`resolved_count`·`expired_count`·`checked_pending`).
+                # 행을 세면 실행 횟수를 세게 된다 — 문턱 300 은 성과 수를 뜻하므로
+                # 그 실행이 실제로 정산한 건수를 더한다. 실측: 실행 2,080건 = 성과 4,684건.
+                count += int(row.get("resolved_count") or 0) if "resolved_count" in row else 1
     return count
 
 

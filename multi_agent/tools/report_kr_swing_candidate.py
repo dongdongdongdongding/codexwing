@@ -604,7 +604,11 @@ def main() -> None:
             print(json.dumps({"route_error": repr(exc)[:200]}))
     summary = resolve_pending(pd.Timestamp(now.date()))
     rank_summary = None
-    if os.getenv("AG_SWING_RANKING_SHADOW", "1").strip() in ("1", "true", "True") and scored.get("ranking"):
+    # 🔴 기본값 0 (2026-09-02). 사전등록 킬이 **2026-08-16 에 선언됐는데 기본값이 1 로 남아 있었다** —
+    # 그 뒤로 1,304행이 더 쌓였고 센티넬 `kr_ranking_shadow_kill_enforced`(critical)가
+    # 「죽은 보드가 생산을 재개했다」로 발동해 있었다. 킬은 선언만으로 집행되지 않는다.
+    # 되살리려면 명시적으로 `AG_SWING_RANKING_SHADOW=1` 을 줘야 하고, 그건 킬을 되돌리는 결정이다.
+    if os.getenv("AG_SWING_RANKING_SHADOW", "0").strip() in ("1", "true", "True") and scored.get("ranking"):
         try:
             rank_summary = ranking_shadow(scored["ranking"], now.isoformat())
         except Exception as exc:

@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import { useApi } from "../components/useApi";
+import { LoadFail } from "../components/LoadFail";
 import { C, fmt, pct, signColor } from "../theme";
 import { Card, Term, MarketBadge } from "../components/ui";
 
 // ⑤ 시장·근거 — 지수/레짐 + 공시(DART)·수급(flow) 근거 피드.
 export function Market() {
-  const [m, setM] = useState<any>(null);
-  useEffect(() => { api.market().then(setM).catch(() => {}); }, []);
+  const { data: m, err } = useApi<any>(() => api.market());
+  if (err) return <LoadFail err={err} what="시장·근거" />;
   if (!m) return <div style={{ height: 200, background: C.surface, borderRadius: 12, opacity: .5 }} />;
   return (
     <div style={{ display: "grid", gap: 16 }}>

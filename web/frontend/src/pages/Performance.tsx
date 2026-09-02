@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, Performance as PF, Archive as AR, ContractPerf } from "../api";
+import { useApi } from "../components/useApi";
+import { LoadFail } from "../components/LoadFail";
 import { C, fmt, pct, signColor } from "../theme";
 import { Card, Term, MarketBadge, WarnBadge } from "../components/ui";
 
@@ -18,10 +20,10 @@ export function Performance() {
 }
 
 function Summary() {
-  const [pf, setPf] = useState<PF | null>(null);
-  const [cp, setCp] = useState<ContractPerf | null>(null);
   const [basis, setBasis] = useState<"alpha" | "abs">("alpha");
-  useEffect(() => { api.performance().then(setPf).catch(() => {}); api.contractPerformance().then(setCp).catch(() => {}); }, []);
+  const { data: pf, err } = useApi<PF>(() => api.performance());
+  const { data: cp } = useApi<ContractPerf>(() => api.contractPerformance());
+  if (err) return <LoadFail err={err} what="성과 집계" />;
   if (!pf) return <Sk />;
   const o = pf.overall;
   const mainVal = basis === "alpha" ? o.alpha_mean : o.abs_mean;

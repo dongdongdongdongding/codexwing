@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, TimingPick } from "../api";
 import { useIsMobile } from "../useIsMobile";
+import { LoadFail } from "../components/LoadFail";
 import { C, fmt } from "../theme";
 import { MarketBadge } from "../components/ui";
 import { Chart } from "../components/Chart";
@@ -109,9 +110,13 @@ export function Timing() {
   const [laneSel, setLaneSel] = useState("");
   const [sel, setSel] = useState<TimingPick | null>(null);
   const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string>("");
 
   useEffect(() => {
-    const load = () => api.buyTiming(5).then((d) => { setPicks(d.picks); setAsof(d.asof); setCov((d as any).coverage_note ?? null); setLoading(false); }).catch(() => setLoading(false));
+    // 실패해도 로딩만 끄면 화면은 「계산 중…」이 사라진 빈 페이지가 된다 — 이유를 남긴다.
+    const load = () => api.buyTiming(5)
+      .then((d) => { setPicks(d.picks); setAsof(d.asof); setCov((d as any).coverage_note ?? null); setErr(""); setLoading(false); })
+      .catch((e: any) => { setErr(e?.message || String(e) || "불러오지 못했다"); setLoading(false); });
     load();
     const t = setInterval(load, 30000);   // 픽 탭과 동일하게 주기 갱신 (시세→신호등/여력/트레일 재계산)
     return () => clearInterval(t);
@@ -127,6 +132,7 @@ export function Timing() {
   const lanes = useMemo(() => Array.from(new Set(picks.map((p) => p.lane_label))), [picks]);
   const shown = picks.filter((p) => (!dateSel || p.scan_date === dateSel) && (!laneSel || p.lane_label === laneSel));
 
+  if (err) return <LoadFail err={err} what="매수 타이밍" />;
   if (loading) return <div style={{ color: C.mut, padding: 40, textAlign: "center" }}>계약 대비 시세 계산 중…</div>;
   if (!picks.length) return <div style={{ color: C.mut, padding: 40, textAlign: "center" }}>최근 5거래일 발행 픽이 없습니다.</div>;
 
