@@ -140,11 +140,15 @@ def test_unmapped_lanes_are_excluded_without_inheriting_another_verdict(tmp_path
 
 
 def test_ungated_lanes_are_excluded_regardless_of_gate_availability(tmp_path):
-    """게이트 유무와 무관하다 — 애초에 게이트가 판단하지 않는 레인이기 때문이다."""
+    """게이트 유무와 무관하다 — 애초에 게이트가 판단하지 않는 레인이기 때문이다.
+
+    2026-09-02 운영자 결정으로 **은퇴**했다. 불변식(발행 불가)은 그대로고 사유만 바뀐다 —
+    은퇴는 게이트 판정보다 앞서므로 `lane_retired` 가 나와야 한다.
+    """
     row = se.apply_stream_exclusion(_sized_row(), "nasdaq_session_edge", gate_path=tmp_path / "nope.json")
 
     assert row["stream_excluded"] is True
-    assert row["stream_exclusion_reason"] == "lane_unadjudicated"
+    assert row["stream_exclusion_reason"] == "lane_retired"
 
 
 # --------------------------------------------------------------------------

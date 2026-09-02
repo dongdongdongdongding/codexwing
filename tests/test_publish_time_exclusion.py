@@ -126,7 +126,8 @@ def test_reapplication_is_idempotent(degrade_gate):
 def test_ungated_lane_stored_rows_are_also_blocked(degrade_gate):
     """무게이트 레인의 저장 해석도 발행 불가다 (2026-08-16 정책).
 
-    사유는 `lane_unadjudicated` — tape의 DEGRADE를 물려받은 게 아니다.
+    사유는 `lane_retired` — 2026-09-02 운영자 결정으로 은퇴했다(그 전엔 `lane_unadjudicated`).
+    어느 쪽이든 tape 의 DEGRADE 를 물려받은 게 아니라는 점이 이 검사의 요점이다.
     """
     row = _row_with_stored_interpretation()
     row["decision_bucket"] = "nasdaq_session_edge"
@@ -135,7 +136,7 @@ def test_ungated_lane_stored_rows_are_also_blocked(degrade_gate):
     interp = renderers._interpretation_for_render(row)
 
     assert interp["stream_excluded"] is True
-    assert interp["stream_exclusion_reason"] == "lane_unadjudicated"
+    assert interp["stream_exclusion_reason"] == "lane_retired"
     assert interp["buy_ready"] is False
 
 

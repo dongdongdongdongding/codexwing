@@ -109,6 +109,19 @@ RETIRED_LANES: Dict[str, str] = {
     "nasdaq_session_edge": "retired",
 }
 
+# 은퇴 사유는 레인마다 다르고 복귀 경로도 다르다. 한 문장으로 뭉치면 남의 사유가 붙는다 —
+# 실제로 은퇴 레인이 하나였을 땐 `UNGATED_LANE_NOTES["retired"]` 에 `kospi_intraday` 의
+# 사유가 박혀 있었고, 2026-09-02 에 두 번째 레인이 들어오자 그게 그대로 붙었다.
+RETIRED_NOTES: Dict[str, str] = {
+    "kospi_intraday": ("⛔ 발행 제외(관측) — 은퇴 (2026-08-22). 엣지가 **체결 불가능한 진입** 위에 있었다: "
+                       "랭커 top-1 의 19.2% 가 신호일 상한가 종가(유니버스 0.21% — 91배 농축)이고, "
+                       "체결 가능한 픽만 남기면 net 이 +1.620 → −0.009 로 사라진다. 복귀 경로 없음"),
+    "nasdaq_session_edge": ("⛔ 발행 제외(관측) — 은퇴 (2026-09-02). 후계 `nasdaq_session_tape`(A1)가 "
+                            "감사를 통과했고, 이 레인은 42거래일간 0픽이다. 승격 게이트가 표본 부족으로 "
+                            "막혀 있으며 원인이 `multi_year_overnight_provider_not_loaded` — "
+                            "**다년 장중 공급원(유료) 없이는 안 풀린다.** 되살리려면 그 데이터부터다"),
+}
+
 UNGATED_PUBLISHED_LANES = frozenset({
     # nasdaq_swing 은 2026-08-20 에 GATE_LANE_MAP 으로 옮겼다 — 실제로 게이트 원장을 읽는다.
     "nasdaq_session_edge", "b_market_neutral", "swing_ensemble",
@@ -262,8 +275,10 @@ def stream_status(lane_key: Any, *, gate_state: Optional[Dict[str, Any]] = None,
     # 은퇴가 게이트를 이긴다. 게이트를 먼저 보면 CONFIRM 판정이 은퇴를 덮어쓴다.
     if key in RETIRED_LANES:
         kind = RETIRED_LANES[key]
+        # `lane` 을 실어 보낸다 — 사유 문구가 레인마다 다르고, 안 실으면 `_size_note` 가
+        # 어느 레인인지 몰라 남의 은퇴 사유를 붙인다(2026-09-02 에 실제로 그랬다).
         return {"gated": False, "excluded": True, "reason": "lane_" + kind,
-                "gate_lane": None, "verdict": None, "ungated_kind": kind}
+                "gate_lane": None, "verdict": None, "ungated_kind": kind, "lane": key}
     gate_lane = GATE_LANE_MAP.get(key)
     if gate_lane is None:
         if key in UNGATED_PUBLISHED_LANES:
@@ -321,6 +336,8 @@ def _size_note(status: Dict[str, Any]) -> str:
                 f"EV {status.get('fwd_ev')}, §20 스트림 제외 정책)")
     kind = status.get("ungated_kind")
     if kind:
+        if kind == "retired":
+            return RETIRED_NOTES.get(str(status.get("lane") or ""), UNGATED_LANE_NOTES["retired"])
         return UNGATED_LANE_NOTES[kind]
     if reason == "lane_undeclared":
         return ("⛔ 발행 제외(관측) — 이 레인이 스트림 계약에 선언되지 않음 "

@@ -69,13 +69,14 @@ def test_nasdaq_session_edge_routes_to_live_scan_lane(monkeypatch, tmp_path):
 
     result = run_model_lane_scan("NASDAQ", "SWING", route=True)
 
-    assert result["error"] is None
-    assert result["bucket"] == "nasdaq_session_edge"
-    assert result["run_id"] == "NASDAQ-SESSION-EDGE-20260626"
-    assert result["routed"] == 1
-    assert result["picks"][0]["ticker"] == "HOOD"
-    assert observed["args"].market_session == "nasdaq_regular_close"
-    assert observed["args"].no_fetch is False
-    assert observed["route"]["bucket"] == "nasdaq_session_edge"
-    assert observed["route"]["decision"] == "NASDAQ_SESSION_EDGE_BUY"
-    assert observed["route"]["lane"] == "NASDAQ_SESSION_EDGE"
+    # 2026-09-02 은퇴 이후: 스캔은 돌되 **라우팅은 거부**된다.
+    # 이 테스트는 원래 「정상 라우팅」을 지켰다. 결정이 뒤집혔고, 같은 자리에서
+    # **은퇴가 라우팅 층에서도 집행되는지**를 지킨다 — 은퇴를 선언해 놓고 라우터가
+    # 그대로 발행하면 은퇴가 아니다(랭킹섀도 보드가 킬 선언 뒤 1,304행을 더 찍은 그 병).
+    assert result["error"] == "lane_retired: nasdaq_session_edge"
+    assert result.get("routed") in (0, None), "은퇴 레인이 라우팅되면 안 된다"
+
+    # 스캔조차 안 부른다 — 은퇴 판정이 모델 실행 **앞**에 선다.
+    # 관측만 남기려면 스캔을 돌려야 하지만, 이 레인은 42거래일간 0픽이라 돌릴 이유가 없다.
+    assert "args" not in observed, "은퇴 레인의 모델이 실행됐다"
+    assert "route" not in observed, "은퇴 레인이 _route_live 까지 도달했다"

@@ -118,13 +118,15 @@ def test_flag_one_runs_the_step(tmp_path):
     assert "[SKIP]" not in out
 
 
-def test_default_keeps_the_lane_running(tmp_path):
-    """운영자 결정: 이 레인은 수리해 존속. 미설정 기본값은 ON 이어야 한다.
+def test_default_skips_the_retired_lane(tmp_path):
+    """운영자 결정 2026-09-02: 은퇴. 미설정 기본값은 OFF 여야 한다.
 
-    (스케줄 경로의 실효 기본값이 계속 ON 이었으므로 이것이 동작 보존이다.)
+    이 테스트는 원래 「기본값 ON 유지」를 지켰다. 결정이 뒤집혔고, 뒤집힌 결정이
+    **실제로 집행되는지**를 같은 자리에서 지킨다 — 랭킹섀도 보드는 킬이 선언된 뒤에도
+    기본값이 1 로 남아 1,304행을 더 찍었다. 선언과 집행은 다른 일이다.
     """
     out = run_block(guard_block(), tmp_path)
-    assert f"[STEP] {STEP}" in out, f"기본값이 레인을 껐다 — 운영자 결정과 어긋난다:\n{out}"
+    assert f"[SKIP] {STEP}" in out, f"기본값이 은퇴 레인을 계속 돌린다:\n{out}"
 
 
 def test_skip_line_names_how_to_resume(tmp_path):

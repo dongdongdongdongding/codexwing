@@ -64,15 +64,20 @@ def test_archived_lane_says_it_is_retired(tmp_path):
 def test_unadjudicated_lane_says_how_to_get_back(tmp_path):
     """`nasdaq_session_edge` — 별개 스트림이라 tape 판정을 물려줄 수 없다.
 
-    복귀 경로는 '여기서 예외 처리'가 아니라 '게이트에 배선'이다. 그걸 사유에 적는다.
+    2026-09-02 은퇴. 복귀 경로가 게이트 배선에서 **데이터 확보**로 바뀌었으므로 사유도 바뀐다 —
+    사유 문구는 레인마다 달라야 한다(하나로 뭉쳐 두면 남의 은퇴 사유가 붙는다. 실제로 그랬다).
     """
     from conftest import write_gate_report
 
     row = se.apply_stream_exclusion(_sized_row(), "nasdaq_session_edge",
                                     gate_path=write_gate_report(tmp_path / "g.json"))
 
-    assert row["stream_exclusion_reason"] == "lane_unadjudicated"
-    assert "게이트" in row["size_note"]
+    assert row["stream_exclusion_reason"] == "lane_retired"   # 2026-09-02 은퇴
+    assert "은퇴" in row["size_note"]
+    assert "multi_year_overnight_provider_not_loaded" in row["size_note"], \
+        "복귀에 필요한 것이 무엇인지 적혀 있어야 한다"
+    # 남의 레인 은퇴 사유가 붙지 않는다
+    assert "상한가" not in row["size_note"]
 
 
 def test_suspended_lane_is_named_as_suspended(tmp_path):
