@@ -545,6 +545,28 @@ if [[ "${AG_KOSDAQ_BUNDLE_RETRAIN_ENABLE:-1}" == "1" ]]; then
     python3 multi_agent/tools/train_kosdaq_1500_bundle.py
 fi
 
+# phase25 KR 통합 벤치마크 재학습 (2026-09-03, FINDING_2026-09-03_serving_models_stale.md).
+#   이 두 스크립트가 `models/phase25_kr_{swing,intraday}_*.pkl` 을 만든다 —
+#   **KR SWING/INTRADAY 스코어링이 실제로 고르는 바로 그 번들이다**(quant_analysis.py:1706-1745).
+#   2026-09-03 이전에는 저장소 어디에서도 이 둘을 호출하지 않았다. 유일한 언급이
+#   horizon_full_diagnosis_2026-05-08.md:236 의 "재학습해야 한다"는 권고였고 이행되지 않아,
+#   **5월 8일/12일 학습 모델이 넉 달간 그대로 서빙됐다**(intraday 는 auc 0.478, 무작위 미만).
+#   `retrain_ml.py` 는 phase25_model.pkl 만 갱신하는데 그건 KR 후보 목록 맨 뒤라 미선택이다 —
+#   즉 「재학습이 돌았다」와 「서빙 모델이 바뀌었다」가 다른 명제였다.
+#   비활성: AG_PHASE25_KR_BENCHMARK_RETRAIN=0.
+if [[ "${AG_PHASE25_KR_BENCHMARK_RETRAIN:-1}" == "1" ]]; then
+  echo "[STEP] evaluate_kr_swing_models (phase25 통합 번들 재학습)"
+  run_optional "evaluate_kr_swing_models" \
+    python3 multi_agent/tools/evaluate_kr_swing_models.py
+  echo "[STEP] evaluate_kr_intraday_models (phase25 통합 번들 재학습)"
+  run_optional "evaluate_kr_intraday_models" \
+    python3 multi_agent/tools/evaluate_kr_intraday_models.py
+  # 재학습 직후 출하 자격을 찍어 남긴다 — 번들이 게이트를 통과하는지가 로그에 보여야
+  # 「돌았다」와 「쓸 만하다」가 구분된다.
+  run_optional "report_phase25_governance" \
+    python3 multi_agent/tools/report_phase25_governance.py
+fi
+
 
 if [[ "${AG_KR_SELECTIVE_SHADOW_ENABLE:-1}" == "1" ]]; then
   # Observation-only selective high-conviction view over both intraday lane ledgers

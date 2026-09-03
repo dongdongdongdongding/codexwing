@@ -160,6 +160,13 @@ class ScorePipelineTests(unittest.TestCase):
                         "phase25_prob": 18.9,
                         "phase25_variant": "phase25_kr_swing_logistic",
                         "phase25_recommended_threshold": 55.0,
+                        # 2026-09-03: OOS 메타데이터를 픽스처에 싣는다. 없으면 fail-closed 게이트가
+                        # PHASE25_WEAK_OOS_PRIORITY_BLOCK 에서 먼저 끊어 뒤 경로를 못 본다.
+                        # 라이브에서는 quant_analysis.py:2095-2101 이 이 필드들을 항상 채운다.
+                        "phase25_signal_direction": "normal",
+                        "phase25_oos_auc": 0.58,
+                        "phase25_oos_win_rate_pct": 72.0,
+                        "phase25_oos_avg_return_pct": 5.4,
                         "real_trend": "UP",
                         "scan_mode": "SWING",
                         "strategy_family": "KR_CORE",
@@ -198,6 +205,12 @@ class ScorePipelineTests(unittest.TestCase):
                         "phase25_prob": 20.0,
                         "phase25_variant": "phase25_kr_swing_logistic",
                         "phase25_recommended_threshold": 55.0,
+                        # 2026-09-03: 위와 같은 이유 — 이 테스트가 보려는 것은
+                        # KOSDAQ_SWING_PROBATION 경로이고, 메타데이터가 없으면 그 앞에서 끊긴다.
+                        "phase25_signal_direction": "normal",
+                        "phase25_oos_auc": 0.58,
+                        "phase25_oos_win_rate_pct": 72.0,
+                        "phase25_oos_avg_return_pct": 5.4,
                         "volume_ratio": 2.4,
                         "real_trend": "UP",
                         "scan_mode": "SWING",

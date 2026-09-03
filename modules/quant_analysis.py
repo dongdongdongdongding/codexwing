@@ -2017,15 +2017,21 @@ class QuantStrategy:
                     _oos_auc = p25_bundle.get("oos_auc")
                     _oos_win = p25_bundle.get("oos_win_rate_pct")
                     _oos_ret = p25_bundle.get("oos_avg_return_pct")
+                    # 2026-09-03: 분모(_oos_n)와 방향을 함께 넘긴다. 넘기지 않으면 게이트가
+                    # 판정 근거를 못 보고 통과시킨다 — 이 레인이 넉 달간 그 상태였다.
+                    _oos_n = p25_bundle.get("oos_n")
                     _oos_validates = phase25_oos_validates(
                         oos_auc=_oos_auc,
                         oos_win_rate_pct=_oos_win,
                         oos_avg_return_pct=_oos_ret,
+                        oos_n=_oos_n,
                     )
                     _weak_oos_reasons = phase25_weak_oos_reasons(
                         oos_auc=_oos_auc,
                         oos_win_rate_pct=_oos_win,
                         oos_avg_return_pct=_oos_ret,
+                        oos_n=_oos_n,
+                        signal_direction=p25_bundle.get("signal_direction"),
                     )
                     if _p25_direction == "uncertain" and _oos_validates:
                         _p25_direction = "normal"
@@ -2054,15 +2060,19 @@ class QuantStrategy:
                             _shadow_oos_auc = shadow_bundle.get("oos_auc")
                             _shadow_oos_win = shadow_bundle.get("oos_win_rate_pct")
                             _shadow_oos_ret = shadow_bundle.get("oos_avg_return_pct")
+                            _shadow_oos_n = shadow_bundle.get("oos_n")
                             _shadow_oos_validates = phase25_oos_validates(
                                 oos_auc=_shadow_oos_auc,
                                 oos_win_rate_pct=_shadow_oos_win,
                                 oos_avg_return_pct=_shadow_oos_ret,
+                                oos_n=_shadow_oos_n,
                             )
                             _shadow_weak_oos_reasons = phase25_weak_oos_reasons(
                                 oos_auc=_shadow_oos_auc,
                                 oos_win_rate_pct=_shadow_oos_win,
                                 oos_avg_return_pct=_shadow_oos_ret,
+                                oos_n=_shadow_oos_n,
+                                signal_direction=shadow_bundle.get("signal_direction"),
                             )
                             if _shadow_direction == "uncertain" and _shadow_oos_validates:
                                 _shadow_direction = "normal"

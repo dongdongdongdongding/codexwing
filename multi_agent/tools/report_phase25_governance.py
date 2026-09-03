@@ -31,15 +31,19 @@ def build_phase25_governance_report(payload: Dict[str, Any], *, generated_at: st
         oos_avg = _first(segment.get("oos_avg_return_pct"), oos.get("avg_return_pct"))
         cv_auc = segment.get("cv_median_auc")
         cv_oos_auc_gap = _gap(cv_auc, oos_auc)
+        oos_n = _first(segment.get("oos_n"), oos.get("picks"))
         weak_reasons = phase25_weak_oos_reasons(
             oos_auc=oos_auc,
             oos_win_rate_pct=oos_win,
             oos_avg_return_pct=oos_avg,
+            oos_n=oos_n,
+            signal_direction=segment.get("signal_direction"),
         )
         oos_release_ready = phase25_oos_validates(
             oos_auc=oos_auc,
             oos_win_rate_pct=oos_win,
             oos_avg_return_pct=oos_avg,
+            oos_n=oos_n,
         )
         action = "allow_phase25_probability"
         if weak_reasons:

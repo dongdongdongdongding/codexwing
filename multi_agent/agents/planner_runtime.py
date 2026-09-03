@@ -259,6 +259,9 @@ def _apply_phase25_reliability_gate(
         oos_auc=phase25_oos_auc,
         oos_win_rate_pct=phase25_oos_win_rate_pct,
         oos_avg_return_pct=phase25_oos_avg_return_pct,
+        # 이 경로는 DB 행 스냅샷을 읽으므로 분모(oos_n)가 없다. 승격 게이트가 그 없음을
+        # False 로 닫으므로 여기서는 방향만 넘긴다(2026-09-03).
+        signal_direction=phase25_signal_direction,
     )
     triggered = False
     if phase25_signal_direction == "uncertain":

@@ -107,13 +107,39 @@ RETIRED_LANES: Dict[str, str] = {
     #     (「append 0 에도 전량 재기록」 함정 — 센티넬이 내용 신선도로 잡아냈다).
     # 과거 픽 해석을 위해 LANES 에는 남긴다 — 레인을 지우면 ledger="" 가 되어 /api/picks 가 죽는다.
     "nasdaq_session_edge": "retired",
+
+    # 2026-09-03 운영자 결정: **재학습이 유효해질 때까지 정지**(은퇴가 아니다 — 복귀 경로가 있다).
+    #   · 서빙 중이던 `phase25_kr_intraday_xgboost.pkl` 은 **2026-05-08 학습**이고 auc **0.478 —
+    #     무작위 미만**이다. 생산자(`evaluate_kr_intraday_models.py`)를 호출하는 곳이
+    #     저장소에 없어 넉 달간 아무도 갱신하지 않았다.
+    #   · 이를 잡아야 할 OOS 거버넌스는 그 번들에 `oos_*`/`signal_direction` 이 **아예 없어서**
+    #     한 번도 발동하지 못했다(`modules/phase25_governance.py` 상단 참조).
+    #   · 2026-09-03 재측정(70/15/15 정직 분할): 후보 6종 전부 oos_auc <= 0.503,
+    #     그중 4종이 무작위 미만. **리프트가 없다** — rep 구간 기준선 win 37.6% / 평균 −0.88% 에
+    #     대해 최고 모델이 37.9% / −0.86% 로 **+0.3pp**, 즉 기준선을 그대로 복제한다.
+    #     (같은 자로 잰 SWING 은 +7.6pp 라 이 축만의 문제다.)
+    #   · [H1] 독립 실측도 같은 방향: INTRADAY 통합 라인 shadow **−13.2pp (p=3.3e-03)**.
+    # 복귀 조건: 재학습 번들이 OOS 게이트를 통과하고(중립화 사유 0건) 리프트가 양수일 것.
+    # 두 어휘를 **둘 다** 적는다 — 웹은 lane_key, Discord 는 decision_bucket 을 쓰고
+    # 한쪽만 적으면 다른 쪽으로 그대로 나간다(F1 이 정확히 그 실패였다).
+    "kosdaq_intraday": "model_stale",
+    "kosdaq_intraday_3d_t5_vwap_guard": "model_stale",
 }
 
 # 은퇴 사유는 레인마다 다르고 복귀 경로도 다르다. 한 문장으로 뭉치면 남의 사유가 붙는다 —
 # 실제로 은퇴 레인이 하나였을 땐 `UNGATED_LANE_NOTES["retired"]` 에 `kospi_intraday` 의
 # 사유가 박혀 있었고, 2026-09-02 에 두 번째 레인이 들어오자 그게 그대로 붙었다.
 RETIRED_NOTES: Dict[str, str] = {
-    "kospi_intraday": ("⛔ 발행 제외(관측) — 은퇴 (2026-08-22). 엣지가 **체결 불가능한 진입** 위에 있었다: "
+    # 두 어휘가 같은 사유를 봐야 한다 — 아래에서 alias 로 묶는다.
+    "kosdaq_intraday": ("⛔ 발행 제외(관측) — 모델 정지 (2026-09-03). 서빙 모델이 2026-05-08 학습이고 "
+                        "auc 0.478(무작위 미만)인데 생산자를 호출하는 곳이 없어 넉 달간 갱신되지 않았다. "
+                        "재측정 결과 후보 6종 전부 리프트 없음(기준선 win 37.6%/−0.88% 대비 최고 +0.3pp). "
+                        "**복귀 경로 있음**: 재학습 번들이 OOS 게이트를 통과하고 리프트가 양수이면 해제"),
+    # 2026-09-03: 이 항목은 그동안 **도달 불가능한 죽은 코드**였다 — kind 가 "killed" 라
+    # `_size_note` 가 `UNGATED_LANE_NOTES["killed"]` 만 봤다. 레인별 조회를 모든 kind 로
+    # 넓히면서 살아났고, 그때 「죽은 레인」이 「은퇴」로 바뀌는 회귀가 났다(테스트가 잡았다).
+    # 이 레인은 은퇴가 아니라 **죽은** 레인이다 — 복귀 경로가 없다는 뜻이고 어휘가 다르다.
+    "kospi_intraday": ("⛔ 발행 제외(관측) — 죽은 레인 (2026-08-22 운영자 결정). 엣지가 **체결 불가능한 진입** 위에 있었다: "
                        "랭커 top-1 의 19.2% 가 신호일 상한가 종가(유니버스 0.21% — 91배 농축)이고, "
                        "체결 가능한 픽만 남기면 net 이 +1.620 → −0.009 로 사라진다. 복귀 경로 없음"),
     "nasdaq_session_edge": ("⛔ 발행 제외(관측) — 은퇴 (2026-09-02). 후계 `nasdaq_session_tape`(A1)가 "
@@ -121,6 +147,15 @@ RETIRED_NOTES: Dict[str, str] = {
                             "막혀 있으며 원인이 `multi_year_overnight_provider_not_loaded` — "
                             "**다년 장중 공급원(유료) 없이는 안 풀린다.** 되살리려면 그 데이터부터다"),
 }
+
+
+# 정지 레인의 두 어휘가 같은 사유 문구를 보게 한다(한쪽만 적으면 다른 쪽이 기본 문구로 샌다).
+RETIRED_NOTES["kosdaq_intraday_3d_t5_vwap_guard"] = RETIRED_NOTES["kosdaq_intraday"]
+
+# 은퇴/정지 레인은 전부 사유 문구를 가져야 한다 — 없으면 남의 사유가 붙는다.
+_missing_note = [k for k in RETIRED_LANES if k not in RETIRED_NOTES]
+if _missing_note:
+    raise RuntimeError(f"은퇴/정지 레인에 사유 문구가 없다: {sorted(_missing_note)}")
 
 UNGATED_PUBLISHED_LANES = frozenset({
     # nasdaq_swing 은 2026-08-20 에 GATE_LANE_MAP 으로 옮겼다 — 실제로 게이트 원장을 읽는다.
@@ -336,9 +371,12 @@ def _size_note(status: Dict[str, Any]) -> str:
                 f"EV {status.get('fwd_ev')}, §20 스트림 제외 정책)")
     kind = status.get("ungated_kind")
     if kind:
-        if kind == "retired":
-            return RETIRED_NOTES.get(str(status.get("lane") or ""), UNGATED_LANE_NOTES["retired"])
-        return UNGATED_LANE_NOTES[kind]
+        # 2026-09-03: 레인별 문구를 **모든 kind 에서** 먼저 찾는다. 이전에는 'retired' 일 때만
+        # 찾아서, 새 kind 를 추가하면 다시 남의 사유가 붙는 구조였다(2026-09-02 재발 지점과 같다).
+        lane_note = RETIRED_NOTES.get(str(status.get("lane") or ""))
+        if lane_note:
+            return lane_note
+        return UNGATED_LANE_NOTES.get(kind, UNGATED_LANE_NOTES["retired"])
     if reason == "lane_undeclared":
         return ("⛔ 발행 제외(관측) — 이 레인이 스트림 계약에 선언되지 않음 "
                 "(modules/stream_exclusion.py의 GATE_LANE_MAP 또는 UNGATED_PUBLISHED_LANES에 추가 필요)")

@@ -1062,17 +1062,12 @@ def train_segment(df_all: pd.DataFrame, spec: SegmentSpec, backend: str):
         # 정확히 inverted였다. 두 지표가 크게 갈리면 모델 자체가 불안정한
         # 신호이므로 둘 다 0.55를 넘어야 normal, 하나라도 0.45 미만이면
         # invert, 나머지는 uncertain으로 한다. cv가 NaN이면 raw_auc로만 판정.
-        if pd.isna(cv_median_auc):
-            min_auc = max_auc = raw_auc
-        else:
-            min_auc = min(raw_auc, cv_median_auc)
-            max_auc = max(raw_auc, cv_median_auc)
-        if min_auc < 0.45:
-            signal_direction = "invert"
-        elif min_auc > 0.55:
-            signal_direction = "normal"
-        else:
-            signal_direction = "uncertain"
+        # 2026-09-03: 이 규칙이 여기에만 있어서 evaluate_kr_*_models.py 가 만든 번들에는
+        # signal_direction 이 아예 없었다(항상 'normal' 로 떨어짐). 단일 지점으로 옮겼다.
+        from modules.phase25_governance import phase25_signal_direction
+        signal_direction = phase25_signal_direction(
+            raw_auc, None if pd.isna(cv_median_auc) else cv_median_auc
+        )
 
     y_prob = (1.0 - y_prob_raw) if signal_direction == "invert" else y_prob_raw
     y_pred = (y_prob >= 0.5).astype(int)
@@ -1114,6 +1109,9 @@ def train_segment(df_all: pd.DataFrame, spec: SegmentSpec, backend: str):
         "oos_auc": (oos_summary or {}).get("auc") if oos_summary else None,
         "oos_win_rate_pct": (oos_summary or {}).get("win_rate_pct") if oos_summary else None,
         "oos_avg_return_pct": (oos_summary or {}).get("avg_return_pct") if oos_summary else None,
+        # 2026-09-03: oos_summary["picks"] 는 줄곧 계산됐는데 payload 에서 버려졌다.
+        # 분모 없이 승률만 실어 보내면 픽 19건짜리 78% 가 승격 게이트를 통과한다.
+        "oos_n": (oos_summary or {}).get("picks") if oos_summary else None,
         "segment": spec.name,
         "return_col": spec.return_col,
         "target_horizon_days": horizon_days_from_return_col(spec.return_col),

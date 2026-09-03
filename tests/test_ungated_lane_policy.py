@@ -93,8 +93,10 @@ def test_gated_healthy_lane_is_untouched(tmp_path):
     """양성 대조 — 정책이 게이트가 판단한 정상 레인까지 죽이면 안 된다."""
     from conftest import write_gate_report
 
-    path = write_gate_report(tmp_path / "g.json", {"kosdaq_intraday_t10": "OBSERVING"})
-    row = se.apply_stream_exclusion(_sized_row(), "kosdaq_intraday", gate_path=path)
+    # 2026-09-03: 양성 대조를 kosdaq_intraday 에서 kospi_swing 으로 옮겼다 —
+    # 전자는 모델 정지(RETIRED_LANES)라 게이트 판정과 무관하게 막히므로 대조군이 못 된다.
+    path = write_gate_report(tmp_path / "g.json", {"swing_candidate": "OBSERVING"})
+    row = se.apply_stream_exclusion(_sized_row(), "kospi_swing", gate_path=path)
 
     assert row.get("stream_excluded") is not True
     assert row["size_pct_total"] == 2.0
