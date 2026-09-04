@@ -89,6 +89,14 @@ DEFF_CAP = 5.0               # 폭주 방지
 #     **높을수록 안전하고 도달 불가해도 무방하다.** 보호(DEGRADE)를 늦추지 않는다.
 #   EXCEED_MIN_N   — ③ 승격 표본 하한. 이미 위에 있다.
 
+# 스크립트로 직접 실행하면 sys.path[0] 이 이 파일의 디렉터리라 최상위 패키지가 안 잡힌다.
+import sys
+_ROOT = str(Path(__file__).resolve().parents[2])
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+
+from modules.trading_costs import KR_ROUNDTRIP_COST_PCT  # noqa: E402
+
 # 레인별: 원장, 실현수익 필드, 동결된 백테스트 기대(연구 로그 근거), 성숙 표본 수
 # cost: 왕복 비용(%p) — 원장은 gross를 저장하므로 게이트가 차감해 net으로 판정 (2026-08-03 PKG-B ②).
 #   기대치는 전부 net 기준으로 동결돼 있었음(§28 threshold_frontier=net−0.3, §11-A=net−0.33,
@@ -129,7 +137,12 @@ LANES: Dict[str, Dict[str, Any]] = {
         "basis": "EV=§11-A:263 15:00 실파이프라인 재검증(n=66) · 승률=§27:584 티어 승률 맵(n=101, 2026-07-13 정본)"},
     "swing_candidate": {
         "market": "KR",
-        "ledger": EXP / "kr_swing_candidate_ledger.jsonl", "field": "policy_ret", "cost": 0.3,
+        # 2026-09-05: 0.3 하드코딩이었다. 운영자 실측은 **0.215**(슬리피지 포함)이고
+        # 2026-09-02 에 `modules/trading_costs.py` 로 단일화했는데 **이 파일이 누락됐다.**
+        # 매 픽에 0.085%p 를 더 물리던 것이고, 이 레인의 EV 규모(±0.5%)에서 작지 않다.
+        # (판정은 안 바뀐다 — forward EV −0.48 → −0.40 으로 여전히 expect_ev 0.65 미달.)
+        "ledger": EXP / "kr_swing_candidate_ledger.jsonl", "field": "policy_ret",
+        "cost": KR_ROUNDTRIP_COST_PCT,
         # ⚠️ 종전 동작(원장 전체)을 그대로 선언한다 — **바꾸지 않기 위해서가 아니라 확인이
         #   안 돼서다.** tier 스탬프가 213행 중 17행(CANDIDATE)에만 있어 나머지 196행이
         #   발행분인지 판별할 근거가 원장에 없다. 근거가 생기면 좁혀야 한다(§ 확인 필요).

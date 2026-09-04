@@ -35,6 +35,7 @@ top-50/시장을 kr_ranking_shadow_ledger.jsonl에 관측 전용 축적, px_long
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -315,6 +316,28 @@ def _universe_integrity(px, latest) -> Dict[str, Any]:
     return out
 
 
+def _input_fingerprint(tr, te, feats) -> str:
+    """이 픽을 만든 **입력의 지문**. 픽을 정하는 것은 학습 슬라이스와 스코어링 행렬 둘이다.
+
+    2026-09-05 (규율 43): [K2] 재현 게이트에서 KOSDAQ 라이브 픽은 12/12 가 재현 top3 안인데
+    KOSPI 는 **7/16**(최하 139위)이었다. 결정성·라벨빈티지·발행경로를 전부 배제하고 남은
+    원인이 **픽 시점 `px_long` 스냅샷의 매일 덮어쓰기**였고, 덮어써진 뒤에는
+    **무엇을 보고 고른 픽인지 복원할 방법이 없다** — 즉 라이브 픽을 사후 감사할 수 없었다.
+
+    파일 전체 해시가 아니라 **실제로 점수를 매긴 행렬**을 해시한다. 픽을 직접 정하는 것이
+    그것이고, 패널의 무관한 부분이 바뀌어도 지문이 흔들리지 않아야 대조가 의미를 갖는다.
+    """
+    h = hashlib.sha256()
+    for tag, frame in (("tr", tr), ("te", te)):
+        sub = frame.sort_values(["code", "date"])
+        h.update(tag.encode())
+        h.update(np.ascontiguousarray(
+            sub[list(feats)].to_numpy(dtype="float64")).tobytes())
+        h.update("|".join(sub["code"].astype(str)).encode())
+        h.update(str(len(sub)).encode())
+    return h.hexdigest()[:16]
+
+
 def score_today(top_k: Optional[int] = None) -> Dict[str, Any]:
     cols = list(dict.fromkeys(["code", "date", "market", "liq", "close", "volume"] + FEATS))
     px = pd.read_parquet(CACHE / "px_long.parquet", columns=cols)
@@ -369,6 +392,7 @@ def score_today(top_k: Optional[int] = None) -> Dict[str, Any]:
         if len(tr) < 20000 or te.empty:
             continue
         te["p"] = _fit(tr).predict_proba(te[FEATS].clip(-1e4, 1e4))[:, 1]
+        _sig = _input_fingerprint(tr, te, FEATS)
         if mkt in ABSTAIN_MARKETS:
             verdict = gate_w60q07(d, latest)
         elif mkt in MKT_WEAKNESS_MARKETS:
@@ -396,6 +420,11 @@ def score_today(top_k: Optional[int] = None) -> Dict[str, Any]:
         _k = top_k if top_k is not None else TOP_K.get(mkt, 3)
         for _, r in te.nlargest(_k, "p").iterrows():
             out["picks"].append({"date": str(latest.date()), "market": mkt, **state, **verdict,
+                                 # 재현 감사용 입력 지문 (규율 43). 없으면 픽을 사후 검증할 수 없다.
+                                 "input_sig": _sig,
+                                 "px_max_date": str(latest.date()),
+                                 "px_rows": int(len(d)), "train_rows": int(len(tr)),
+                                 "label_max_date": str(pd.to_datetime(lab["date"]).max().date()),
                                  "ticker": str(r["code"]) + (".KS" if mkt == "KOSPI" else ".KQ"),
                                  "p": round(float(r["p"]), 4), "close": float(r["close"]),
                                  "ret_5d": round(float(r["ret_5d"]), 2) if pd.notna(r.get("ret_5d")) else None,
