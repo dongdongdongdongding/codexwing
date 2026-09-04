@@ -39,6 +39,22 @@ OOS_VALIDATE_MIN_AVG_RETURN_PCT = 5.0
 # 여유를 둬 30 으로 한다. 이보다 적으면 「승격할 만큼 봤다」고 말할 수 없다.
 OOS_VALIDATE_MIN_PICKS = 30
 
+# 2026-09-04 운영자 결정: 중립화는 **리프트**로 판정한다(기준선이 있을 때).
+#
+# 근거: `phase25_prob` 은 매매 결정이 아니라 **순위 기울기**다. 순위에 필요한 것은
+# 판별력이고, 절대 시장 방향은 이미 시장약세 게이트가 본다 — 절대 수익으로 또 거르면
+# 같은 것을 두 번 센다. 실측이 그 차이를 드러냈다(2026-09-03, 정직 분할 70/15/15):
+#   SWING    기준선 win 34.7% / −4.33%  →  픽 42.3% / −1.76%  =  **리프트 +7.6pp / +2.21pp**
+#   INTRADAY 기준선 win 37.6% / −0.88%  →  픽 37.9% / −0.86%  =  **리프트 +0.3pp / +0.02pp**
+# 절대 임계값만 보면 **둘 다 탈락**이라 「판별하는 모델」과 「기준선을 복제하는 모델」이
+# 구분되지 않았다. 구분되지 않으면 게이트가 정보를 안 주는 것과 같다(규율 16: 자를 맞춰라).
+#
+# 리프트 하한은 **표본에서 유도한다** — 승률 리프트는 표준오차 1개분을 넘어야 한다.
+# 0 초과만 요구하면 잡음이 절반은 통과한다. n=527 이면 1SE=2.2pp(SWING +7.6 통과),
+# n=2079 이면 1SE=1.1pp(INTRADAY +0.3 탈락).
+OOS_LIFT_WIN_SE_MULT = 1.0
+
+# 기준선이 없는 번들은 옛 절대 기준으로 판정한다(하위호환 — 리프트를 못 재면 느슨해지면 안 된다).
 WEAK_OOS_MIN_AUC = 0.50
 WEAK_OOS_MIN_WIN_RATE_PCT = 60.0
 WEAK_OOS_MIN_AVG_RETURN_PCT = 0.0
@@ -130,6 +146,8 @@ def phase25_weak_oos_reasons(
     oos_avg_return_pct: Any,
     oos_n: Any = None,
     signal_direction: Any = None,
+    oos_baseline_win_rate_pct: Any = None,
+    oos_baseline_avg_return_pct: Any = None,
 ) -> List[str]:
     """**중립화** 게이트: 사유가 하나라도 있으면 이 모델의 기여를 50 으로 죽인다.
 
@@ -165,8 +183,24 @@ def phase25_weak_oos_reasons(
         elif n is not None and n < OOS_VALIDATE_MIN_PICKS:
             reasons.append(f"oos_n={int(n)}<{OOS_VALIDATE_MIN_PICKS}")
 
+    # 무작위 미만은 기준선과 무관하게 고장이다 — 리프트 판정보다 먼저 본다.
     if auc is not None and auc < WEAK_OOS_MIN_AUC:
         reasons.append(f"oos_auc={auc:.3f}<{WEAK_OOS_MIN_AUC:.2f}")
+
+    base_win = _float_or_none(oos_baseline_win_rate_pct)
+    base_ret = _float_or_none(oos_baseline_avg_return_pct)
+    if base_win is not None and base_ret is not None and win is not None and avg is not None:
+        lift_win = win - base_win
+        lift_ret = avg - base_ret
+        se_win = 100.0 * math.sqrt(0.25 / n) if n and n > 0 else None
+        floor = (OOS_LIFT_WIN_SE_MULT * se_win) if se_win is not None else 0.0
+        if lift_win <= floor:
+            reasons.append(f"oos_lift_win={lift_win:+.1f}pp<={floor:.1f}pp(1SE,n={int(n or 0)})")
+        if lift_ret <= 0:
+            reasons.append(f"oos_lift_ret={lift_ret:+.2f}pp<=0")
+        return reasons
+
+    # 기준선을 못 봤다 — 옛 절대 기준으로 떨어진다.
     if win is not None and win < WEAK_OOS_MIN_WIN_RATE_PCT:
         reasons.append(f"oos_win={win:.1f}%<{WEAK_OOS_MIN_WIN_RATE_PCT:.1f}%")
     if avg is not None and avg < WEAK_OOS_MIN_AVG_RETURN_PCT:

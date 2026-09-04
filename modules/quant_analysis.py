@@ -2032,6 +2032,10 @@ class QuantStrategy:
                         oos_avg_return_pct=_oos_ret,
                         oos_n=_oos_n,
                         signal_direction=p25_bundle.get("signal_direction"),
+                        # 2026-09-04: 기준선을 같이 넘긴다 — 없으면 절대 기준으로 떨어져
+                        # 「판별하는 모델」과 「기준선을 복제하는 모델」이 구분되지 않는다.
+                        oos_baseline_win_rate_pct=p25_bundle.get("oos_baseline_win_rate_pct"),
+                        oos_baseline_avg_return_pct=p25_bundle.get("oos_baseline_avg_return_pct"),
                     )
                     if _p25_direction == "uncertain" and _oos_validates:
                         _p25_direction = "normal"
@@ -2073,6 +2077,8 @@ class QuantStrategy:
                                 oos_avg_return_pct=_shadow_oos_ret,
                                 oos_n=_shadow_oos_n,
                                 signal_direction=shadow_bundle.get("signal_direction"),
+                                oos_baseline_win_rate_pct=shadow_bundle.get("oos_baseline_win_rate_pct"),
+                                oos_baseline_avg_return_pct=shadow_bundle.get("oos_baseline_avg_return_pct"),
                             )
                             if _shadow_direction == "uncertain" and _shadow_oos_validates:
                                 _shadow_direction = "normal"

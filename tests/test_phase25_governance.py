@@ -68,3 +68,48 @@ def test_direction_ruler_matches_the_retrain_rule():
     assert phase25_signal_direction(0.53, 0.60) == "uncertain"
     assert phase25_signal_direction(0.62, None) == "normal"
     assert phase25_signal_direction(None, 0.62) == "uncertain"
+
+
+# --- 2026-09-04: 리프트 기준 (운영자 결정) ---
+
+SWING = dict(oos_auc=0.5018, oos_win_rate_pct=42.31, oos_avg_return_pct=-2.12, oos_n=527,
+             signal_direction="normal",
+             oos_baseline_win_rate_pct=34.7, oos_baseline_avg_return_pct=-4.33)
+INTRADAY = dict(oos_auc=0.4732, oos_win_rate_pct=37.61, oos_avg_return_pct=-0.892, oos_n=2079,
+                signal_direction="normal",
+                oos_baseline_win_rate_pct=37.61, oos_baseline_avg_return_pct=-0.88)
+
+
+def test_lift_separates_a_discriminating_model_from_a_baseline_clone():
+    """절대 임계값만 보면 둘 다 탈락해 구분이 안 된다. 아래는 실측값이다(2026-09-03, 70/15/15).
+
+    SWING 은 기준선 −4.33% 장에서 −2.12% 를 냈다 — 절대로는 음수지만 리프트 +2.21pp 이고
+    승률 리프트 +7.6pp 은 1SE(2.2pp)의 세 배가 넘는다.
+    INTRADAY 는 기준선을 소수점까지 그대로 복제한다.
+    """
+    assert phase25_weak_oos_reasons(**SWING) == []
+    reasons = phase25_weak_oos_reasons(**INTRADAY)
+    assert any("oos_lift_win" in r for r in reasons)
+    assert any("oos_lift_ret" in r for r in reasons)
+
+
+def test_lift_floor_scales_with_the_sample():
+    """0 초과만 요구하면 잡음이 절반은 통과한다. 하한을 표본에서 유도한다."""
+    small = {**SWING, "oos_n": 100, "oos_win_rate_pct": 34.7 + 2.0}   # 1SE=5.0pp → 미달
+    big = {**SWING, "oos_n": 10000, "oos_win_rate_pct": 34.7 + 2.0}   # 1SE=0.5pp → 통과
+    assert any("oos_lift_win" in r for r in phase25_weak_oos_reasons(**small))
+    assert phase25_weak_oos_reasons(**big) == []
+
+
+def test_below_random_is_broken_regardless_of_lift():
+    """무작위 미만은 기준선과 무관하게 고장이다."""
+    assert any(r.startswith("oos_auc=") for r in phase25_weak_oos_reasons(**{**SWING, "oos_auc": 0.42}))
+
+
+def test_missing_baseline_falls_back_to_the_absolute_rule():
+    """리프트를 못 재면 **느슨해지면 안 된다** — 옛 절대 기준으로 떨어진다."""
+    no_base = {k: v for k, v in SWING.items() if not k.startswith("oos_baseline")}
+    assert phase25_weak_oos_reasons(**no_base) == [
+        "oos_win=42.3%<60.0%",
+        "oos_avg=-2.12%<0.0%",
+    ]
