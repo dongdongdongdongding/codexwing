@@ -422,6 +422,11 @@ def score_today(top_k: Optional[int] = None) -> Dict[str, Any]:
             out["picks"].append({"date": str(latest.date()), "market": mkt, **state, **verdict,
                                  # 재현 감사용 입력 지문 (규율 43). 없으면 픽을 사후 검증할 수 없다.
                                  "input_sig": _sig,
+                                 # 2026-09-05 [M2]: `contract_h` 는 픽별인데 TP 만 전역 상수라
+                                 # **TP 를 바꾸는 순간 미정산 과거 픽이 새 TP 로 채점된다** —
+                                 # 바로 위 `contract_h` 주석이 경고하는 소급 변조가 TP 축에 열려 있었다.
+                                 # 지금은 전부 0.05 라 동작이 바뀌지 않는다. 지뢰만 제거한다.
+                                 "contract_tp": CONTRACT_TP,
                                  "px_max_date": str(latest.date()),
                                  "px_rows": int(len(d)), "train_rows": int(len(tr)),
                                  "label_max_date": str(pd.to_datetime(lab["date"]).max().date()),
@@ -525,7 +530,9 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
             _H = _H_row      # 발행 당시 계약 (위 참조)
             if len(h) < _H + 1:
                 continue
-            tgt = entry * (1.0 + CONTRACT_TP)
+            # 발행 당시 TP 로 채점한다(위 `_H_row` 와 같은 이유). 없으면 = 2026-09-05 이전 발행 = 0.05.
+            _TP_row = float(row.get("contract_tp") or CONTRACT_TP)
+            tgt = entry * (1.0 + _TP_row)
             win5 = h.iloc[:_H]
             ret = float((win5["Close"].iloc[-1] / entry - 1) * 100)
             touched = 0
@@ -539,6 +546,7 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
                     break
             row["entry_open"] = round(entry, 2)
             row["contract_h"] = _H
+            row["contract_tp"] = _TP_row
             row["ft_touch5"] = touched
             row["policy_ret"] = round(ret, 2)
             # §29 출구혼합 shadow 병행채점 (계약 불변): 밴드별 대체 출구의 실현수익

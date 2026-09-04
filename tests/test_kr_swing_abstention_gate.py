@@ -79,8 +79,15 @@ def test_target_is_still_plus_five_percent():
     """목표는 +5% 로 불변이다. **H 만 시장별로 갈렸다**(2026-08-23) — TP 까지 같이 움직이면
     두 시장 다 검증 밖으로 나간다."""
     src = __import__("pathlib").Path(swc.__file__).read_text(encoding="utf-8")
-    assert "tgt = entry * (1.0 + CONTRACT_TP)" in src
     assert swc.CONTRACT_TP == 0.05
+    # 2026-09-05: 정산이 **픽이 들고 온 TP** 를 쓰도록 바뀌었다(`contract_h` 와 같은 보호).
+    # 이전에는 `CONTRACT_TP` 를 정산 시점에 읽어, TP 를 바꾸면 **미정산 과거 픽까지 새 TP 로
+    # 채점**됐다 — 전진 기록의 소급 변조다. 검사 대상을 소스 문자열에서 **불변식**으로 옮긴다.
+    assert 'float(row.get("contract_tp") or CONTRACT_TP)' in src, \
+        "정산이 발행 당시 TP 를 쓰지 않으면 계약 변경이 과거를 소급 재채점한다"
+    assert '"contract_tp": CONTRACT_TP' in src, "픽에 TP 가 박히지 않으면 위 보호가 무의미하다"
+    # TP 는 **시장별로 갈리지 않는다**(H 만 갈렸다). 갈리면 두 시장 다 검증 밖으로 나간다.
+    assert isinstance(swc.CONTRACT_TP, float), "TP 가 시장별 dict 가 되면 안 된다"
     assert "win5 = h.iloc[:_H]" in src, "보유창이 시장별 H 를 따라야 한다"
 
 
