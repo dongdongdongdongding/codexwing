@@ -398,6 +398,10 @@ artifacts:
   # 매일 갱신되는 형제 파일(tape_ledger)이 가리고 있었다. 원장은 파일 단위로 본다.
 
   - path: runtime_state/reports/us_research/nasdaq_session_edge_operational_ledger.jsonl
+    # 2026-09-04: `lane` 을 적으면 은퇴 레지스트리(modules/stream_exclusion.RETIRED_LANES)에서
+    # 자동으로 따라온다. 이 레인은 2026-09-02 에 은퇴했는데 설정을 손으로 안 꺼서
+    # 이틀간 CRIT 을 울렸다 — 결정이 선언만 되고 전파되지 않은 형태다.
+    lane: nasdaq_session_edge
     cadence: every_trading_day
     severity: critical
     producer: multi_agent/tools/report_nasdaq_session_edge_shadow.py

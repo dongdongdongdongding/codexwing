@@ -72,31 +72,52 @@ def test_direction_ruler_matches_the_retrain_rule():
 
 # --- 2026-09-04: 리프트 기준 (운영자 결정) ---
 
-SWING = dict(oos_auc=0.5018, oos_win_rate_pct=42.31, oos_avg_return_pct=-2.12, oos_n=527,
-             signal_direction="normal",
-             oos_baseline_win_rate_pct=34.7, oos_baseline_avg_return_pct=-4.33)
+# 아래는 전부 실측값이다(2026-09-04 재측정, 70/15/15 · **날짜 맞춤 기준선**).
+BASE = dict(oos_auc=0.5018, oos_avg_return_pct=-2.12, oos_n=482, signal_direction="normal",
+            oos_baseline_avg_return_pct=-3.13, oos_baseline_win_rate_pct=34.70)
+# 서빙 모델(logistic). 날짜를 맞추자 리프트가 +7.96 → **+2.96pp** 로 떨어졌다.
+SWING = {**BASE, "oos_win_rate_pct": 37.66}
 INTRADAY = dict(oos_auc=0.4732, oos_win_rate_pct=37.61, oos_avg_return_pct=-0.892, oos_n=2079,
                 signal_direction="normal",
-                oos_baseline_win_rate_pct=37.61, oos_baseline_avg_return_pct=-0.88)
+                oos_baseline_win_rate_pct=37.44, oos_baseline_avg_return_pct=-0.91)
 
 
-def test_lift_separates_a_discriminating_model_from_a_baseline_clone():
-    """절대 임계값만 보면 둘 다 탈락해 구분이 안 된다. 아래는 실측값이다(2026-09-03, 70/15/15).
+def test_a_lift_that_is_only_date_composition_does_not_pass():
+    """🔴 2026-09-04 회귀 방지 — 이 게이트가 처음에 틀렸던 지점이다.
 
-    SWING 은 기준선 −4.33% 장에서 −2.12% 를 냈다 — 절대로는 음수지만 리프트 +2.21pp 이고
-    승률 리프트 +7.6pp 은 1SE(2.2pp)의 세 배가 넘는다.
-    INTRADAY 는 기준선을 소수점까지 그대로 복제한다.
+    기준선을 rep 슬라이스 **무조건부** 평균으로 잡으면 「좋은 날을 고른 모델」과
+    「좋은 종목을 고른 모델」이 구분되지 않는다(규율 15: 널의 형태를 맞춰라).
+    [J3] 실측: 날짜구성 널만으로 +3.19~+7.34pp 가 나온다. 무조건부 기준선 대비
+    +7.96pp 였던 서빙 모델은 날짜를 맞추면 +2.96pp 이고(1.3σ), 날짜 내
+    Spearman 은 −0.0096±0.0396 으로 **정확히 0** 이었다.
     """
-    assert phase25_weak_oos_reasons(**SWING) == []
+    assert any("oos_lift_win" in r for r in phase25_weak_oos_reasons(**SWING))
+
+
+def test_lift_still_passes_a_model_that_clearly_beats_its_own_days():
+    """양성 대조 — 게이트가 전부 막으면 정보를 주지 않는 것과 같다."""
+    strong = {**SWING, "oos_win_rate_pct": 34.70 + 8.0, "oos_avg_return_pct": -1.0}
+    assert phase25_weak_oos_reasons(**strong) == []
+
+
+def test_a_baseline_clone_never_passes():
+    """INTRADAY 는 자기 날짜의 기준선을 그대로 복제한다(리프트 win +0.17pp · ret +0.02pp).
+
+    수익 리프트는 **양수**다 — 부호만 보는 검사였다면 통과했다. n=2079 에서
+    2SE=2.19pp 이므로 승률 리프트가 표본에 비례한 하한에서 걸린다.
+    이것이 하한을 0 이 아니라 표본에서 유도해야 하는 이유다.
+    """
     reasons = phase25_weak_oos_reasons(**INTRADAY)
     assert any("oos_lift_win" in r for r in reasons)
-    assert any("oos_lift_ret" in r for r in reasons)
+    # 부호만 봤다면 놓쳤을 것이라는 사실 자체를 고정한다.
+    assert INTRADAY["oos_avg_return_pct"] - INTRADAY["oos_baseline_avg_return_pct"] > 0
+    assert not any("oos_lift_ret" in r for r in reasons)
 
 
 def test_lift_floor_scales_with_the_sample():
-    """0 초과만 요구하면 잡음이 절반은 통과한다. 하한을 표본에서 유도한다."""
-    small = {**SWING, "oos_n": 100, "oos_win_rate_pct": 34.7 + 2.0}   # 1SE=5.0pp → 미달
-    big = {**SWING, "oos_n": 10000, "oos_win_rate_pct": 34.7 + 2.0}   # 1SE=0.5pp → 통과
+    """0 초과만 요구하면 잡음이 절반 통과한다. 하한을 표본에서 유도한다(2SE)."""
+    small = {**SWING, "oos_n": 100, "oos_win_rate_pct": 34.7 + 6.0}    # 2SE=10.0pp → 미달
+    big = {**SWING, "oos_n": 10000, "oos_win_rate_pct": 34.7 + 6.0}    # 2SE=1.0pp → 통과
     assert any("oos_lift_win" in r for r in phase25_weak_oos_reasons(**small))
     assert phase25_weak_oos_reasons(**big) == []
 
@@ -110,6 +131,6 @@ def test_missing_baseline_falls_back_to_the_absolute_rule():
     """리프트를 못 재면 **느슨해지면 안 된다** — 옛 절대 기준으로 떨어진다."""
     no_base = {k: v for k, v in SWING.items() if not k.startswith("oos_baseline")}
     assert phase25_weak_oos_reasons(**no_base) == [
-        "oos_win=42.3%<60.0%",
+        "oos_win=37.7%<60.0%",
         "oos_avg=-2.12%<0.0%",
     ]

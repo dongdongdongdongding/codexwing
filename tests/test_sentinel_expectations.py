@@ -79,20 +79,40 @@ def _cfg(window=10, floor=0.8, deadlines=None):
         "active_deadlines": deadlines or []}}
 
 
+# 2026-09-04: 시험 대상 레인을 `kosdaq_intraday_t10` → `b_primary_top3` 로 옮겼다.
+# (`nasdaq_session_tape` 는 US 달력이 **자기 원장에서** 나와 하한 시험이 성립하지 않는다 —
+#  레인을 성기게 만들면 달력도 같이 성겨진다. KR 달력은 kospi/swing 원장에서 온다.)
+# 두 장중 레인(kospi_intraday_t5 · kosdaq_intraday_t10)이 은퇴/정지 레지스트리에 들어가
+# `RETIRED_LANE` 으로 먼저 걸러진다 — 미발화가 정상인 레인이라 자격 판정의 대상이 아니다.
+# 여기서 보려는 것은 자격 판정 로직(하한·유예·OD-39)이므로 **살아 있는 레인**으로 봐야 한다.
 def test_lane_firing_every_day_passes(tmp_path):
     days = [f"2026-07-{d:02d}" for d in range(1, 16)]
-    build_repo(tmp_path, kospi=days, swing=days, kosdaq=days)
+    build_repo(tmp_path, kospi=days, swing=days, b=days)
     out = sen.check_firing_qualification(tmp_path, _cfg(), TODAY, {})
-    kosdaq = [f for f in out if f["lane"] == "kosdaq_intraday_t10"][0]
-    assert kosdaq["verdict"] == "PASS" and kosdaq["rate"] == 1.0
+    lane = [f for f in out if f["lane"] == "b_primary_top3"][0]
+    assert lane["verdict"] == "PASS" and lane["rate"] == 1.0
+
+
+def test_retired_lanes_are_not_judged_on_firing(tmp_path):
+    """은퇴/정지 레인은 **발화하지 않는 것이 정상**이다. 자격 미달로 경보하면
+    우리가 내린 결정을 시스템이 결함으로 되돌려 보고하고, 그 소음이 진짜 경보를 묻는다.
+    실제로 2026-08-22 에 죽인 레인이 2주간 FAIL 경보를 냈다."""
+    days = [f"2026-07-{d:02d}" for d in range(1, 16)]
+    build_repo(tmp_path, kospi=[], swing=days, kosdaq=[], nasdaq=days, b=days)
+    out = sen.check_firing_qualification(tmp_path, _cfg(), TODAY, {})
+    for lane in ("kospi_intraday_t5", "kosdaq_intraday_t10"):
+        f = [x for x in out if x["lane"] == lane][0]
+        assert f["verdict"] == "RETIRED_LANE" and f["severity"] == "info"
+    # 조용히 버리지 않는다 — 사유가 남아야 한다.
+    assert all(f.get("retired_as") for f in out if f["verdict"] == "RETIRED_LANE")
 
 
 def test_lane_below_floor_fails_and_blocks_sizing(tmp_path):
     """미달은 경보가 아니라 사이징 차단이다(OD-7/OD-33)."""
     days = [f"2026-07-{d:02d}" for d in range(1, 16)]
-    build_repo(tmp_path, kospi=days, swing=days, kosdaq=days[:3])
+    build_repo(tmp_path, kospi=days, swing=days, b=days[:3])
     out = sen.check_firing_qualification(tmp_path, _cfg(), TODAY, {})
-    k = [f for f in out if f["lane"] == "kosdaq_intraday_t10"][0]
+    k = [f for f in out if f["lane"] == "b_primary_top3"][0]
     assert k["verdict"] == "FAIL" and k["severity"] == "alert"
     assert k["action"] == "block_sizing"
 
@@ -100,9 +120,9 @@ def test_lane_below_floor_fails_and_blocks_sizing(tmp_path):
 def test_new_lane_gets_grace(tmp_path):
     """첫 픽 이후 창 길이에 못 미치면 판정 보류 — 신규 레인 보호."""
     days = [f"2026-07-{d:02d}" for d in range(1, 16)]
-    build_repo(tmp_path, kospi=days, swing=days, kosdaq=days[-2:])
+    build_repo(tmp_path, kospi=days, swing=days, b=days[-2:])
     k = [f for f in sen.check_firing_qualification(tmp_path, _cfg(), TODAY, {})
-         if f["lane"] == "kosdaq_intraday_t10"][0]
+         if f["lane"] == "b_primary_top3"][0]
     assert k["verdict"] == "GRACE"
 
 
@@ -118,9 +138,9 @@ def test_suspended_lane_is_exempt(tmp_path):
 def test_od39_stopped_without_marker_is_not_exempt(tmp_path):
     """OD-39: 면제를 주면 **고장이 정지로 위장된다.**"""
     days = [f"2026-07-{d:02d}" for d in range(1, 16)]
-    build_repo(tmp_path, kospi=days, swing=days, kosdaq=[])   # 픽 0건, 마커 없음
+    build_repo(tmp_path, kospi=days, swing=days, b=[])   # 픽 0건, 마커 없음
     k = [f for f in sen.check_firing_qualification(tmp_path, _cfg(), TODAY, {})
-         if f["lane"] == "kosdaq_intraday_t10"][0]
+         if f["lane"] == "b_primary_top3"][0]
     assert k["verdict"] == "FAIL", "마커 없이 멈춘 레인에 면제를 줬다"
     assert k["severity"] == "alert"
 
@@ -267,7 +287,7 @@ def test_clean_repo_produces_no_escalation(tmp_path):
     build_repo(tmp_path, kospi=days, swing=days, kosdaq=days, nasdaq=days, b=days)
     rep = sen.run(tmp_path, _cfg(), TODAY, {})
     firing = [f for f in rep["findings"] if f["check"] == "firing_qualification"]
-    assert all(f["verdict"] in ("PASS", "GRACE", "EXEMPT") for f in firing), firing
+    assert all(f["verdict"] in ("PASS", "GRACE", "EXEMPT", "RETIRED_LANE") for f in firing), firing
 
 
 def test_config_lives_inside_the_repo(tmp_path):
@@ -309,12 +329,15 @@ def test_output_carries_freshness_evidence(tmp_path):
 def test_lane_sizing_is_explicit_not_derived(tmp_path):
     """소비자가 findings 를 재해석하게 두면 해석이 갈린다 — 허용 여부를 명시한다."""
     days = [f"2026-07-{d:02d}" for d in range(1, 16)]
-    build_repo(tmp_path, kospi=days, swing=days, kosdaq=days[:3], nasdaq=days)
+    build_repo(tmp_path, kospi=days, swing=days, b=days[:3], nasdaq=days)
     rep = sen.run(tmp_path, _cfg(), TODAY, {})
     ls = rep["lane_sizing"]
-    assert ls["kosdaq_intraday_t10"]["allowed"] is False
-    assert ls["kosdaq_intraday_t10"]["verdict"] == "FAIL"
-    assert ls["kospi_intraday_t5"]["allowed"] is True
+    assert ls["b_primary_top3"]["allowed"] is False
+    assert ls["b_primary_top3"]["verdict"] == "FAIL"
+    assert ls["swing_candidate"]["allowed"] is True
+    # 은퇴 레인도 목록에 **있어야** 하고 불허여야 한다 — 없으면 소비자가 "의견 없음"으로 읽는다.
+    assert ls["kospi_intraday_t5"]["allowed"] is False
+    assert ls["kospi_intraday_t5"]["verdict"] == "RETIRED_LANE"
 
 
 def test_exempt_and_grace_are_allowed_but_fail_is_not(tmp_path):

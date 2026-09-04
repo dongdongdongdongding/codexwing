@@ -94,7 +94,7 @@ def threshold_sweep(prob: np.ndarray, returns: np.ndarray, target: np.ndarray) -
 
 
 def fit_and_eval(name: str, model, X_train, X_sel, X_rep, y_train, y_sel, y_rep,
-                 returns_sel, returns_rep, feat_cols):
+                 returns_sel, returns_rep, feat_cols, dates_rep=None):
     """train 70% 학습 → sel 15% 에서 임계값 선택 → rep 15% 에서 보고.
 
     2026-09-03: 이전에는 30% 검증 슬라이스 **하나**에서 임계값을 argmax 로 고르고
@@ -136,8 +136,33 @@ def fit_and_eval(name: str, model, X_train, X_sel, X_rep, y_train, y_sel, y_rep,
     # SWING rep 구간 기준선이 win 34.7% / 평균 −4.33% 였고, 모델 픽은 42.3% / −1.76% 로
     # **리프트 +7.6pp / +2.6pp** 인데 절대 기준으로는 둘 다 탈락한다.
     # 판정은 아래 게이트가 하고, 여기서는 **자를 같이 실어 보낸다**(규율 16).
-    base_win = float(np.mean(returns_rep > 0) * 100) if len(returns_rep) else None
-    base_ret = float(np.mean(returns_rep)) if len(returns_rep) else None
+    # 🔴 2026-09-04 정정 (규율 15: 널의 형태가 개입의 형태와 같아야 한다).
+    # 처음엔 rep 슬라이스의 **무조건부** 평균을 기준선으로 썼다. 그러면
+    # 「좋은 날을 고른 모델」과 「좋은 종목을 고른 모델」이 구분되지 않는다 —
+    # [J3] 실측: 날짜구성 널(날짜 내 치환)만으로 +3.19~+7.34pp 가 나온다.
+    # 무조건부 기준선 대비 +7.96pp 였던 모델은 널 중심(~+5.4pp)을 빼면 +2.6pp 로
+    # **널 산포 안**이고, 날짜 내 Spearman 은 −0.0096±0.0396 으로 **정확히 0** 이었다.
+    # 즉 그 리프트는 종목 판별력이 아니라 **날짜 구성**이었고, 내 게이트가 그걸 통과시켰다.
+    # 이제 **모델이 픽한 날들의 기준선을 픽수로 가중평균**한다 — 날짜 선택분을 제거하고
+    # 「같은 날 안에서 더 나은 종목을 골랐는가」만 남긴다.
+    base_win = base_ret = None
+    if len(returns_rep):
+        if dates_rep is not None and oos_n:
+            dr = pd.Series(np.asarray(dates_rep))
+            picked = dr[rep_mask].value_counts()               # 날짜별 픽 수
+            wins, rets, wsum = 0.0, 0.0, 0.0
+            for day, k in picked.items():
+                m = (dr == day).to_numpy()
+                if not m.any():
+                    continue
+                wins += k * float(np.mean(returns_rep[m] > 0) * 100)
+                rets += k * float(np.mean(returns_rep[m]))
+                wsum += k
+            if wsum:
+                base_win, base_ret = wins / wsum, rets / wsum
+        if base_win is None:                                    # 날짜를 못 받았다 — 옛 자로 떨어진다
+            base_win = float(np.mean(returns_rep > 0) * 100)
+            base_ret = float(np.mean(returns_rep))
     result = {
         "model": name,
         "auc": auc,
@@ -202,6 +227,8 @@ def main():
     y_train, y_sel, y_rep = y.iloc[:i_train], y.iloc[i_train:i_sel], y.iloc[i_sel:]
     returns_sel = returns.iloc[i_train:i_sel].to_numpy()
     returns_rep = returns.iloc[i_sel:].to_numpy()
+    # 날짜를 넘겨야 기준선을 **같은 날짜 구성**으로 맞출 수 있다(위 정정 참조).
+    dates_rep = pd.to_datetime(seg["created_at"].iloc[i_sel:], errors="coerce").dt.date.to_numpy()
 
     candidates = {
         "rf": RandomForestClassifier(n_estimators=500, max_depth=8, class_weight="balanced", random_state=42, n_jobs=-1),
@@ -244,7 +271,8 @@ def main():
     payloads = {}
     for name, model in candidates.items():
         result, payload = fit_and_eval(name, model, X_train, X_sel, X_rep,
-                                       y_train, y_sel, y_rep, returns_sel, returns_rep, feat_cols)
+                                       y_train, y_sel, y_rep, returns_sel, returns_rep, feat_cols,
+                                       dates_rep=dates_rep)
         results.append(result)
         payloads[name] = payload
 

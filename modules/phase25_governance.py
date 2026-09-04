@@ -49,10 +49,18 @@ OOS_VALIDATE_MIN_PICKS = 30
 # 절대 임계값만 보면 **둘 다 탈락**이라 「판별하는 모델」과 「기준선을 복제하는 모델」이
 # 구분되지 않았다. 구분되지 않으면 게이트가 정보를 안 주는 것과 같다(규율 16: 자를 맞춰라).
 #
-# 리프트 하한은 **표본에서 유도한다** — 승률 리프트는 표준오차 1개분을 넘어야 한다.
-# 0 초과만 요구하면 잡음이 절반은 통과한다. n=527 이면 1SE=2.2pp(SWING +7.6 통과),
-# n=2079 이면 1SE=1.1pp(INTRADAY +0.3 탈락).
-OOS_LIFT_WIN_SE_MULT = 1.0
+# 리프트 하한은 **표본에서 유도한다** — 승률 리프트가 표준오차의 몇 배를 넘어야 하는가.
+#
+# 🔴 2026-09-04 상향 (1.0 → 2.0). 두 가지가 겹쳤다:
+#  ⑴ 기준선의 널 형태를 고치자(날짜 맞춤) 서빙 모델 리프트가 **+7.96 → +2.96pp** 로 떨어졌다.
+#     약 5pp 가 종목 판별이 아니라 **날짜 구성**이었다. n=482 에서 1SE=2.28pp 이므로
+#     남은 값은 **1.3σ** — 확립된 값이 아니다.
+#  ⑵ [J3] 독립 측정: 날짜 내 Spearman(예측, 실현) = **−0.0096 ± 0.0396 (t=−0.24)**,
+#     보정도 파탄(예측 19.8%→70.3% 로 3.5배 벌어지는 동안 실현은 17~21% 평평).
+#     즉 남은 리프트는 종목 판별력이 아니다.
+# 1SE 는 순수 잡음의 약 16% 를 통과시킨다. 이 게이트는 **매일 · 레인 2개 × 후보 6종**을
+# 판정하므로 그 오탐률로는 잡음이 상시 통과한다. 보드의 표준 잣대도 2σ 다.
+OOS_LIFT_WIN_SE_MULT = 2.0
 
 # 기준선이 없는 번들은 옛 절대 기준으로 판정한다(하위호환 — 리프트를 못 재면 느슨해지면 안 된다).
 WEAK_OOS_MIN_AUC = 0.50
@@ -195,7 +203,8 @@ def phase25_weak_oos_reasons(
         se_win = 100.0 * math.sqrt(0.25 / n) if n and n > 0 else None
         floor = (OOS_LIFT_WIN_SE_MULT * se_win) if se_win is not None else 0.0
         if lift_win <= floor:
-            reasons.append(f"oos_lift_win={lift_win:+.1f}pp<={floor:.1f}pp(1SE,n={int(n or 0)})")
+            reasons.append(f"oos_lift_win={lift_win:+.1f}pp<={floor:.1f}pp"
+                           f"({OOS_LIFT_WIN_SE_MULT:g}SE,n={int(n or 0)})")
         if lift_ret <= 0:
             reasons.append(f"oos_lift_ret={lift_ret:+.2f}pp<=0")
         return reasons

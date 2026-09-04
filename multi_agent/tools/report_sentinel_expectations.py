@@ -75,6 +75,29 @@ KR_CALENDAR_LANES = ["kospi_intraday_t5", "swing_candidate"]
 US_CALENDAR_LANES = ["nasdaq_session_tape"]
 
 
+# 스크립트로 직접 실행하면 sys.path[0] 이 이 파일의 디렉터리라 최상위 패키지가 안 잡힌다.
+# (위 `multi_agent.tools...` import 가 그래서 조용히 fallback 으로 떨어지고 있었다.)
+_PROJECT_ROOT = str(Path(__file__).resolve().parents[2])
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+
+from modules.stream_exclusion import GATE_LANE_MAP, RETIRED_LANES
+
+
+def _retired_gate_lane(gate_lane: str):
+    """게이트 어휘(`kospi_intraday_t5`)로 은퇴 여부를 묻는다.
+
+    2026-09-04: 은퇴/정지 레지스트리는 **발행 어휘**(`kospi_intraday`)로 적혀 있고
+    이 파일은 **게이트 어휘**로 돈다. 그래서 2026-08-22 에 죽인 레인이 2주 동안
+    `firing_qualification FAIL` 경보를 냈다 — 발화하지 않는 것이 정상인 레인인데.
+    두 어휘가 갈라지는 지점마다 같은 실패가 난다(stream_exclusion.py 의 F1 계열).
+    """
+    for pub, gate in GATE_LANE_MAP.items():
+        if gate == gate_lane and pub in RETIRED_LANES:
+            return pub, RETIRED_LANES[pub]
+    return None, None
+
+
 def _iso(value: Any) -> str:
     s = str(value or "").strip()[:10]
     if len(s) == 8 and s.isdigit():
@@ -170,6 +193,16 @@ def check_firing_qualification(root: Path, cfg: Dict[str, Any], today: str,
 
     findings: List[Dict[str, Any]] = []
     for lane, (_, _, market) in LANE_LEDGERS.items():
+        pub_lane, kind = _retired_gate_lane(lane)
+        if pub_lane:
+            # 은퇴/정지 레인은 **발화하지 않는 것이 정상**이다. 자격 미달로 경보하면
+            # 우리가 내린 결정을 시스템이 결함으로 되돌려 보고하는 것이고,
+            # 그 소음이 진짜 경보를 묻는다. 조용히 버리지 않고 info 로 드러낸다.
+            findings.append({"check": "firing_qualification", "lane": lane,
+                             "verdict": "RETIRED_LANE", "severity": "info",
+                             "retired_as": pub_lane, "kind": kind,
+                             "detail": f"{pub_lane} 이 {kind} 상태 — 미발화가 정상이다"})
+            continue
         days = firing_days(root, lane)
         recent = cal[market][-window:]
         suspended = suspensions.get(lane)
@@ -258,6 +291,17 @@ def check_artifact_freshness(root: Path, cfg: Dict[str, Any], today: str) -> Lis
         sev = {"critical": "critical", "high": "alert", "medium": "warn"}.get(sev, "warn")
         if not art.get("producer_scheduled", True):
             continue                                   # 은퇴한 생산자의 정체는 정상이다
+        # 2026-09-04: 레인이 은퇴/정지되면 그 산출물이 멎는 것이 **정상**이다. 그런데
+        # `producer_scheduled` 는 손으로 꺼야 해서, 2026-09-02 에 은퇴시킨 nasdaq_session_edge 가
+        # 이틀 뒤에도 CRIT 을 울리고 있었다. CRIT 채널의 소음은 진짜 CRIT 을 묻는다.
+        # 이제 은퇴 레지스트리에서 자동으로 따라온다 — 다음 은퇴 때 또 남지 않는다.
+        # **조용히 버리지는 않는다**(info 로 드러낸다) — 침묵은 이 파일이 줄곧 싸워온 실패다.
+        lane = str(art.get("lane") or "")
+        if lane and lane in RETIRED_LANES:
+            out.append({"check": "artifact_freshness", "path": str(art.get("path")),
+                        "verdict": "RETIRED_LANE", "severity": "info", "lane": lane,
+                        "detail": f"레인 {lane} 이 {RETIRED_LANES[lane]} 상태 — 산출물 정체는 정상이다"})
+            continue
         if "{" in raw:
             # 월별 파일 등 템플릿 경로. 해석기 없이 MISSING 으로 올리면 **오탐**이고,
             # 오탐이 쌓이면 경보 전체가 무시된다 — 조용히 넘기지도 않고 미검사로 드러낸다.
@@ -350,14 +394,33 @@ def _kc_no_rows_after(root: Path, chk: Dict[str, Any]) -> Dict[str, Any]:
     dates = [_iso(r.get(chk.get("date_field", "date"))) for r in rows]
     newer = [d for d in dates if d and d > after]          # 행 단위 — 축소 보고 금지
     newer_dates = sorted(set(newer))                        # 거래일 단위
+    # 2026-09-04: 이 검사는 **과거 위반 때문에 영원히 발동**하고 있었다. 랭킹섀도 킬은
+    # 2026-09-03 에 집행됐는데(AG_SWING_RANKING_SHADOW 기본값 0), 08-18~09-02 에 쌓인
+    # 1,304행 때문에 그 뒤로도 계속 CRIT 을 냈다.
+    # **절대 꺼지지 않는 CRIT 은 없는 CRIT 과 같다** — 사람이 무시하도록 훈련된다.
+    # 그래서 「위반이 진행 중인가」와 「위반이 있었고 지금은 막혔는가」를 나눈다.
+    # 새 행이 하나라도 들어오면 last_date_after 가 전진해 즉시 다시 진행 중으로 올라간다 —
+    # 잊는 것이 아니라 **상태를 정확히 말하는 것**이다.
+    last_after = newer_dates[-1] if newer_dates else None
+    stale_td = 0
+    if last_after:
+        cal = trading_days(root, str(chk.get("market", "KR")), _today())
+        stale_td = len([d for d in cal if d > last_after])
+    contained_after_td = int(chk.get("contained_after_trading_days", 2))
+    contained = bool(newer) and stale_td >= contained_after_td
     return {"fired": bool(newer),
+            "contained": contained,
             "observed": {"max_date": max(dates) if dates else None,
                          "rows_after": len(newer),
                          "dates_after": len(newer_dates),
-                         "first_date_after": newer_dates[0] if newer_dates else None},
+                         "first_date_after": newer_dates[0] if newer_dates else None,
+                         "last_date_after": last_after,
+                         "trading_days_since_last": stale_td},
             "detail": (f"킬 선언일 {after} 이후 행 {len(newer)}건"
                        f" ({len(newer_dates)}거래일"
                        + (f", {newer_dates[0]}~{newer_dates[-1]}" if newer_dates else "") + ")"
+                       + (f" — **집행됨**: 마지막 위반 {last_after} 이후 {stale_td}거래일 신규 0건"
+                          if contained else (" — **진행 중**" if newer else ""))
                        if newer else f"킬 선언일 {after} 이후 행 0건")}
 
 
@@ -639,6 +702,12 @@ def check_prereg_kill_criteria(cfg: Dict[str, Any], root: Optional[Path] = None)
             verdict, sev = "UNDECIDED", "warn"
         elif res["fired"]:
             verdict, sev = "FIRED", str(item.get("severity", "alert"))
+            if res.get("contained"):
+                # 위반은 있었으나 집행 후 신규가 멎었다. 사실은 남기되 등급을 내린다 —
+                # 영원히 켜진 CRIT 은 사람이 무시하도록 훈련시켜 **진짜 CRIT 을 묻는다.**
+                # 새 행이 하나라도 들어오면 다음 실행에서 즉시 원래 등급으로 돌아간다.
+                verdict = "FIRED_CONTAINED"
+                sev = "warn" if sev == "critical" else "info"
         else:
             verdict, sev = "OK", "info"
         out.append({**base, "verdict": verdict, "severity": sev,
