@@ -100,9 +100,11 @@ def test_retired_lanes_are_not_judged_on_firing(tmp_path):
     days = [f"2026-07-{d:02d}" for d in range(1, 16)]
     build_repo(tmp_path, kospi=[], swing=days, kosdaq=[], nasdaq=days, b=days)
     out = sen.check_firing_qualification(tmp_path, _cfg(), TODAY, {})
-    for lane in ("kospi_intraday_t5", "kosdaq_intraday_t10"):
-        f = [x for x in out if x["lane"] == lane][0]
-        assert f["verdict"] == "RETIRED_LANE" and f["severity"] == "info"
+    f = [x for x in out if x["lane"] == "kospi_intraday_t5"][0]
+    assert f["verdict"] == "RETIRED_LANE" and f["severity"] == "info"
+    # 2026-09-05: kosdaq_intraday_t10 은 정지가 철회됐으므로 **정상 판정 대상**이다.
+    k = [x for x in out if x["lane"] == "kosdaq_intraday_t10"][0]
+    assert k["verdict"] != "RETIRED_LANE"
     # 조용히 버리지 않는다 — 사유가 남아야 한다.
     assert all(f.get("retired_as") for f in out if f["verdict"] == "RETIRED_LANE")
 

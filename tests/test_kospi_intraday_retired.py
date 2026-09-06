@@ -47,32 +47,27 @@ def test_scanner_refuses_to_run_the_lane():
 def test_other_lanes_are_untouched():
     """죽인 것은 한 레인이다. 나머지는 은퇴 레지스트리에 들어가면 안 된다.
 
-    2026-09-03: `kosdaq_intraday` 는 이 목록에서 뺐다 — 별개 결정으로 **정지**됐다
-    (`model_stale`, 서빙 모델 auc 0.478 / 리프트 −0.0pp).
-    「죽음」과 「정지」는 다른 사유이고 복귀 경로도 다르므로 아래에서 따로 확인한다.
+    2026-09-05: `kosdaq_intraday` 를 이 목록에 되돌렸다. 09-03 에 「서빙 모델 auc 0.478」을
+    근거로 정지시켰으나 **그 모델은 이 레인의 것이 아니었다** — phase25 는 `quant_analysis`
+    스코어링의 tilt 모델이고, 이 레인은 `train_kosdaq_1500_bundle.py` 가 일일 재학습하는
+    자기 번들로 돈다. 전진 원장에서도 유일하게 CI 하한이 0 을 넘는 레인이다.
     """
-    for lane in ("kospi_swing", "kosdaq_swing", "nasdaq_swing"):
+    for lane in ("kospi_swing", "kosdaq_swing", "kosdaq_intraday", "nasdaq_swing"):
         assert lane not in RETIRED_LANES
 
 
-def test_kosdaq_intraday_is_halted_for_a_different_reason():
-    """정지는 은퇴가 아니다 — 사유와 복귀 경로가 달라야 하고, 남의 문구가 붙으면 안 된다."""
-    row = {}
-    apply_stream_exclusion(row, "kosdaq_intraday",
-                           gate_state={"usable": True, "lanes": {"kosdaq_intraday_t10": {"verdict": "CONFIRM"}}})
-    note = " ".join(str(v) for v in row.values())
-    assert RETIRED_LANES["kosdaq_intraday"] == "model_stale"
-    assert "모델 정지" in note and "복귀 경로 있음" in note
-    # 죽은 레인의 사유(체결 불가능한 진입)가 새어 들어오면 안 된다.
-    assert "상한가" not in note
+def test_a_lane_is_only_halted_on_its_own_producer():
+    """🔴 2026-09-05 회귀 방지 — 레인을 세울 때 **그 레인의 생산자**를 봤는지 확인한다.
 
-
-def test_halted_lane_covers_both_vocabularies():
-    """웹은 lane_key, Discord 는 decision_bucket 을 쓴다. 한쪽만 막으면 다른 쪽으로 그대로 나간다(F1)."""
+    조정관이 남의 모델(phase25 스코어링 tilt)의 성적으로 이 레인을 세웠다. 두 어휘
+    (`kosdaq_intraday` / `kosdaq_intraday_3d_t5_vwap_guard`) 를 다 막아서 스캐너 단계까지
+    조용히 죽었고, 하필 그 레인이 전진 원장에서 유일하게 유의 양수였다.
+    """
     for lane in ("kosdaq_intraday", "kosdaq_intraday_3d_t5_vwap_guard"):
         st = stream_status(lane, gate_state={"usable": True,
-                                             "lanes": {"kosdaq_intraday_t10": {"verdict": "CONFIRM"}}}, strict=True)
-        assert st["excluded"] is True and st["reason"] == "lane_model_stale"
+                                             "lanes": {"kosdaq_intraday_t10": {"verdict": "CONFIRM"}}},
+                           strict=True)
+        assert st["excluded"] is False, f"{lane} 이 근거 없이 막혀 있다"
 
 
 def test_lane_stays_in_LANES_for_history():
