@@ -243,3 +243,23 @@ def test_both_publishers_respect_the_per_market_depth():
     ops = pathlib.Path("multi_agent/tools/run_daily_ops.sh").read_text(encoding="utf-8")
     assert '--top-k "${AG_KR_SWING_CANDIDATE_TOPK:-3}"' not in ops, "항상 넘기면 시장별 값이 덮인다"
     assert 'KR_SWING_TOPK_ARGS[@]+"${KR_SWING_TOPK_ARGS[@]}"' in ops, "bash 3.2 빈 배열 확장 보호"
+
+
+def test_picks_carry_their_rank_and_contract_membership():
+    """🔴 2026-09-08 회귀 방지 — **원장만 보고 계약 안/밖을 가릴 수 있어야 한다.**
+
+    실제 사고: KOSDAQ 계약은 `TOP_K=1` 인데 원장은 발화일 43일에 픽 123건(일평균 2.86)이었고
+    **35/43 일이 쿼터를 초과**했다. 랭크가 안 박혀 있어 그 전체를 성과로 읽었고
+    조정관이 라이브 EV 를 **−0.277%** 로 보고했다. 계약 밖 80건을 빼면 부호가 뒤집힌다
+    (사후 재구성 +0.950% · `top_k` 가 실제 박힌 행만 +1.817%).
+
+    재구성은 픽 시점 랭크가 아니라 추정이다 — provenance 는 **발행 시점에** 박아야 한다.
+    """
+    src = __import__("pathlib").Path(swc.__file__).read_text(encoding="utf-8")
+    assert 'for _rank, (_, r) in enumerate(te.nlargest(_k, "p").iterrows(), 1):' in src, \
+        "랭크를 세지 않으면 계약 안/밖을 원장에 남길 수 없다"
+    for field in ('"rank": _rank,', '"contract_top_k": TOP_K.get(mkt, 3),',
+                  '"in_contract": bool(_rank <= TOP_K.get(mkt, 3)),'):
+        assert field in src, f"픽에 {field} 가 없다 — 원장이 계약을 스스로 설명하지 못한다"
+    # 계약 정본은 시장별로 다르다. 하나로 뭉치면 KOSDAQ(1)이 KOSPI(3)의 깊이를 물려받는다.
+    assert swc.TOP_K["KOSDAQ"] == 1 and swc.TOP_K["KOSPI"] == 3

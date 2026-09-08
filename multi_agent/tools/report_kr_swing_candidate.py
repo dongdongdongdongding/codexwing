@@ -418,7 +418,12 @@ def score_today(top_k: Optional[int] = None) -> Dict[str, Any]:
             continue          # 기권 w60q0.7: 그날은 사지 않는다 (순위 강등이 아니다)
         # `top_k` 가 명시되면 두 시장 다 그 값(수동 실행·검정용). 아니면 시장별 `TOP_K`.
         _k = top_k if top_k is not None else TOP_K.get(mkt, 3)
-        for _, r in te.nlargest(_k, "p").iterrows():
+        # 2026-09-08: **랭크를 박는다.** 안 박으면 계약(top-1)이 낸 성과를 원장에서 읽을 수 없다.
+        # 실제 사고: KOSDAQ 원장이 발화일 43일에 픽 123건(일평균 2.86)으로 **35/43일이 쿼터 초과**였고,
+        # 그 전체를 성과로 읽어 **−0.277%** 라고 보고했다. 같은 날 `p` 로 1위를 **사후 재구성**하면
+        # +0.950% 이고, `top_k` 가 실제로 박힌 행만 보면 **+1.817%** 다 — 부호가 반대다.
+        # 재구성은 픽 시점 랭크가 아니라 추정이다. **provenance 는 발행 시점에 박아야 한다.**
+        for _rank, (_, r) in enumerate(te.nlargest(_k, "p").iterrows(), 1):
             out["picks"].append({"date": str(latest.date()), "market": mkt, **state, **verdict,
                                  # 재현 감사용 입력 지문 (규율 43). 없으면 픽을 사후 검증할 수 없다.
                                  "input_sig": _sig,
@@ -436,6 +441,10 @@ def score_today(top_k: Optional[int] = None) -> Dict[str, Any]:
                                  "atr_pct": round(float(r["atr_pct"]), 2) if pd.notna(r.get("atr_pct")) else None,
                                  "liq_eok": round(float(r["liq"]) / 1e8, 1),
                                  "contract_h": CONTRACT_H.get(mkt, 5), "top_k": _k,
+                                 # 계약 안(rank <= TOP_K 정본)인지 원장만 보고 판별 가능해야 한다.
+                                 "rank": _rank,
+                                 "contract_top_k": TOP_K.get(mkt, 3),
+                                 "in_contract": bool(_rank <= TOP_K.get(mkt, 3)),
                                  "contract": f"buy next open; +{CONTRACT_TP*100:.0f}% touch exit within "
                                              f"{CONTRACT_H.get(mkt, 5)} sessions else close"})
     # §29 출구혼합 shadow: 당일 픽 내 ATR 3분위 밴드 → 출구 플랜 스탬프 (계약 불변, 병행채점용)
