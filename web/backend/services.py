@@ -53,7 +53,12 @@ _LEDGER_EXTRA_KEYS = ("tier", "tier_threshold", "mkt_state", "mkt_dd20", "hold_d
                       "target_tp_pct", "ev_pred", "exit_contract", "ret_5d", "ret_5d_d",
                       "atr_pct", "exit_band", "exit_mix_plan", "rank_in_day", "picks_in_day",
                       # 체결 가능성 판정에 필요 — 없으면 상한가 픽을 못 거른다
-                      "day_change", "close_vwap")
+                      "day_change", "close_vwap",
+                      # 2026-09-08: 계약이 **시장별**로 갈렸다(KOSDAQ +7%/H10 · KOSPI +5%/H10).
+                      # 이 필드들이 안 오면 화면이 **계약과 다른 목표가**를 보여준다 — 실제로 그랬다:
+                      # KOSDAQ 픽의 목표가가 +5.00% 로 나왔는데 계약은 +7% 였다.
+                      # 그 화면대로 팔면 **측정된 계약과 다른 매매**가 된다(거래당 +0.684 는 +7% 기준이다).
+                      "contract_tp", "contract_h", "rank", "contract_top_k", "in_contract")
 
 
 @lru_cache(maxsize=1)
@@ -485,6 +490,13 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
     }
     if extra:
         row.update({k: v for k, v in extra.items() if v is not None})
+        # 원장은 `contract_tp` 를 **분수**로 적고(0.07) 화면은 `target_tp_pct` 를 **퍼센트**로 읽는다.
+        # 두 어휘를 잇지 않으면 계약을 바꿔도 화면 목표가가 안 따라온다(2026-09-08 실측 결함).
+        if row.get("target_tp_pct") is None and row.get("contract_tp") is not None:
+            try:
+                row["target_tp_pct"] = round(float(row["contract_tp"]) * 100, 4)
+            except (TypeError, ValueError):
+                pass
         # 레인별 계약 TP(§7-E: KOSDAQ +10%)가 있으면 목표가 재계산
         tp = row.get("target_tp_pct")
         if tp and entry:
