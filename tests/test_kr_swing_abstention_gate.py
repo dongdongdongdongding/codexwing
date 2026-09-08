@@ -75,19 +75,28 @@ def test_spec_constants_are_pinned():
     assert swc.LABEL == "t5_5"
 
 
-def test_target_is_still_plus_five_percent():
-    """목표는 +5% 로 불변이다. **H 만 시장별로 갈렸다**(2026-08-23) — TP 까지 같이 움직이면
-    두 시장 다 검증 밖으로 나간다."""
+def test_contract_is_per_market_and_stamped_on_every_pick():
+    """계약은 **시장별**이고, 픽은 자기가 팔린 계약을 들고 다녀야 한다.
+
+    2026-09-08 운영자 결정으로 KOSDAQ 이 **TP7/H10** 으로 옮겼다(KOSPI 는 TP5/H10 유지).
+    근거는 [M2] 계약격자 보고창 실측: 현행 TP5/H5 거래당 +0.325 · 승률 76.8% 대비
+    TP7/H10 이 거래당 **+0.684(2.1배)** · 승률 **76.2%**(75% 관문 유지) ·
+    `margin>0` **6/6** · 현행 대비 `Δ>0` **6/6**. 보유가 1.09→1.92 로 **길어져** 게이트를 지키는 방향이다.
+    ⚠️ paired CI 는 0 을 포함한다 — 점추정과 시드일관성으로 고른 것이지 유의성으로 고른 것이 아니다.
+
+    이 테스트의 직전 판은 「TP 가 시장별 dict 가 되면 안 된다」였다. 그 근거는
+    「TP 까지 같이 움직이면 두 시장 다 검증 밖으로 나간다」였는데, 지금은 **두 시장 각각이
+    같은 격자에서 6시드 × 3창으로 검증된 칸**이라 그 전제가 더는 성립하지 않는다.
+    대신 지켜야 할 불변식은 **「픽이 자기 계약을 들고 다닌다」**이다 — 안 그러면 계약을 바꿀 때
+    미정산 과거 픽이 새 계약으로 소급 채점된다.
+    """
     src = __import__("pathlib").Path(swc.__file__).read_text(encoding="utf-8")
-    assert swc.CONTRACT_TP == 0.05
-    # 2026-09-05: 정산이 **픽이 들고 온 TP** 를 쓰도록 바뀌었다(`contract_h` 와 같은 보호).
-    # 이전에는 `CONTRACT_TP` 를 정산 시점에 읽어, TP 를 바꾸면 **미정산 과거 픽까지 새 TP 로
-    # 채점**됐다 — 전진 기록의 소급 변조다. 검사 대상을 소스 문자열에서 **불변식**으로 옮긴다.
-    assert 'float(row.get("contract_tp") or CONTRACT_TP)' in src, \
-        "정산이 발행 당시 TP 를 쓰지 않으면 계약 변경이 과거를 소급 재채점한다"
-    assert '"contract_tp": CONTRACT_TP' in src, "픽에 TP 가 박히지 않으면 위 보호가 무의미하다"
-    # TP 는 **시장별로 갈리지 않는다**(H 만 갈렸다). 갈리면 두 시장 다 검증 밖으로 나간다.
-    assert isinstance(swc.CONTRACT_TP, float), "TP 가 시장별 dict 가 되면 안 된다"
+    assert swc.CONTRACT_TP == {"KOSPI": 0.05, "KOSDAQ": 0.07}
+    assert swc.CONTRACT_H == {"KOSPI": 10, "KOSDAQ": 10}
+    assert swc.CONTRACT_TP_DEFAULT == 0.05, "미표기 과거 픽은 +5% 로 남아야 한다"
+    # 정산은 **픽이 들고 온 값**을 쓴다(전역 상수를 정산 시점에 읽으면 소급 변조가 된다).
+    assert 'float(row.get("contract_tp") or CONTRACT_TP_DEFAULT)' in src
+    assert '"contract_tp": CONTRACT_TP.get(mkt, CONTRACT_TP_DEFAULT),' in src
     assert "win5 = h.iloc[:_H]" in src, "보유창이 시장별 H 를 따라야 한다"
 
 
@@ -188,12 +197,19 @@ def test_quantile_actually_changes_the_threshold():
 
 
 def test_contract_horizon_is_per_market():
-    """KOSPI 10세션 / KOSDAQ 5세션. 각 시장이 **자기가 검증된 계약**을 쓴다.
+    """각 시장이 **자기가 검증된 계약**을 쓴다. 한 값으로 묶으면 한쪽이 검증 밖으로 나간다.
 
-    두 시장을 한 H 로 묶으면 한쪽이 검증 밖으로 나간다 — KOSDAQ 의 [U] 게이트는 H=5 에서
-    검증됐고 H 조임을 KOSDAQ 에서 다시 재지 않았다."""
-    assert swc.CONTRACT_H == {"KOSPI": 10, "KOSDAQ": 5}
-    assert swc.CONTRACT_TP == 0.05
+    2026-09-08: KOSDAQ 이 H=5 → **H=10**(TP 도 5→7). 이 테스트의 직전 판은
+    「KOSDAQ 의 H 조임을 다시 재지 않았다」를 근거로 H=5 를 고정했는데,
+    [M2] 가 **그 축을 쟀다** — 6시드 × 3창 계약격자에서 TP7/H10 이 현행 대비
+    거래당 +0.325 → **+0.684**, `margin>0` 6/6, `Δ>0` 6/6, 승률 76.8% → **76.2%**(관문 유지).
+    미측정이라는 전제가 해소됐으므로 고정 근거도 함께 사라진다.
+    ⚠️ paired CI 는 0 을 포함한다 — 유의성이 아니라 점추정·시드일관성으로 고른 값이다.
+    """
+    assert swc.CONTRACT_H == {"KOSPI": 10, "KOSDAQ": 10}
+    assert swc.CONTRACT_TP == {"KOSPI": 0.05, "KOSDAQ": 0.07}
+    # 두 시장이 같은 값을 갖더라도 **시장별 자료구조**여야 한다 — 한쪽만 바꿀 수 있어야 하기 때문이다.
+    assert isinstance(swc.CONTRACT_H, dict) and isinstance(swc.CONTRACT_TP, dict)
 
 
 def test_settlement_waits_for_the_longer_window():

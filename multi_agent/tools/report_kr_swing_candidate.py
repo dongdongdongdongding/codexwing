@@ -110,8 +110,24 @@ EMBARGO_DAYS = 17                  # 라벨이 H 세션 앞을 보므로 학습�
 # KOSPI H=10: [Y] 가 위 셀에서 검증한 계약. KOSDAQ H=5: [U] 게이트가 검증된 계약이고
 # H 조임을 KOSDAQ 에서 다시 재지 않았다([V] 고원 TP4~7/H3~10 안이긴 하나 세션당으로는 미측정).
 # **검증된 계약 밖으로 시장을 끌고 가지 않는다.**
-CONTRACT_H = {"KOSPI": 10, "KOSDAQ": 5}
-CONTRACT_TP = 0.05
+CONTRACT_H = {"KOSPI": 10, "KOSDAQ": 10}
+# 🔴 2026-09-08 운영자 결정(「운영 레인보다 좋으면 교체해」): **KOSDAQ 만 TP7/H10 으로 옮긴다.**
+# 근거 — [M2] 계약격자(6시드 × 3창, `~/research_cache/M2/{cells,paired}.parquet`) 보고창:
+#   현행 TP5/H5  승률 76.8% · 거래당 +0.325 · 보유 1.09 · 유효세션당 +0.2974
+#   신규 TP7/H10 승률 **76.2%** · 거래당 **+0.684(2.1배)** · 보유 1.92 · 유효세션당 +0.3567(1.20배)
+# 이 칸을 고른 이유(더 높은 칸을 두고):
+#   · `margin>0` **6/6** 이고 현행 대비 `Δ>0` 도 **6/6** — 두 조건을 같이 만족하는 칸은 TP7/H10 과 TP10/H10 뿐이다
+#   · 승률 76.2% 로 **기존 75% 관문을 그대로 넘는다**(TP10/H10 은 67.6% 라 완화가 필요하다)
+#   · 보유가 1.09 → 1.92 로 **길어진다**. [Y] 개정 7·8 실측은 「보유가 짧을수록 게이트 판별력이 죽는다」이므로
+#     이 방향은 시장약세 게이트(감사에서 유일하게 살아남은 성분)를 **지키는 쪽**이다.
+#   · 유효세션당은 `보유`가 아니라 `max(보유,1)` 로 나눴다 — 하루 1픽(TOP_K=1)이라
+#     보유가 1세션 미만이어도 재투입이 불가능하다. 이 하한이 없으면 H2/H3 칸이 5배로 뜬다(자본회전 착시).
+# ⚠️ 불확실성(운영자 완화 기준에 따라 폐기 사유로 쓰지 않되 그대로 적는다):
+#   · [M2] paired CI 는 **0 을 포함**한다([−0.28, +0.99]). 「유의하게 낫다」가 아니라 「점추정과 시드일관성」이다.
+#   · 백테 격자이고 **라이브 검증이 아니다.** 전환 후 원장이 새 에폭으로 쌓여야 확인된다.
+# KOSPI 는 **유지**한다 — 최선안(TP5/H3)이 보유 0.65세션으로 게이트가 죽는 구간이고 승률도 60.6% 다.
+CONTRACT_TP = {"KOSPI": 0.05, "KOSDAQ": 0.07}
+CONTRACT_TP_DEFAULT = 0.05        # 미표기 과거 픽 = 2026-09-08 이전 발행 = +5%
 # 발행 깊이도 **시장별**이다. 운영자 결정 2026-08-23.
 # 깊이의 효과가 두 시장에서 정반대다([Z] 측정, 계약·게이트·유니버스·기간 고정하고 k 만 훑음):
 #   KOSDAQ  k=3 -> k=1 : 세션당 +0.3388 -> **+0.6363 (+88%)** · 승률 77.9 -> 81.4% · 발화 1.99 -> 2.06일
@@ -431,7 +447,7 @@ def score_today(top_k: Optional[int] = None) -> Dict[str, Any]:
                                  # **TP 를 바꾸는 순간 미정산 과거 픽이 새 TP 로 채점된다** —
                                  # 바로 위 `contract_h` 주석이 경고하는 소급 변조가 TP 축에 열려 있었다.
                                  # 지금은 전부 0.05 라 동작이 바뀌지 않는다. 지뢰만 제거한다.
-                                 "contract_tp": CONTRACT_TP,
+                                 "contract_tp": CONTRACT_TP.get(mkt, CONTRACT_TP_DEFAULT),
                                  "px_max_date": str(latest.date()),
                                  "px_rows": int(len(d)), "train_rows": int(len(tr)),
                                  "label_max_date": str(pd.to_datetime(lab["date"]).max().date()),
@@ -445,7 +461,7 @@ def score_today(top_k: Optional[int] = None) -> Dict[str, Any]:
                                  "rank": _rank,
                                  "contract_top_k": TOP_K.get(mkt, 3),
                                  "in_contract": bool(_rank <= TOP_K.get(mkt, 3)),
-                                 "contract": f"buy next open; +{CONTRACT_TP*100:.0f}% touch exit within "
+                                 "contract": f"buy next open; +{CONTRACT_TP.get(mkt, CONTRACT_TP_DEFAULT)*100:.0f}% touch exit within "
                                              f"{CONTRACT_H.get(mkt, 5)} sessions else close"})
     # §29 출구혼합 shadow: 당일 픽 내 ATR 3분위 밴드 → 출구 플랜 스탬프 (계약 불변, 병행채점용)
     atrs = [p["atr_pct"] for p in out["picks"] if p.get("atr_pct") is not None]
@@ -540,7 +556,7 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
             if len(h) < _H + 1:
                 continue
             # 발행 당시 TP 로 채점한다(위 `_H_row` 와 같은 이유). 없으면 = 2026-09-05 이전 발행 = 0.05.
-            _TP_row = float(row.get("contract_tp") or CONTRACT_TP)
+            _TP_row = float(row.get("contract_tp") or CONTRACT_TP_DEFAULT)
             tgt = entry * (1.0 + _TP_row)
             win5 = h.iloc[:_H]
             ret = float((win5["Close"].iloc[-1] / entry - 1) * 100)
