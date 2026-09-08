@@ -55,6 +55,12 @@ MIN_LIQ20 = 1e8
 ADMIT_Q = 0.10           # 편입자격: `univ_frac250` 의 **그날 횡단면 분위**. 절대컷 아님(규율 3)
 UNIV_W, UNIV_MINP = 250, 60
 CONTRACT_H = 20          # TP +5% / H=20세션 (기존 5세션에서 교체)
+# 2026-09-08 [Q2] 발견: `contract_h` 는 픽별로 박히는데 **TP 만 정산부에 하드코딩**돼 있었다
+# (`entry * 1.05`). TP 를 바꾸는 순간 미정산 과거 픽이 새 TP 로 채점된다 —
+# 이 파일이 `contract_h` 에 대해 스스로 금지한 소급 변조가 TP 축에 열려 있었다.
+# KR 레인에서 같은 조치를 했다(커밋 `2856604`). 지금 동작은 불변(전부 0.05)이고 지뢰만 제거한다.
+CONTRACT_TP = 0.05
+CONTRACT_TP_DEFAULT = 0.05   # 미표기 과거 픽 = 2026-09-08 이전 발행 = +5%
 USR = PROJECT_ROOT / "runtime_state" / "reports" / "us_research"
 LEDGER = USR / "nasdaq_session_tape_ledger.jsonl"
 REPORT_JSON = USR / "nasdaq_session_tape_latest.json"
@@ -102,7 +108,9 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
             if len(h) < _H:
                 continue
             entry = float(row["entry"])
-            tgt = entry * 1.05
+            # 발행 당시 TP 로 채점한다(위 `_H` 와 같은 이유).
+            _TP = float(row.get("contract_tp") or CONTRACT_TP_DEFAULT)
+            tgt = entry * (1.0 + _TP)
             win5 = h.iloc[:_H]
             ret = (float(win5["Close"].iloc[-1]) / entry - 1) * 100
             touched = 0
@@ -129,6 +137,7 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
                     break
             row["touch5"] = touched
             row["contract_h"] = _H
+            row["contract_tp"] = _TP
             row["policy_ret"] = round(ret, 2)
             changed = True
         except Exception:
@@ -242,7 +251,7 @@ def main() -> None:
     picks = [{"date": str(latest.date()), "symbol": str(r["symbol"]), "p": round(float(r["p"]), 4),
               "entry": round(float(r["close"]), 2), "tier": "SHADOW",
               "contract": f"+5% touch within {CONTRACT_H} sessions else {CONTRACT_H}d close (close entry)",
-              "contract_h": CONTRACT_H, "univ_frac250": round(float(r["univ_frac250"]), 4),
+              "contract_h": CONTRACT_H, "contract_tp": CONTRACT_TP, "univ_frac250": round(float(r["univ_frac250"]), 4),
               "xq": round(float(r["xq"]), 4), "panel": os.path.basename(panel)}
              for _, r in top.iterrows()]
     existing = {(r.get("date"), r.get("symbol")) for r in _read_ledger()}
