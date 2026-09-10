@@ -293,6 +293,55 @@ def _universe_integrity(px, latest) -> Dict[str, Any]:
     """
     out: Dict[str, Any] = {}
     hist = px[px["date"] > latest - pd.Timedelta(days=UNIVERSE_CHECK_WINDOW * 2)]
+
+    # 🔴 2026-09-10: 아래 루프는 「줄어든 것」은 잡지만 **「없어진 것」은 못 잡았다** —
+    # 시장이 통째로 0행이면 `g` 가 비어 `continue` 로 조용히 넘어간다.
+    # 실제로 그랬다: `build_px_long` 의 시장 지도가 비어(`fdr.StockListing` 404 를
+    # `except: pass` 가 삼킴) `market` 기본값이 **4,938,844행 전부를 KOSPI 로** 찍었고,
+    #   · KOSDAQ 스윙 레인이 **픽을 한 건도 못 냈고**(유동성 통과 행 0)
+    #   · KOSDAQ 장중 번들 재학습이 빈 패널로 `KeyError: 'code'` 로 죽었고
+    #   · KOSPI 유니버스가 코스닥 종목으로 오염돼 원장에 7건이 잘못 나갔다
+    # 그 사흘간 **경보가 하나도 울리지 않았다.**
+    #
+    # 「한쪽 시장이 0」은 줄어듦과 달리 **정상 시나리오가 없다**(대량 상폐도 0 은 안 된다).
+    # 그래서 이것만은 기록이 아니라 **중단**이다 — 없는 시장으로 픽을 내는 것보다 안 내는 것이 낫다.
+    # **최근에 있었는데 오늘 0** 인 경우만 잡는다. 처음부터 없던 시장(단일시장 패널·검정 픽스처)은
+    # 사고가 아니다. 그리고 이 좁힘이 「대량 상폐를 막지 않는다」는 기존 계약(test_it_never_stops_publishing)과
+    # 충돌하지 않는다 — 상폐는 **줄어드는 것**이고 여기서 보는 것은 **사라지는 것**이다.
+    _today = px[px["date"] == latest]
+    _codes = {m: int(_today[_today["market"] == m]["code"].nunique()) for m in ("KOSPI", "KOSDAQ")}
+    # 창은 아래 루프가 쓰는 `hist` 와 **같은 것**을 쓴다. 달력일로 따로 잡았다가
+    # 거래일 수가 모자라 이력 조건이 한쪽만 통과했다(2026-09-10, 내가 만든 버그).
+    _recent = hist[hist["date"] < latest]
+    _had = {m: int(_recent[_recent["market"] == m]["code"].nunique()) for m in ("KOSPI", "KOSDAQ")}
+    # 이력이 부족하면 **아무것도 적지 않는다**(추측하지 않는다는 기존 계약 —
+    # test_too_little_history_is_skipped_rather_than_guessed 가 반환값이 정확히 {} 이길 요구한다).
+    # 아래 소멸 판정 자체가 `_had >= 100` 을 요구하므로 이력 없이는 어차피 발화하지 않는다.
+    # 이력 기준을 아래 루프와 **같게** 맞춘다(거래일 수). 다르게 잡으면 한쪽만 통과해
+    # 「추측하지 않는다」 계약이 깨진다 — 실제로 그랬다.
+    _hist_days = int(_recent["date"].nunique())
+    if _hist_days >= UNIVERSE_REF_DAYS * 3 and max(_had.values()) >= 100:
+        out["codes_today"] = _codes
+        out["codes_recent"] = _had
+    _dead = ([m for m, n in _codes.items() if n == 0 and _had.get(m, 0) >= 100]
+             if _hist_days >= UNIVERSE_REF_DAYS * 3 else [])
+    if _dead:
+        raise SystemExit(
+            f"[유니버스] {'/'.join(_dead)} 종목이 **0개**다 (오늘 {latest.date()}: {_codes}).\n"
+            f"  시장이 통째로 비는 정상 시나리오는 없다 — 시장 구분이 깨졌다는 뜻이다.\n"
+            f"  2026-09-10 전례: build_px_long 의 `mk.get(code,'KOSPI')` 기본값이 전 종목을\n"
+            f"  KOSPI 로 찍었다(fdr.StockListing 404 를 except:pass 가 삼킴).\n"
+            f"  확인: python3 -c \"import pandas as pd;\\\n"
+            f"    print(pd.read_parquet('~/research_cache/px_long.parquet',columns=['market'])['market'].value_counts())\"")
+    # 한쪽이 살아는 있으나 **비중이 급변**한 경우도 같은 병의 약한 형태다. 이건 기록만 한다.
+    if _hist_days >= UNIVERSE_REF_DAYS * 3 and min(_had.values()) >= 100:
+        _tot = sum(_codes.values()) or 1
+        out["share_today"] = {m: round(n / _tot, 4) for m, n in _codes.items()}
+        if max(out["share_today"].values()) > 0.95:
+            out["composition_alarm"] = (
+                f"한 시장이 유니버스의 {max(out['share_today'].values())*100:.1f}% 다 — 시장 구분을 확인해라")
+            print(f"[경고] 유니버스 구성 쏠림: {out['share_today']}", flush=True)
+
     for mkt in ("KOSPI", "KOSDAQ"):
         g = hist[hist["market"] == mkt].groupby("date")["code"].nunique().sort_index()
         if len(g) < UNIVERSE_REF_DAYS * 3 or latest not in g.index:

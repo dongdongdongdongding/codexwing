@@ -12,14 +12,41 @@ DRY_RUN="${DAILY_OPS_DRY_RUN:-0}"
 RESOLVE_ALL="${DAILY_OPS_RESOLVE_ALL:-0}"
 REFRESH_SIGNAL_PERF="${DAILY_OPS_REFRESH_SIGNAL_PERFORMANCE:-0}"
 
+# 🔴 2026-09-10: 실패가 `[WARN]` 한 줄로 끝나 **아무도 안 읽었다.**
+# 실제 사고: 2026-09-09 운영에서 `train_kosdaq_1500_bundle` 이 `KeyError: 'code'` 로 죽었는데
+# 스크립트는 `rc=0` · `[DONE] daily_ops completed` 로 끝났고, 그 결과 장중 레인 모델이
+# 이틀간 낡은 채로 서빙됐다. 실패한 사실이 **어디에도 집계되지 않았다.**
+# 이제 실패를 모아 **맨 끝에 다시 찍고 종료코드에 반영**한다.
+# ⚠️ 그래도 중간에 멈추지는 않는다 — 한 선택 단계가 뒤 단계 전부를 막으면 안 된다.
+#   목적은 「멈추는 것」이 아니라 **「끝났을 때 무엇이 실패했는지 알 수 있는 것」**이다.
+OPTIONAL_FAILURES=()
 run_optional() {
   local label="$1"
   shift
   if "$@"; then
     echo "[OK] ${label}"
   else
-    echo "[WARN] ${label} failed (continuing)"
+    local rc=$?
+    echo "[WARN] ${label} failed rc=${rc} (continuing)"
+    OPTIONAL_FAILURES+=("${label}(rc=${rc})")
   fi
+}
+
+report_optional_failures() {
+  if [[ ${#OPTIONAL_FAILURES[@]} -eq 0 ]]; then
+    echo "[SUMMARY] optional_failures=0"
+    return 0
+  fi
+  echo "[SUMMARY] optional_failures=${#OPTIONAL_FAILURES[@]}"
+  local f
+  # bash 3.2 + set -u 에서 빈 배열 전개는 unbound 다. 여기선 비어 있지 않지만
+  # 같은 패턴이 저장소 전반의 계약이라 맞춘다(tests/test_shell_portability.py).
+  for f in ${OPTIONAL_FAILURES[@]+"${OPTIONAL_FAILURES[@]}"}; do
+    echo "[FAILED] ${f}"
+  done
+  # 종료코드로 올린다 — 호출자(primary_market_session_ops)가 optional_failure_count 를
+  # 리포트에 적으므로, 여기서 0 을 돌려주면 그 칸이 영원히 0 이다(2026-09-09 에 실제로 0 이었다).
+  return 9
 }
 
 trim() {
@@ -659,4 +686,7 @@ if [[ "${AG_DAILY_MODEL_FOUNDATION_GATE_ENABLE:-1}" == "1" ]]; then
     python3 multi_agent/tools/report_daily_model_foundation_gate.py
 fi
 
-echo "[DONE] daily_ops completed"
+report_optional_failures
+DAILY_OPS_RC=$?
+echo "[DONE] daily_ops completed (optional_failures=${#OPTIONAL_FAILURES[@]})"
+exit "${DAILY_OPS_RC}"
