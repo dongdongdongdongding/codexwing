@@ -9,6 +9,12 @@ The target audience is not only engineers but also a product/planning operator w
 
 - `docs/RESEARCH_STANDARDS.md` — 무엇이 근거로 인정되는가, 승격 기준, 연구 방향, 멈춰야 하는 지점. **이 리포에서 일하는 모든 에이전트에 구속된다.**
 - `docs/DECISIONS.md` — 운영자 결정 원장(OD-N). 지시할 때 결정을 다시 서술하지 말고 번호를 인용한다.
+- `docs/LANE_DATA_MAP.md` — **레인 ↔ 모델 ↔ 데이터 ↔ 스케줄 지도.** 「이 레인은 어느 모델을 쓰나」,
+  「이 파일은 누가 만드나」, 「무엇이 언제 도나」에 답하기 전에 **반드시 여기를 본다.**
+  이름이 비슷한 것들이 서로 다른 파이프라인에 속해 있다(`phase25_*` 는 스캔 경로이고 발행 레인이 아니다 ·
+  스윙 레인은 저장 모델이 없고 매 실행 적합한다 · `px_long` 의 OHLC 는 미조정이다).
+  **기억으로 답하지 마라** — 한 세션에서 이 경계를 다섯 번 혼동했고 둘은 라이브에 닿았다.
+  레인·계약·모델조달 변경 시 갱신은 선택이 아니다: `tests/test_lane_data_map_is_current.py` 가 대조한다.
 
 두 문서의 수정 권한은 오케스트레이터에게만 있다. 다른 에이전트는 인용만 한다.
 
