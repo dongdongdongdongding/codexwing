@@ -123,6 +123,14 @@ def test_history_dates_follow_market_timezone_but_date_only_values_do_not_shift(
     assert _row_scan_date({'ticker':'AAPL','recommended_at':'garbage'}) is None
 
 
+def test_postgrest_variable_fraction_precision_never_falls_back_to_stale_base_date():
+    from multi_agent.tools.backfill_scanner_full_returns import _row_scan_date
+    for fraction in ['1', '12', '123', '1234', '17633', '123456', '1234567']:
+        row = {'ticker':'079550.KS','recommended_at':f'2026-07-23T22:37:09.{fraction}+00:00',
+               'base_trade_date':'2026-07-23'}
+        assert _row_scan_date(row) == '2026-07-24'
+
+
 def test_run_limit_uses_modification_time_not_random_run_id_order(tmp_path):
     import os
     from multi_agent.tools.backfill_scanner_full_returns import _iter_run_dirs

@@ -1,6 +1,6 @@
 """Normalize a captured KR cohort against frozen KIS J adjusted daily bars.
 
-Dry-run by default. Only exact original run/ticker/reference matches qualify.
+Dry-run by default. Only verified original run/ticker/reference matches qualify.
 Preserves recommendation prices and exclusions; these are valuation labels,
 not executable contract returns. Every source is hashed before planning/apply.
 """
@@ -67,6 +67,23 @@ def original_matches(row, outcomes):
             and pd.Timestamp(matches[0].get("recommended_at")) == pd.Timestamp(row.get("recommended_at")))
 
 
+def scanner_matches(row, scanner):
+    """Scanner-only candidates need not exist in the planner outcome subset."""
+    context = scanner.get("run_context") or {}
+    candidates = scanner.get("candidates") or []
+    matches = [x for x in candidates if x.get("ticker") == row.get("ticker")]
+    if len(matches) != 1:
+        return False
+    features = matches[0].get("feature_snapshot") or {}
+    signal_day = _row_scan_date(row)
+    return bool(signal_day and context.get("run_id") == row.get("run_id")
+                and context.get("market") == row.get("market")
+                and context.get("as_of_date") == signal_day
+                and features.get("scan_mode") == row.get("scan_mode")
+                and features.get("entry_reference_price") is not None
+                and features.get("entry_reference_price") == row.get("entry_reference_price"))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--root", type=Path, default=ROOT)
@@ -109,10 +126,18 @@ def main():
             raise ValueError("captured identity changed")
         if row.get("market_type") != "KR" or not str(row.get("run_id", "")).startswith("RUN-"):
             raise ValueError("outside generic KR scope")
-        original = read(args.root/"runtime_state/shared_working"/row["run_id"]/"realized_outcomes.json")
+        run_dir = args.root/"runtime_state/shared_working"/row["run_id"]
+        original = read(run_dir/"realized_outcomes.json")
+        identity_source = "realized_outcomes.json"
         if not original_matches(row, original.get("outcomes", [])):
-            skipped.append({"id": row["id"], "reason": "original_identity_unverified"})
-            continue
+            # A contradictory original outcome is not repaired by choosing a
+            # more convenient source. Scanner fallback is only for absent picks.
+            has_outcome = any(x.get("ticker") == row["ticker"] for x in original.get("outcomes", []))
+            scanner_path = run_dir/"scanner_handoff.json"
+            if has_outcome or not scanner_path.exists() or not scanner_matches(row, read(scanner_path)):
+                skipped.append({"id": row["id"], "reason": "original_identity_unverified"})
+                continue
+            identity_source = "scanner_handoff.json"
         signal_day = _row_scan_date(row)
         eligible = sessions[sessions >= pd.Timestamp(signal_day)].sort_values()
         if signal_day is None or eligible.empty or str(eligible.iloc[0].date()) != row.get("base_trade_date"):
@@ -131,7 +156,8 @@ def main():
         if patch.get("feature_snapshot") == row.get("feature_snapshot"):
             patch.pop("feature_snapshot", None)
         if patch:
-            plan.append({"before": row, "patch": patch, "basis": basis})
+            plan.append({"before": row, "patch": patch, "basis": basis,
+                         "identity_evidence": {"run_id": row["run_id"], "source": identity_source}})
 
     def guard():
         for path, expected in hashes.items():

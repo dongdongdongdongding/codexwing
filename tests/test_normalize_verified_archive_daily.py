@@ -1,7 +1,7 @@
 import pandas as pd
 
 from modules.db_manager import DBManager
-from multi_agent.tools.normalize_verified_archive_daily import original_matches
+from multi_agent.tools.normalize_verified_archive_daily import original_matches, scanner_matches
 from multi_agent.tools.repair_issued_outcomes import recompute
 from multi_agent.tools.normalize_verified_archive_daily import cas_sql
 import pytest
@@ -31,6 +31,21 @@ def test_original_identity_requires_unique_ticker_reference_and_timestamp():
     assert not original_matches(row, [{**original, "entry_reference_price": 43850}])
     assert not original_matches(row, [{**original, "recommended_at": "2026-07-13T00:00:00Z"}])
     assert not original_matches(row, [])
+
+
+def test_scanner_identity_requires_unique_candidate_and_exact_run_basis():
+    row = {"ticker": "079550.KS", "run_id": "RUN-94373AA8", "market": "KOSPI",
+           "recommended_at": "2026-07-24T00:37:09.17633+00:00", "scan_mode": "INTRADAY",
+           "entry_reference_price": 783000}
+    candidate = {"ticker": row["ticker"], "feature_snapshot": {
+        "entry_reference_price": 783000, "scan_mode": "INTRADAY"}}
+    scanner = {"run_context": {"run_id": row["run_id"], "market": "KOSPI", "as_of_date": "2026-07-24"},
+               "candidates": [candidate]}
+    assert scanner_matches(row, scanner)
+    assert not scanner_matches(row, {**scanner, "candidates": [candidate, candidate]})
+    for key, value in [("run_id", "RUN-OTHER"), ("market", "KOSDAQ"), ("recommended_at", "2026-07-23T00:00:00Z"),
+                       ("scan_mode", "SWING"), ("entry_reference_price", 784000), ("ticker", "028050.KS")]:
+        assert not scanner_matches({**row, key: value}, scanner), key
 
 
 def test_generic_sync_cannot_overwrite_normalized_bundle_or_clear_exclusion():

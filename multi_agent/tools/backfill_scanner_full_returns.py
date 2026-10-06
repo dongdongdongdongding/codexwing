@@ -41,6 +41,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -159,6 +160,10 @@ def _parse_iso_date(value: Any, timezone_name: str = "UTC") -> Optional[str]:
         # Date-only values already name a market day; do not timezone-shift them.
         if len(text) == 10:
             return datetime.fromisoformat(text).date().isoformat()
+        # Python 3.9 accepts only 3/6 fractional digits, while PostgREST emits
+        # variable precision (e.g. .17633). Normalize without losing the day.
+        text = re.sub(r"(\d{2}:\d{2}:\d{2})\.(\d+)",
+                      lambda m: m[1] + "." + m[2][:6].ljust(6, "0"), text)
         dt = datetime.fromisoformat(text.replace("Z", "+00:00"))
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=timezone.utc)
