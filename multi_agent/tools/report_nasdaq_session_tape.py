@@ -194,6 +194,9 @@ def _listed_pit(P: pd.DataFrame) -> np.ndarray:
     eligible row per symbol would keep removed/reclassified securities forever.
     Snapshot gaps still limit knowledge: changes between captures remain unknown,
     and this predicate alone does not certify intraday capture availability.
+    New live snapshots carry the observed UTC instant, stored timezone-naive.
+    Legacy date-only snapshots retain their old midnight interpretation. Daily
+    rows at midnight cannot use a directory captured later that same day.
     """
     t1 = pd.read_parquet(T1_PATH, columns=["snapshot_ts", "symbol", "security_name", "test_issue", "etf"])
     t1["snapshot_ts"] = pd.to_datetime(t1["snapshot_ts"])

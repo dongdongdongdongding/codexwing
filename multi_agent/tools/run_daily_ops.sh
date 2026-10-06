@@ -539,6 +539,9 @@ fi
 # 검증: 29개월 walk-forward 승률 79.3%(플라시보 +9.4pp/5σ), 진짜엣지 ~+0.5~1.0/트레이드.
 # 관측 전용(라우팅 없음) — forward n>=30 전 운용 금지. 비활성: AG_NASDAQ_SESSION_TAPE_ENABLE=0.
 if [[ "${AG_NASDAQ_SESSION_TAPE_ENABLE:-1}" == "1" ]]; then
+  echo "[STEP] refresh_nasdaq_listing"
+  run_optional "refresh_nasdaq_listing" \
+    python3 multi_agent/tools/refresh_nasdaq_listing.py
   echo "[STEP] update_us_hourly (시간봉 증분)"
   run_optional "update_us_hourly" \
     python3 multi_agent/tools/update_us_hourly.py

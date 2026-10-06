@@ -503,3 +503,23 @@ def test_us_panel_failure_reaches_final_batch_exit_code(tmp_path):
     assert r.returncode==9
     assert 'AFTER_PANEL' in r.stdout
     assert '[FAILED] us_daily_panel(rc=1)' in r.stdout
+
+
+def test_listing_capture_precedes_consumer_and_respects_tape_switch(tmp_path):
+    block=guard_block('refresh_nasdaq_listing','AG_NASDAQ_SESSION_TAPE_ENABLE')
+    enabled=run_block(block,tmp_path,AG_NASDAQ_SESSION_TAPE_ENABLE='1')
+    assert enabled.index('[RAN] refresh_nasdaq_listing') < enabled.index('[RAN] report_nasdaq_session_tape')
+    disabled=run_block(block,tmp_path,AG_NASDAQ_SESSION_TAPE_ENABLE='0')
+    assert '[RAN]' not in disabled
+
+
+def test_listing_failure_is_recorded_without_hiding_later_steps(tmp_path):
+    source=OPS.read_text()
+    helpers=source[source.index('OPTIONAL_FAILURES=()'):source.index('\ntrim()')]
+    block=guard_block('refresh_nasdaq_listing','AG_NASDAQ_SESSION_TAPE_ENABLE')
+    harness='set -euo pipefail\n'+helpers+'\npython3() { if [[ "$1" == *refresh_nasdaq_listing.py ]]; then return 1; fi; return 0; }\n'+block+'\necho AFTER_LISTING\nreport_optional_failures\n'
+    r=subprocess.run([SYSTEM_BASH,'-c',harness],text=True,capture_output=True,
+        env={**os.environ,'AG_NASDAQ_SESSION_TAPE_ENABLE':'1'},timeout=10)
+    assert r.returncode==9
+    assert 'AFTER_LISTING' in r.stdout and '[OK] report_nasdaq_session_tape' in r.stdout
+    assert '[FAILED] refresh_nasdaq_listing(rc=1)' in r.stdout
