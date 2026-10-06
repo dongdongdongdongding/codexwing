@@ -236,47 +236,40 @@ def _fetch_scanner_rows_missing_returns(
         "return_1d_pct,return_2d_pct,return_3d_pct,return_5d_pct,return_7d_pct,"
         "return_14d_pct,return_30d_pct,latest_return_pct,base_trade_date,entry_reference_price"
     )
+    missing_cols = [f"return_{h}d_pct" for h in HORIZONS_FROM_HISTORY]
     rows_by_id: Dict[Any, Dict[str, Any]] = {}
-    for missing_col in (
-        "return_1d_pct",
-        "return_2d_pct",
-        "return_3d_pct",
-        "return_5d_pct",
-        "return_7d_pct",
-        "return_14d_pct",
-        "return_30d_pct",
-    ):
-        page = 0
-        while True:
-            query = (
-                db.client.table("market_scan_results")
-                .select(select_cols)
-                .in_("feature_origin", list(SCANNER_ORIGINS))
-                .is_(missing_col, "null")
-                .order("created_at", desc=True)
-                .range(page * page_size, page * page_size + page_size - 1)
-            )
-            if market_filter == "KOSDAQ":
-                query = query.eq("market_type", "KR").ilike("ticker", "%.KQ")
-            elif market_filter == "KOSPI":
-                query = query.eq("market_type", "KR").ilike("ticker", "%.KS")
-            elif market_filter == "KR":
-                query = query.eq("market_type", "KR")
-            elif market_filter == "US":
-                query = query.eq("market_type", "US")
-            elif market_filter == "AMEX":
-                query = query.eq("market_type", "AMEX")
-            res = query.execute()
-            batch = res.data or []
-            for row in batch:
-                row_id = row.get("id")
-                if row_id is not None and row_id not in rows_by_id:
-                    rows_by_id[row_id] = row
-            if len(batch) < page_size:
-                break
-            page += 1
-            if page > 200:
-                break
+    # Seven independent NULL-filtered OFFSET scans timed out on the live DB.
+    # Traverse the primary key once and filter missing horizons locally. Freeze
+    # the upper ID so concurrent inserts cannot make the scan unbounded.
+    def scoped(columns):
+        query = db.client.table("market_scan_results").select(columns).in_("feature_origin", list(SCANNER_ORIGINS))
+        if market_filter in {"KOSDAQ", "KOSPI"}:
+            query = query.eq("market_type", "KR").ilike("ticker", "%.KQ" if market_filter == "KOSDAQ" else "%.KS")
+        elif market_filter in {"KR", "US", "AMEX"}:
+            query = query.eq("market_type", market_filter)
+        return query
+    newest = scoped("id").order("id", desc=True).limit(1).execute().data or []
+    if not newest:
+        return []
+    upper = newest[0]["id"]
+    last_id = None
+    page_size = max(1, min(page_size, 500))
+    while True:
+        query = scoped(select_cols).lte("id", upper).order("id").limit(page_size)
+        if last_id is not None:
+            query = query.gt("id", last_id)
+        batch = query.execute().data or []
+        if not batch:
+            break
+        ids = [row["id"] for row in batch]
+        if ids != sorted(set(ids)) or last_id is not None and ids[0] <= last_id:
+            raise ValueError("archive keyset scan did not advance")
+        for row in batch:
+            if any(row.get(col) is None for col in missing_cols):
+                rows_by_id[row["id"]] = row
+        last_id = ids[-1]
+        if len(batch) < page_size or last_id >= upper:
+            break
     return list(rows_by_id.values())
 
 
