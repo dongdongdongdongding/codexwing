@@ -84,6 +84,23 @@ if [[ "${AG_ALLOW_EXPIRE_WITHOUT_DB:-0}" == "1" ]]; then
   UPDATER_ARGS+=(--allow-expire-without-db)
 fi
 
+# 학습 라벨 사슬 (marcap -> px_delisted -> p2_label). 2026-08-26 추가.
+# 이게 없어서 랭커가 그날 피처로 채점하면서 **한 달 된 라벨로 학습**하고 있었다 —
+# px_long 만 매일 돌고 라벨 사슬은 어디에도 없었으며, 아무것도 그걸 보지 않았다.
+# 방치하면 신선도 가드가 발동해 레인이 픽을 아예 못 낸다.
+# 멱등이다: marcap 이 안 늘면 아무것도 안 하고 끝난다. 보통 수십 초, 갱신 시 ~20초 재구축.
+if [[ "${AG_LABEL_CHAIN_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/refresh_label_chain.py" ]]; then
+  echo "[STEP] label_chain_refresh (marcap → px_delisted → p2_label)"
+  run_optional "label_chain_refresh" python3 "${HOME}/research_cache/refresh_label_chain.py"
+fi
+if [[ "${AG_PX_LONG_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/build_px_long.py" ]]; then
+  # 일봉 px_long: full rebuild to today (PX_REBUILD writes a .tmp then atomic-swaps, so readers keep
+  # the old panel until it finishes). Heavy (~30-60min). Disable with AG_PX_LONG_REFRESH=0.
+  echo "[STEP] px_long_refresh (일봉)"
+  run_optional "px_long_refresh" \
+    env PX_REBUILD=1 PX_END="${DATE_TARGET}" python3 "${HOME}/research_cache/build_px_long.py"
+fi
+
 echo "[STEP] update_realized_outcomes ${UPDATER_ARGS[*]}"
 python3 multi_agent/tools/update_realized_outcomes.py "${UPDATER_ARGS[@]}"
 
@@ -94,6 +111,16 @@ run_optional "update_outcome_return_metrics" \
 echo "[STEP] backfill_scanner_full_returns"
 run_optional "backfill_scanner_full_returns" \
   python3 multi_agent/tools/backfill_scanner_full_returns.py --limit-runs "${BACKFILL_RETURN_LIMIT_RUNS:-1000}"
+
+# Current issued contracts use adjusted daily labels. Run after both price and
+# calendar refresh, before exporting the archive and before the long intraday job.
+echo "[STEP] refresh_issued_outcomes"
+ISSUED_OUTCOME_ARGS=()
+if [[ "${DRY_RUN}" != "1" ]]; then
+  ISSUED_OUTCOME_ARGS+=(--apply)
+fi
+run_optional "refresh_issued_outcomes" python3 multi_agent/tools/refresh_issued_outcomes.py \
+  ${ISSUED_OUTCOME_ARGS[@]+"${ISSUED_OUTCOME_ARGS[@]}"}
 
 echo "[STEP] export_scan_archive_learning_dataset"
 run_optional "export_scan_archive_learning_dataset" \
@@ -243,22 +270,6 @@ fi
 if [[ "${AG_ORDERBOOK_SNAPSHOT:-1}" == "1" && -f "${HOME}/research_cache/collect_orderbook.py" ]]; then
   echo "[STEP] orderbook_snapshot (호가 잔량)"
   run_optional "orderbook_snapshot" python3 "${HOME}/research_cache/collect_orderbook.py"
-fi
-# 학습 라벨 사슬 (marcap -> px_delisted -> p2_label). 2026-08-26 추가.
-# 이게 없어서 랭커가 그날 피처로 채점하면서 **한 달 된 라벨로 학습**하고 있었다 —
-# px_long 만 매일 돌고 라벨 사슬은 어디에도 없었으며, 아무것도 그걸 보지 않았다.
-# 방치하면 신선도 가드가 발동해 레인이 픽을 아예 못 낸다.
-# 멱등이다: marcap 이 안 늘면 아무것도 안 하고 끝난다. 보통 수십 초, 갱신 시 ~20초 재구축.
-if [[ "${AG_LABEL_CHAIN_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/refresh_label_chain.py" ]]; then
-  echo "[STEP] label_chain_refresh (marcap → px_delisted → p2_label)"
-  run_optional "label_chain_refresh" python3 "${HOME}/research_cache/refresh_label_chain.py"
-fi
-if [[ "${AG_PX_LONG_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/build_px_long.py" ]]; then
-  # 일봉 px_long: full rebuild to today (PX_REBUILD writes a .tmp then atomic-swaps, so readers keep
-  # the old panel until it finishes). Heavy (~30-60min). Disable with AG_PX_LONG_REFRESH=0.
-  echo "[STEP] px_long_refresh (일봉)"
-  run_optional "px_long_refresh" \
-    env PX_REBUILD=1 PX_END="${DATE_TARGET}" python3 "${HOME}/research_cache/build_px_long.py"
 fi
 # 빈티지 매니페스트. 2026-08-27 추가. 기준선이 세 라운드 연속 실행 중인 에이전트 아래에서
 # 말없이 움직였다 — 라벨 사슬이 매일 돌게 되면서 이제 구조적으로 매일 움직인다.

@@ -33,9 +33,15 @@ def recompute(row, original, prices, sessions):
     prices = prices[prices.date >= day]
     if expected.empty or expected[0] != day or set(expected) != set(prices.date):
         raise ValueError("incomplete market-session price coverage")
-    if not (np.isfinite(prices[["adj_close", "adj_high"]]).all().all()
-            and (prices[["adj_close", "adj_high"]] > 0).all().all()):
+    if not (np.isfinite(prices.adj_close).all() and (prices.adj_close > 0).all()):
         raise ValueError("invalid adjusted prices")
+    invalid_high = ~np.isfinite(prices.adj_high) | (prices.adj_high <= 0)
+    no_trade = prices.get("volume",pd.Series(index=prices.index,dtype=float)).eq(0)
+    if (invalid_high & ~no_trade).any():
+        raise ValueError("invalid adjusted prices")
+    # Keep suspended sessions in the calendar. A retained close is a valuation,
+    # not an executable exit; missing highs cannot establish a full-window label.
+    prices.loc[invalid_high & no_trade,"adj_high"] = np.nan
     hist = prices.rename(columns={"adj_close": "Close", "adj_high": "High"}).reset_index(drop=True)
     hist["trade_date"] = hist.date.dt.date
     # Daily label routine uses the signal day's adjusted close as denominator.
@@ -55,7 +61,8 @@ def recompute(row, original, prices, sessions):
              "signal_date": str(day.date()), "asof": str(prices.date.max().date()),
              "adjusted_base_close": float(prices.adj_close.iloc[0]),
              "issued_reference_price": row.get("entry_reference_price"),
-             "contract_pnl": False}
+             "contract_pnl": False,"valuation_only":True,
+             "nontrading_sessions":prices.loc[no_trade,"date"].dt.strftime("%Y-%m-%d").tolist()}
     snapshot = row.get("feature_snapshot") or {}
     if not isinstance(snapshot, dict):
         raise ValueError("unexpected feature_snapshot type")
@@ -65,6 +72,44 @@ def recompute(row, original, prices, sessions):
     if snapshot != row.get("feature_snapshot"):
         patch["feature_snapshot"] = snapshot
     return patch, basis
+
+
+def audit_and_apply(plan, audit_dir, provenance, client, apply=False, source_guard=None):
+    """Verify a complete reversible plan before the first compare-and-set write."""
+    audit_dir.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps({**provenance,"plan":plan},
+                         sort_keys=True, ensure_ascii=False, allow_nan=False).encode()
+    digest = hashlib.sha256(payload).hexdigest()
+    backup = audit_dir/f"{digest}.json"
+    backup.write_bytes(payload)
+    if backup.read_bytes() != payload:
+        raise RuntimeError("backup verification failed")
+    def log(state, **data):
+        with (audit_dir/"audit.jsonl").open("a") as fh:
+            fh.write(json.dumps({"at":datetime.now(timezone.utc).isoformat(),
+                                 "state":state,"snapshot":str(backup),"sha256":digest,**data})+"\n")
+    log("prepared" if apply else "dry_run", changes=len(plan))
+    if apply:
+        if source_guard:
+            source_guard()
+        for item in plan:
+            before, patch = item["before"], item["patch"]
+            q = client.table("market_scan_results").update({**patch,
+                "performance_updated_at":datetime.now(timezone.utc).isoformat()}).eq("id",before["id"])
+            for key in set(patch) | {"entry_reference_price", "performance_updated_at", "validation_excluded_reason"}:
+                old = before.get(key)
+                q = q.is_(key,"null") if old is None else q.eq(
+                    key, json.dumps(old,ensure_ascii=False) if isinstance(old,(dict,list)) else old)
+            try:
+                updated = q.execute().data
+            except Exception as exc:
+                log("failed", id=before["id"], error_type=type(exc).__name__)
+                raise
+            if len(updated) != 1 or any(updated[0].get(k) != v for k,v in patch.items()):
+                log("conflict", id=before["id"])
+                raise RuntimeError("compare-and-set conflict; replan")
+            log("committed", id=before["id"], fields=list(patch))
+    return {"applied":apply,"changes":len(plan),"backup":str(backup)}
 
 
 def main():
@@ -88,7 +133,7 @@ def main():
     source = args.cache/"px_delisted.parquet"
     source_stat = source.stat().st_mtime_ns
     codes = list({r["ticker"].split(".")[0] for r in rows})
-    prices = pd.read_parquet(source, columns=["code", "date", "adj_close", "adj_high"],
+    prices = pd.read_parquet(source, columns=["code", "date", "adj_close", "adj_high", "volume"],
                              filters=[("code", "in", codes),
                                       ("date", ">=", pd.Timestamp(min(r["base_trade_date"] for r in rows)))])
     sessions = pd.read_parquet(args.cache/"px_long.parquet", columns=["date"]).date.drop_duplicates()
@@ -99,41 +144,13 @@ def main():
                                  prices[prices.code == row["ticker"].split(".")[0]], sessions)
         if patch:
             plan.append({"before": row, "patch": patch, "basis": basis})
-    args.audit_dir.mkdir(parents=True, exist_ok=True)
-    payload = json.dumps({"original_backup_sha256":hashlib.sha256(original_bytes).hexdigest(),
-                          "source_mtime_ns":source_stat,"plan":plan},
-                         sort_keys=True, ensure_ascii=False, allow_nan=False).encode()
-    digest = hashlib.sha256(payload).hexdigest()
-    backup = args.audit_dir/f"{digest}.json"
-    backup.write_bytes(payload)
-    if backup.read_bytes() != payload:
-        raise RuntimeError("backup verification failed")
-    def log(state, **data):
-        with (args.audit_dir/"audit.jsonl").open("a") as fh:
-            fh.write(json.dumps({"at":datetime.now(timezone.utc).isoformat(),
-                                 "state":state,"snapshot":str(backup),"sha256":digest,**data})+"\n")
-    log("prepared" if args.apply else "dry_run", changes=len(plan))
-    if args.apply:
+    def source_guard():
         if source.stat().st_mtime_ns != source_stat:
             raise RuntimeError("price source changed after planning")
-        for item in plan:
-            before, patch = item["before"], item["patch"]
-            q = client.table("market_scan_results").update({**patch,
-                "performance_updated_at":datetime.now(timezone.utc).isoformat()}).eq("id",before["id"])
-            for key in set(patch) | {"entry_reference_price", "performance_updated_at", "validation_excluded_reason"}:
-                old = before.get(key)
-                q = q.is_(key,"null") if old is None else q.eq(
-                    key, json.dumps(old,ensure_ascii=False) if isinstance(old,(dict,list)) else old)
-            try:
-                updated = q.execute().data
-            except Exception as exc:
-                log("failed", id=before["id"], error_type=type(exc).__name__)
-                raise
-            if len(updated) != 1 or any(updated[0].get(k) != v for k,v in patch.items()):
-                log("conflict", id=before["id"])
-                raise RuntimeError("compare-and-set conflict; replan")
-            log("committed", id=before["id"], fields=list(patch))
-    print(json.dumps({"applied":args.apply,"changes":len(plan),"backup":str(backup)},ensure_ascii=False))
+    result = audit_and_apply(plan,args.audit_dir,
+                            {"original_backup_sha256":hashlib.sha256(original_bytes).hexdigest(),
+                             "source_mtime_ns":source_stat},client,args.apply,source_guard)
+    print(json.dumps(result,ensure_ascii=False))
 
 
 if __name__ == "__main__":

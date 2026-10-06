@@ -231,7 +231,7 @@ def _fetch_scanner_rows_missing_returns(
         raise SystemExit("Supabase client unavailable")
 
     select_cols = (
-        "id,ticker,created_at,recommended_at,feature_origin,market_type,feature_snapshot,"
+        "id,ticker,run_id,created_at,recommended_at,feature_origin,market_type,feature_snapshot,"
         "return_1d_pct,return_2d_pct,return_3d_pct,return_5d_pct,return_7d_pct,"
         "return_14d_pct,return_30d_pct,latest_return_pct,base_trade_date,entry_reference_price"
     )
@@ -290,6 +290,9 @@ def _build_update_payload(
     scanner_row: Dict[str, Any],
     outcome: Dict[str, Any],
 ) -> Dict[str, Any]:
+    if str(scanner_row.get("run_id") or "").startswith("SWING-CAND-"):
+        # Dedicated adjusted-price refresh owns these daily outcomes.
+        return {}
     basis = (scanner_row.get("feature_snapshot") or {}).get("daily_outcome_basis")
     if basis and basis != (outcome.get("feature_snapshot") or {}).get("daily_outcome_basis"):
         # An unadjusted or differently dated fallback cannot fill the immature
