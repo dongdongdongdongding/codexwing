@@ -20,7 +20,7 @@ def test_aliases_preserve_identity_order_and_boundary():
     frame = pd.DataFrame({'symbol':['CBIO','GYRE','CBIO','CBIO','GLYC'],
         'date':['2025-06-16','2022-09-20','2024-10-25','2025-06-13','2024-10-25']},index=[5,5,3,1,0])
     original=frame.copy(deep=True)
-    assert listing_symbols(frame).tolist()==['CBIO','GYRE','GLYC','GLYC','GLYC']
+    assert listing_symbols(frame).tolist()==['CBIO','CBIO','GLYC','GLYC','GLYC']
     pd.testing.assert_frame_equal(frame,original)
 
 
@@ -66,3 +66,41 @@ def test_listing_does_not_use_old_catalyst_or_backfill_snapshot_gaps(monkeypatch
     monkeypatch.setattr(tape.pd,'read_parquet',lambda *a,**kw:listing.copy())
     panel=pd.DataFrame({'symbol':['CBIO']*5,'date':['2024-01-10','2024-02-10','2025-06-13','2025-06-16','2025-08-21']})
     assert tape._listed_pit(panel).tolist()==[True,False,True,False,True]
+
+
+@pytest.mark.parametrize('current,previous,effective',[
+    ('GYRE','CBIO','2023-10-31'),('ASTS','NPA','2021-04-07'),
+    ('ATTT','RAY','2026-09-10'),('GMEX','FTEL','2026-03-12'),
+    ('ITOC','PTHL','2026-01-16'),
+])
+def test_alias_uses_trading_boundary_and_does_not_chain(current,previous,effective):
+    when=pd.Timestamp(effective)
+    frame=pd.DataFrame({'symbol':[current]*2,'date':[when-pd.Timedelta(days=1),when]})
+    assert listing_symbols(frame).tolist()==[previous,current]
+
+
+def test_two_historical_cbio_meanings_do_not_converge():
+    frame=pd.DataFrame({'symbol':['GYRE','CBIO'],'date':['2022-01-03']*2})
+    assert listing_symbols(frame).tolist()==['CBIO','GLYC']
+
+
+@pytest.mark.parametrize('symbol,start',[('CNL','2026-08-11'),('SPRC','2021-12-22'),('TLN','2024-07-10')])
+def test_venue_history_cannot_become_nasdaq_membership_from_same_ticker(monkeypatch,symbol,start):
+    when=pd.Timestamp(start)
+    # A ticker may appear for another instrument in an old directory.
+    listing=pd.DataFrame({'snapshot_ts':[when-pd.Timedelta(days=7)],'symbol':[symbol],
+        'security_name':['Common Stock'],'test_issue':['N'],'etf':['N']})
+    monkeypatch.setattr(tape.pd,'read_parquet',lambda *a,**kw:listing.copy())
+    panel=pd.DataFrame({'symbol':[symbol]*2,'date':[when-pd.Timedelta(days=1),when]})
+    assert tape._listed_pit(panel).tolist()==[False,True]
+
+
+def test_new_alias_still_requires_observed_snapshot_membership(monkeypatch):
+    listing=pd.DataFrame([
+        ['2026-06-11','RAY','Raytech Common Stock','N','N'],
+        ['2026-10-06 21:36:27','ATTT','Atlas Common Stock','N','N'],
+    ],columns=['snapshot_ts','symbol','security_name','test_issue','etf'])
+    listing.snapshot_ts=pd.to_datetime(listing.snapshot_ts,format='mixed')
+    monkeypatch.setattr(tape.pd,'read_parquet',lambda *a,**kw:listing.copy())
+    panel=pd.DataFrame({'symbol':['ATTT']*4,'date':['2026-09-09','2026-09-10','2026-10-06','2026-10-07']})
+    assert tape._listed_pit(panel).tolist()==[True,False,False,True]

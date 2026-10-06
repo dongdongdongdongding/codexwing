@@ -219,3 +219,28 @@ Yahoo는 CBIO에 2022-09-21 배당 143, 2023-01-13 배당 24를 연결했다. GY
 새 패널은 `daily_features_20180101_20261007_20261007_072221039428.parquet`, SHA `7cac6cc94ddd123f12c82d8cd92e8e57e0a0796b537337886f5044bd2ed05834`다. 실제 소비자가 이 파일을 선택하며, 같은 입력으로 재실행하면 새 파일을 쓰지 않고 검증된 캐시를 재사용했다. 관련 96개 검사와 운영 API health/picks/contract-performance 응답 확인을 통과했다. 전체 배치 성공이나 공급자 누락 해결을 의미하지 않는다.
 
 `rebuild_result.json`, `verification.json`, `training_input_impact.json`, `event_verification.json`, `cache_reuse.json` 및 실행 코드가 같은 감사 폴더에 있다. Yahoo 재조회와 보존 원본의 2,200개 raw_close는 일치했다. adj_close는 엄격 rtol=1e-7에서 93개가 달랐고 최대 절대차는 0.000244140625였다. 이 미세차이를 숨기지 않으며, 저장된 배당 조정계수의 위 산식 재현은 별도 rtol=1e-6으로 확인했다. CBIO 범위의 수정은 완료했고, 나머지 7개 KIS 이력 차이와 GYRE 상장 별칭은 `swing-main-foju`로 분리했다. 현재 보고서/원장의 계약을 소급 교체하지 않았고 H10TP5 ≥70%·주 2~3회 자격은 여전히 미인증이다.
+
+## 나머지 티커·거래시장 이력 대조
+
+`swing-main-foju`는 사전에 고정한 ASTS·ATTT·CNL·GMEX·ITOC·SPRC·TLN·GYRE 8종목을 대조했다. 공식 원문 11건, 추가 공시 4건, Yahoo chart 8건을 22:30~22:32 UTC에 수집하고 요청·시각·SHA를 운영 `runtime_state/audit/us_lineage_expansion_20261007/`에 보존했다. KIS의 이전 심볼/거래소 조회 12회는 RAY만 100행씩 돌려줬고 나머지는 빈 응답이었다. 빈 응답은 과거 거래가 없었다는 뜻이 아니다.
+
+| 현행 심볼 | 확인한 변경 | 공식 근거 |
+|---|---|---|
+| ASTS | NPA → ASTS, 2021-04-07; CUSIP 64822P106 → 00217D100 | [NASDAQ ECA2021-59](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2021-59) |
+| ATTT | RAY → ATTT, 2026-09-10; CUSIP 유지 | [SEC 6-K](https://www.sec.gov/Archives/edgar/data/1948443/000121390026098242/ea0304803-6k_raytech.htm) |
+| GMEX | FTEL → GMEX; 법인명 변경 3월 2일과 거래표기 시작 3월 12일을 구분 | [발행사 공지](https://www.nasdaq.com/press-release/fitell-announces-corporate-name-and-ticker-changes-and-rebranding-gmex-robotics-2026)는 3월 12일 시작 예상; KIS 이력도 해당일 시작 |
+| ITOC | PTHL → ITOC, 2026-01-16 | [SEC 20-F](https://www.sec.gov/Archives/edgar/data/1970544/000121390026036395/ea0283543-20f_itonic.htm) |
+| CNL | NYSE American → NASDAQ, 2026-08-11; CUSIP·심볼 유지 | [발행사 거래 개시 공지](https://collectivemining.com/collective-mining-commences-trading-on-the-nasdaq/) |
+| SPRC | OTC의 보통주 → NASDAQ, 2021-12-22 | [SEC 당일 개시 공시](https://www.sec.gov/Archives/edgar/data/1611746/000121390021067013/ea152894-6k_scisparcltd.htm) |
+| TLN | OTCQX TLNE → NASDAQ TLN, 2024-07-10 | [발행사 2분기 공시의 개시 확인](https://ir.talenenergy.com/news-releases/news-release-details/talen-energy-reports-second-quarter-2024-results-and-raises-2024) |
+| GYRE | 옛 Catalyst CBIO → GYRE, 2023-10-31 | 앞 절의 ECA2023-623 |
+
+SPRC의 2021년 20-F에는 본문 일부 12월 21일과 주석 12월 22일이 혼재한다. 위 규칙은 실제 거래개시일의 6-K와 반복된 후속 등록서가 제시한 12월 22일을 사용한다. CNL의 2024년 NYSE 이전일도 보도문과 일부 후속 경영설명 사이에 7월 17일/22일 차이가 있어 이번 NASDAQ 적격에 그 날짜를 사용하지 않는다. 과거 ADS와 보통주 또는 거래소를 무조건 같은 시계열로 합치지 않는다.
+
+Yahoo 원문 대 저장 raw의 공통 종가는 ASTS 1,738·CNL 1,312·SPRC 1,279·TLN 837·GYRE 2,202행에서 rtol=1e-6 이내 일치했다. 이는 같은 공급자의 재현 대조이고 독립 가격 인증이 아니다. ATTT는 기존 날짜 1개를 포함하지 않았으며 공통 590개 중 종가 1개가 달랐다. 이전 RAY KIS 100일과 현행 ATTT Yahoo는 92일이 허용오차(rtol=1e-6, atol=0.0001) 내 일치했다. GMEX는 공통 792개 중 5개 종가가 약 9배로 달라졌고, 음수 조정 601행도 그대로다. [Fitell의 실제 0.10 배당 공시](https://www.sec.gov/Archives/edgar/data/1928581/000149315225025668/form6-k.htm)가 존재하므로 이를 CBIO와 같은 타 회사 배당 혼입으로 단정하지 않는다.
+
+ITOC는 [공식 2026-10-06 1:16 병합](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-714)이 있었으나 Yahoo 응답의 timestamp 49개 중 가격이 있는 것은 6일뿐이었다. 기존 521일 중 516일이 이번 응답에 없고 공통 5일의 가격비도 정확히 16으로 같지는 않다. 관측이 없는 과거를 최신 응답에 붙여 정상 복구로 처리하지 않는다. CNL/SPRC의 과거 오류 각 1일도 유지된다. ASTS/TLN의 이번 전체 응답은 OHLC 구조오류 0으로 바뀌어 재수집할 실제 근거가 생겼다.
+
+상장 조회는 현행 가격계열 기준으로 위 다섯 별칭을 추가했다. **GYRE→옛 CBIO를 다시 GLYC로 연쇄 변환하지 않는다.** CNL/SPRC/TLN의 NASDAQ 이전 날짜는 적격이 아니며, 효력일이 지나도 당시 관측 스냅샷에 없으면 자동 편입하지 않는다. 관련 95개 검사를 통과했다. 전체 5,605,363행 대조에서 멤버십은 ASTS 312·ATTT 578·GMEX 614·GYRE 1,456·ITOC 296행, 합계 3,256행이 추가됐다. 기본 가격·유동성·ready 적격과 250일 편입 이력 변화는 0, 현재 320개 후보 및 기존 68개 원장의 멤버십도 그대로였다. 원천 8개·패널·T1·원장 해시는 불변이다. 가격 피처 변경이 없으므로 이 별칭 수정만으로 패널을 다시 쓰거나 모델을 재적합하지 않았다.
+
+기업행동 표와 실제 응답은 공급자의 전체 가격·배당·조정 정확성을 인증하지 않는다. 가격 오류 때문에 전체 최신 봉 저장까지 막는 문제는 `swing-main-9zkb`에서 추적한다. 남은 조정·누락 검증과 전체 서비스/신규 레인 자격은 미완료다.

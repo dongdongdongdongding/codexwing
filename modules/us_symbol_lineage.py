@@ -10,6 +10,24 @@ import pandas as pd
 
 from modules.ohlcv_quality import bar_issues
 
+# Effective trading dates, not legal-name-change or announcement dates.
+# Each rule is keyed by the ORIGINAL current-provider symbol: never chain
+# GYRE -> historical CBIO -> GLYC, which would cross unrelated issuers.
+LISTING_ALIASES = (
+    ('CBIO', '2025-06-16', 'GLYC'),  # Nasdaq ECA2025-303
+    ('GYRE', '2023-10-31', 'CBIO'),  # Nasdaq ECA2023-623
+    ('ASTS', '2021-04-07', 'NPA'),   # Nasdaq ECA2021-59
+    ('ATTT', '2026-09-10', 'RAY'),   # SEC 1948443/000121390026098242
+    ('GMEX', '2026-03-12', 'FTEL'),  # issuer March 11 announcement + KIS boundary
+    ('ITOC', '2026-01-16', 'PTHL'),  # SEC 1970544/000121390026036395
+)
+# Prior OTC/NYSE American data remain price observations; they do not establish
+# membership of the Nasdaq universe. A later snapshot must still confirm it.
+NASDAQ_STARTS = {
+    'CNL': '2026-08-11',
+    'SPRC': '2021-12-22',
+    'TLN': '2024-07-10',
+}
 CBIO_RENAME = pd.Timestamp('2025-06-16')
 CBIO_LAST_BAD_DIVIDEND = pd.Timestamp('2023-01-13')
 
@@ -21,10 +39,23 @@ def listing_symbols(frame: pd.DataFrame) -> pd.Index:
     effective June 16 2025. Old Catalyst CBIO is a different security.
     Snapshot availability rules still apply; no listing gaps are backfilled.
     """
-    symbols = frame['symbol'].astype(str).to_numpy(copy=True)
+    original = frame['symbol'].astype(str).to_numpy()
+    symbols = original.copy()
     dates = pd.to_datetime(frame['date'], errors='coerce')
-    symbols[(symbols == 'CBIO') & (dates < CBIO_RENAME).to_numpy()] = 'GLYC'
+    for current, effective, previous in LISTING_ALIASES:
+        mask = (original == current) & (dates < pd.Timestamp(effective)).to_numpy()
+        symbols[mask] = previous
     return pd.Index(symbols)
+
+
+def nasdaq_venue_eligible(frame: pd.DataFrame) -> np.ndarray:
+    """Known venue boundaries only; not a replacement for observed membership."""
+    symbols = frame['symbol'].astype(str).to_numpy()
+    dates = pd.to_datetime(frame['date'], errors='coerce')
+    eligible = dates.notna().to_numpy()
+    for symbol, first in NASDAQ_STARTS.items():
+        eligible &= ~((symbols == symbol) & (dates < pd.Timestamp(first)).to_numpy())
+    return eligible
 
 
 def daily_bar_issues(frame: pd.DataFrame, *, require_volume: bool = True) -> pd.Series:
