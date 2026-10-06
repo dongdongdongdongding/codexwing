@@ -123,3 +123,23 @@ CBIO·NFE·GMEX의 음수 조정 OHLC와 CNL·SPRC의 저가 0은 별도 전체 
 현재 원장은 68행, 현행 구성 7행, 현행 성숙 3행이다. 현행 7행 중 5행은 신호일 미국 동부시간 16시보다 약 57.6시간 뒤에 기록됐다. 나머지 2행은 16시보다 약 1.1~1.4시간 전이다. 이는 고정된 일반장 종료시각과 기록시각의 비교이며, 조기 폐장 달력이나 실제 주문 체결의 인증이 아니다. 특히 늦게 기록한 신호의 과거 종가 진입을 실현 가능한 전향 계약으로 인정할 근거가 없다. 현행 성숙 3건의 터치율 100%를 H10 실거래 확률이나 승격 근거로 사용하지 않는다.
 
 후속 검증은 원천 최신성·시점 적격·실행 가능한 진입시각을 먼저 확인해야 한다. 과거 픽의 계약·수익률을 새 계약으로 덮어써서 표본을 늘리지 않는다. 이번 결과로 신규 레인 승격이나 기존 발행 정책 변경은 하지 않았다.
+
+
+## 현행 보고서의 근거·점수 표기
+
+`swing-main-96lf`는 생성기의 과거 고정 351종목 시간봉 기대치 문구를 현행 기대치에서 제거하고, 현재 일봉 입력·TP5/H20 종가 기준·t15_20 학습 점수를 명시한다. JSON은 `contract_info`, `score_semantics`, `evidence_scope`로 같은 구분을 제공하고 Markdown은 현행/과거 구성 통계를 따로 표시한다. H10TP5 확률과 주 2~3회 빈도 검증은 false이며, 작은 현행 표본의 100% 터치율로 이를 바꾸지 않는다. 종가 기준 기록은 이후 실행 가능한 체결의 인증이 아니다. 관련 검사 85개가 통과했다.
+
+소비 경로 조사 범위는 다음과 같다. 이 변경은 로컬 보고서 생성·해석 수정이며 신규 레인 교체가 아니다.
+
+| 경로 | 확인한 코드와 관측 |
+|---|---|
+| 정기 생산 | `run_daily_ops.sh` → `report_nasdaq_session_tape.py`; 현재 입력 설명 수정, 호출 순서는 유지 |
+| 웹·Discord 스캔 생산 | `model_lane_scan.py`의 NASDAQ SWING은 별도 은퇴 `nasdaq_session_edge` 경로; session-tape 보고서 JSON을 읽지 않음 |
+| 수동 생산 | session-tape CLI도 같은 생성기; 이번 메타 수정에서 `main()`은 실행하지 않음 |
+| 적격 화이트리스트 | `operational_candidate_scoring.py`에는 별도 `nasdaq_session_edge`; 이번 수정으로 새 bucket 추가 없음 |
+| 해석 프로필 | `candidate_interpretation.py`도 별도 `nasdaq_session_edge`; 이번 보고서 메타와 다른 경로 |
+| 웹 카드·성과 | `services.py`의 `nasdaq_swing`은 session-tape 원장 직접 소비. `contract_performance`는 혼합 원장을 5일 라벨로 표시하는 별도 결함 확인 |
+| Discord·아카이브·DB | `scan_executor.py`/`renderers.py`는 스캔/DB bucket 경로; 현행 session-tape 생성기에 `_route_live`/DB 저장 호출 없음. 이번 작업의 DB 쓰기 없음 |
+| 게이트·부검·재개봉 | `report_research_recursion_gate.py`, `build_pick_autopsy.py`, `research_reopen_queue.py`는 원장 직접 소비. 게이트의 과거 79.3 기대치와 전 구성 정산수 사용은 별도 결함 |
+
+웹 계약성과·게이트·재개봉의 구성 혼합은 `swing-main-5kyi`로 추적하며 이 보고서 표기 수정으로 해결됐다고 간주하지 않는다. 기존 게이트 문턱이나 발행 정책을 결과에 맞춰 조정하지 않았다.

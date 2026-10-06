@@ -26,7 +26,7 @@
 | `kospi_swing` | `report_kr_swing_candidate.py` | **매 실행 자체 적합** (저장 모델 없음) | TP5 / H10 / top-3 | `experimental/kr_swing_candidate_ledger.jsonl` |
 | `kosdaq_swing` | 〃 (같은 파일) | 〃 | TP5 / H5 / top-1 | 〃 (같은 원장) |
 | `kosdaq_intraday` | `report_kosdaq_intraday_vwap_guard.py` | **저장 번들 로드** → `models/kr_intraday_3d_t5/kosdaq_liq30_1500_lgbm_isotonic_vwapguard.pkl` | TP5 / 3일 / 15:00 진입 | `experimental/kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl` |
-| `nasdaq_swing` | `report_nasdaq_session_tape.py` | **매 실행 자체 적합** (저장 모델 없음) | TP5 / H20 / **종가 진입** | `us_research/nasdaq_session_tape_ledger.jsonl` |
+| `nasdaq_swing` | `report_nasdaq_session_tape.py` | **매 실행 자체 적합** (저장 모델 없음) | TP5 / H20 / **종가 진입** (p는 t15_20 점수, H10TP5 확률 아님) | `us_research/nasdaq_session_tape_ledger.jsonl` |
 | `kospi_intraday` | `report_kospi_intraday_swing.py` | — | — | **죽음** (2026-08-22, 체결 불가능한 진입) |
 
 ### 은퇴·정지 레인 (`stream_exclusion.RETIRED_LANES` — **게이트보다 우선한다**)

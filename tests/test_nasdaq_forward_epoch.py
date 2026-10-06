@@ -33,3 +33,36 @@ def test_a_thin_current_epoch_says_it_is_not_a_verdict_sample():
 def test_the_lane_states_its_own_promotion_rule():
     """승격 기준이 코드에 남아 있어야 한다 — 이 경계의 문턱 근거다."""
     assert "no capital before forward n>=30" in SRC
+
+
+def test_report_separates_training_score_contract_and_user_objective():
+    metadata = N.report_evidence()
+    assert metadata['contract_info']['horizon_sessions'] == 20
+    assert metadata['contract_info']['tp'] == .05
+    assert metadata['contract_info']['entry_reference'] == 'signal_session_close'
+    assert metadata['score_semantics']['model_label'] == 't15_20'
+    assert metadata['score_semantics']['calibrated_contract_probability'] is False
+    assert metadata['evidence_scope']['h10_tp5_probability_verified'] is False
+    assert metadata['evidence_scope']['legacy_hourly_study_applicable'] is False
+    assert metadata['evidence_scope']['weekly_2_to_3_cadence_verified'] is False
+    assert '79.3%' not in metadata['expectation']
+
+
+def test_rendered_perfect_thin_epoch_is_not_presented_as_certified_probability():
+    import copy
+    report = {'as_of': '2026-10-06', 'generated_at': 'original',
+              'metadata_updated_at': 'correction', 'status': 'no_candidates', 'picks': [],
+              'forward_summary': {'resolved': 64, 'epoch': {
+                  'current': {'resolved': 3, 'touch5_pct': 100},
+                  'previous': {'resolved': 61}, 'current_picks': 7}},
+              **N.report_evidence()}
+    before = copy.deepcopy(report)
+    text = N.render_report(report)
+    assert report == before
+    assert 'no certified H10 touch probability' in text
+    assert 'TP +5% / 20 sessions' in text
+    assert 'Current composition:' in text and "'resolved': 3" in text
+    assert 'Previous composition:' in text and "'resolved': 61" in text
+    assert 't15_20 model score' in text
+    assert 'No new scan or settlement.' in text
+    assert 'original run: original' in text

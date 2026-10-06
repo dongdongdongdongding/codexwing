@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """NASDAQ session-tape shadow lane (swing-main-f9yw, RESEARCH_LOG §12-D). OBSERVATION-ONLY.
 
-Research basis (29mo walk-forward, 351 liquid syms): session-tape rank-1 win 79.3% vs
-label-shuffle placebo 69.9% (+9.4pp ~ 5 sigma), EV 1.68 net vs placebo 1.12 — honest true
-edge ~+0.5-1.0/trade (half the raw EV is vol-tilt/survivorship/bull-window artifact).
-Contract: close(t) entry -> +5% touch within 5 sessions (fill max(open,target)) else 5d close.
+Current source: daily feature panel plus observed NASDAQ listing snapshots.
+Fits t15_20 (20-session high return >=15%) in-process; its score is not a
+calibrated probability of the issued TP5/H20 contract or the user's TP5/H10 goal.
+Contract: close(t) reference -> +5% touch within 20 sessions, else 20d close.
+The historical close reference does not certify a subsequently executable fill.
 
-Self-consistent single data source: ~/research_cache/us_daily/hourly/{SYM}.parquet — session
-features AND daily context are both derived from the hourly cache (no panel-parity risk).
-Trains in-process on the full cache (like the KOSPI lane), scores the latest US session,
-appends rank-1 to a ledger, auto-resolves with yfinance daily bars. Never routed to buy lists.
+The retired 351-symbol hourly study is not evidence for this source/contract.
+See docs/research/NASDAQ_SOURCE_AUDIT_2026-10-07.md for scope and timing limitations.
+Appends rank-1 to a shadow ledger and resolves with yfinance daily bars.
+No capital before forward n>=30; that count alone does not satisfy OD-1.
 
-  python3 multi_agent/tools/update_us_hourly.py   # refresh cache first (daily ops)
   python3 multi_agent/tools/report_nasdaq_session_tape.py
 """
 from __future__ import annotations
@@ -241,6 +241,49 @@ def _admit(P: pd.DataFrame) -> pd.DataFrame:
     return P
 
 
+def report_evidence() -> Dict[str, Any]:
+    """Descriptive metadata only; never infer qualification from a model score."""
+    return {
+        "expectation": "Current daily-panel TP5/H20 shadow has no certified H10 touch probability. "
+                       "The retired 351-symbol hourly backtest is not current evidence; "
+                       "no capital before forward n>=30, and OD-1 also requires dates, net CI and CONFIRM.",
+        "contract_info": {"entry_reference": "signal_session_close", "tp": CONTRACT_TP,
+                          "horizon_sessions": CONTRACT_H, "executable_fill_verified": False},
+        "score_semantics": {"field": "p", "model_label": "t15_20",
+                            "target": "fwd_high_ret_20d >= 15",
+                            "calibrated_contract_probability": False},
+        "evidence_scope": {
+            "current_epoch_marker": "xq is not null",
+            "forward_summary_top_level": "mixed historical contracts; use epoch.current for current composition",
+            "legacy_hourly_study_applicable": False,
+            "h10_tp5_probability_verified": False,
+            "weekly_2_to_3_cadence_verified": False,
+            "audit": "docs/research/NASDAQ_SOURCE_AUDIT_2026-10-07.md"},
+    }
+
+
+def render_report(report: Dict[str, Any]) -> str:
+    summary = report.get("forward_summary") or {}
+    epoch = summary.get("epoch") or {}
+    contract = report["contract_info"]
+    lines = [f"# NASDAQ session-tape shadow — {report['as_of']}", "",
+             f"- observation-only | status: {report.get('status', 'unknown')}",
+             f"- {report['expectation']}",
+             f"- Contract: signal-session close reference, TP +{contract['tp'] * 100:g}% / "
+             f"{contract['horizon_sessions']} sessions. Executable fill is unverified.",
+             "- p: t15_20 model score (20-session high return >=15%); not a TP5/H10 probability.",
+             f"- Current composition: {epoch.get('current', {'resolved': 'unavailable'})}; "
+             f"picks: {epoch.get('current_picks', 'unknown')}",
+             f"- Previous composition: {epoch.get('previous', {'resolved': 'unavailable'})}"]
+    if report.get("metadata_updated_at"):
+        lines.append(f"- Metadata corrected: {report['metadata_updated_at']}; "
+                     f"original run: {report.get('generated_at')}. No new scan or settlement.")
+    lines += ["", "| Symbol | t15_20 score | close reference |", "|---|---:|---:|"]
+    for p in report.get("picks", []):
+        lines.append(f"| {p['symbol']} | {p['p']} | {p['entry']} |")
+    return "\n".join(lines) + "\n"
+
+
 def main() -> None:
     import lightgbm as lgb
     FEAT = _features()
@@ -285,17 +328,11 @@ def main() -> None:
     report = {"generated_at": now.isoformat(), "as_of": str(latest.date()),
               "status": "no_candidates" if te.empty else "ok",
               "capital_status": "observation_only_shadow",
-              "expectation": "backtest: rank-1 win 79.3%, EV 1.68 net (placebo-separated +9.4pp/5sig); "
-                             "honest true edge ~+0.5-1.0/trade — no capital before forward n>=30",
+              **report_evidence(),
               "train_rows": int(len(tr)), "universe": int(te["symbol"].nunique()),
               "picks": picks, "forward_summary": summary}
     REPORT_JSON.write_text(json.dumps(report, indent=2), encoding="utf-8")
-    lines = [f"# NASDAQ session-tape shadow — {report['as_of']}", "",
-             f"- observation-only | forward: {summary}", "",
-             "| Symbol | p | entry |", "|---|---:|---:|"]
-    for p in picks:
-        lines.append(f"| {p['symbol']} | {p['p']} | {p['entry']} |")
-    REPORT_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    REPORT_MD.write_text(render_report(report), encoding="utf-8")
     print(json.dumps({"as_of": report["as_of"], "picks": picks, "forward": summary}))
 
 

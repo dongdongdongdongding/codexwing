@@ -535,9 +535,9 @@ else
   echo "[SKIP] report_nasdaq_session_edge_shadow — AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE=0 (재개: =1)"
 fi
 
-# NASDAQ 세션테이프 shadow (swing-main-f9yw, §12-D): 시간봉 증분 갱신 → rank-1 shadow 픽.
-# 검증: 29개월 walk-forward 승률 79.3%(플라시보 +9.4pp/5σ), 진짜엣지 ~+0.5~1.0/트레이드.
-# 관측 전용(라우팅 없음) — forward n>=30 전 운용 금지. 비활성: AG_NASDAQ_SESSION_TAPE_ENABLE=0.
+# NASDAQ 세션테이프 shadow: 현행 일봉패널·T1 → t15_20 점수, TP5/H20 종가 기준 원장.
+# 아래 시간봉 갱신은 유지하지만 현행 테이프 입력은 아니다. 과거351종목 성과를 현행 근거로 쓰지 않는다.
+# 관측 전용 — n>=30만으로 승격 불가(OD-1). 비활성: AG_NASDAQ_SESSION_TAPE_ENABLE=0.
 if [[ "${AG_NASDAQ_SESSION_TAPE_ENABLE:-1}" == "1" ]]; then
   echo "[STEP] refresh_nasdaq_listing"
   run_optional "refresh_nasdaq_listing" \

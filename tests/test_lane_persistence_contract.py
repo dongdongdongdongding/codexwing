@@ -87,3 +87,6 @@ def test_empty_nasdaq_admission_still_records_run_and_resolves(tmp_path, monkeyp
     report = json.loads(N.REPORT_JSON.read_text())
     assert report["status"] == "no_candidates" and report["picks"] == []
     assert report["forward_summary"]["resolved"] == 3
+    assert report["score_semantics"]["model_label"] == "t15_20"
+    assert report["evidence_scope"]["h10_tp5_probability_verified"] is False
+    assert "t15_20 score" in N.REPORT_MD.read_text()
