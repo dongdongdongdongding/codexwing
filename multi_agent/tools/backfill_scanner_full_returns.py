@@ -40,6 +40,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -286,6 +287,30 @@ def _row_scan_date(row: Dict[str, Any]) -> Optional[str]:
     )
 
 
+def _conflicting_daily_field(scanner_row, outcome):
+    # A null-only merge can combine KRX and integrated-market prices: the
+    # existing denominator/short horizon remains while a different provider's
+    # longer horizon is appended. Refuse evidence of a different daily basis.
+    for key in RETURN_COLUMNS:
+        if key in {"performance_updated_at", "latest_return_pct"}:
+            continue  # latest return legitimately changes as the source advances
+        existing, incoming = scanner_row.get(key), outcome.get(key)
+        if existing is None or incoming is None:
+            continue
+        if key == "base_trade_date":
+            if str(existing)[:10] != str(incoming)[:10]:
+                return key
+        else:
+            try:
+                left, right = float(existing), float(incoming)
+            except (TypeError, ValueError):
+                return key
+            if not (math.isfinite(left) and math.isfinite(right) and
+                    math.isclose(left, right, rel_tol=1e-8, abs_tol=1e-6)):
+                return key
+    return None
+
+
 def _build_update_payload(
     scanner_row: Dict[str, Any],
     outcome: Dict[str, Any],
@@ -297,6 +322,8 @@ def _build_update_payload(
     if basis and basis != (outcome.get("feature_snapshot") or {}).get("daily_outcome_basis"):
         # An unadjusted or differently dated fallback cannot fill the immature
         # cells of an explicitly normalized adjusted-price outcome.
+        return {}
+    if _conflicting_daily_field(scanner_row, outcome):
         return {}
     payload: Dict[str, Any] = {}
     for col in RETURN_COLUMNS:
@@ -345,6 +372,8 @@ def run_backfill(
     updated = 0
     skipped_no_match = 0
     skipped_no_payload = 0
+    conflicting_fields = defaultdict(int)
+    eligible_updates = 0
     history_failed = 0
     by_origin: Dict[str, int] = defaultdict(int)
     sample_updates: List[Dict[str, Any]] = []
@@ -394,8 +423,12 @@ def run_backfill(
                 history_failed += 1
 
         if not payload:
+            conflict = _conflicting_daily_field(row, outcome)
+            if conflict:
+                conflicting_fields[conflict] += 1
             skipped_no_payload += 1
             continue
+        eligible_updates += 1
         by_origin[str(row.get("feature_origin") or "")] += 1
         if len(sample_updates) < 5:
             sample_updates.append(
@@ -418,7 +451,7 @@ def run_backfill(
 
     matched_total = matched_index + matched_history
     fill_rate_after_estimate = (
-        100.0 * (1.0 - max(rows_seen - matched_total, 0) / max(rows_seen, 1))
+        100.0 * eligible_updates / max(rows_seen, 1)
     )
 
     summary = {
@@ -436,6 +469,9 @@ def run_backfill(
         "updated": updated,
         "skipped_no_match": skipped_no_match,
         "skipped_no_payload": skipped_no_payload,
+        "incompatible_daily_basis_by_field": dict(conflicting_fields),
+        "eligible_updates": eligible_updates,
+        "fill_estimate_scope": "rows with at least one coherent patch; not all horizons filled",
         "matched_by_feature_origin": dict(by_origin),
         "fill_rate_after_pct_estimate": round(fill_rate_after_estimate, 2),
         "allow_history_fallback": bool(allow_history_fallback),

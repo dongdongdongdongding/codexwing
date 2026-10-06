@@ -56,8 +56,8 @@
 
 | 파일 | 내용 | 만드는 것 | 쓰는 곳 | ⚠️ |
 |---|---|---|---|---|
-| `px_long.parquet` | 피처 패널 + 라벨 `ft_5_5` | `build_px_long.py` | 스윙 레인 적합·스코어링 | **OHLC 가 미조정이다.** 다일 경로에 쓰면 액면분할이 섞인다 |
-| `px_delisted.parquet` | **조정** OHLC + `adj_factor` + `delist_date` | `build_px_delisted.py` | 연구 계약 경로 · 시장 지도 폴백 | 상장폐지 포함 = 생존편향 없음 |
+| `px_long.parquet` | 피처 패널 + 라벨 `ft_5_5` | `build_px_long.py` (FDR 기본 NAVER) | 스윙 레인 적합·스코어링 | **일관된 미조정 KRX 가격 또는 조정가격으로 가정하면 안 된다.** 082740의 2026-09-17~10-02 종가는 KIS 통합시장(UN)과 10/10 일치. KRX/조정 경로와 분모 혼합 금지 |
+| `px_delisted.parquet` | 휴리스틱 **조정** OHLC + `adj_factor` + `delist_date` | `build_px_delisted.py` (KRX marcap) | 연구 계약 경로 · 시장 지도 폴백 | 상폐 가격 포함; 피처 모집단의 PIT 완전성은 별도 검증. 082740 원종가는 KIS KRX(J)와 10/10 일치. 기업행위 휴리스틱이 KIS 수정가와 다를 수 있음 |
 | `p2_label.parquet` | 학습 라벨 `t5_5`/`r5_5` | `build_p2_label.py` (← `refresh_label_chain.py`) | 스윙 레인 학습 타깃 | 계약이 끝나야 확정 → 항상 `오늘 − 17일` 근처 |
 | `intraday/*.parquet` | 1분봉 종목당 1파일 | `multi_agent/tools/backfill_kr_intraday.py` (daily ops) | 장중 레인 · 일중 경로 연구 | **소급 조정이다.** `adj_factor` 곱셈으로 안 맞는다 — 하루 단위 종가 자가보정 필요. 최신 관측 거래일 우선·전 관측 종목·요청별 시간예산·원자 저장. `.backfill/latest.json`은 수집 상태이며 전일 완전성이나 PIT 유니버스를 보증하지 않는다 |
 | `us_daily/NASDAQ/` | 미국 일봉 패널 118열 | (수집기 별도) | 나스닥 레인 | **생존편향 심각** — 사라진 3,272 심볼 중 35개(1.1%)만 보유 |

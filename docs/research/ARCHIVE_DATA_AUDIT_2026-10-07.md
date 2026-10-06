@@ -33,3 +33,21 @@ Beads: `swing-main-x8i7`, `swing-main-iezw`. 읽기 전용 도구: `multi_agent/
 - 세션 원천 패널 SHA256: `a66802ac3a84344f657ca7a37a1f4b175ebeab462795aa46f09b9261cd60952b`
 
 원천 파일의 감사 전후 SHA를 대조하며 변경 중이면 결과 저장을 거부한다. 유효 거래소 달력·기업행위 원장의 독립 인증, 미국 기록 정상화와 일반 기록의 자동수정은 이 결과로 완료됐다고 주장하지 않는다.
+
+## 독립 API 대조와 혼합 차단
+
+KIS `daily_bars`를 `market_div=J/UN/NX`, 원주가/수정주가로 구분해 읽기 전용 수집했다. 파라미터 의미는 [한국투자 공식 예제](https://github.com/koreainvestment/open-trading-api/blob/main/examples_llm/domestic_stock/inquire_daily_itemchartprice/inquire_daily_itemchartprice.py)에서 확인했다. 원문: 운영 `runtime_state/audit/price_source_probe/20261006T180539/`.
+
+082740의 2026-09-17~10-02 10세션: `px_long.close`는 통합시장 UN과 10/10, `px_delisted.close`는 KRX J와 10/10 일치했다. 9/17 각각 53,800원·53,000원이다. 이는 샘플에서 확인한 시장 범위 차이이며 모든 종목·날짜의 FDR 정책을 보증하지 않는다. FDR의 설치 코드에서 한국 종목 기본 경로가 NAVER인 것도 확인했다.
+
+417310의 8/21→8/28 종가 수익률: KIS 원주가 -78.538603%, KIS 수정주가 +2.457218% (2,279→2,335), marcap 휴리스틱 조정 +0.459559%. 따라서 기존 조정 휴리스틱을 전체 시장의 확정된 정답으로 승격하지 않는다.
+
+일반 성과 백필은 기존 `base_trade_date`, 기준가, 이미 존재하는 고정 기간 성과와 새 원천이 불일치하면 빈 칸을 채우지 않도록 수정했다. 최신 누적 수익률은 기준일 진행에 따라 바뀌므로 고정 기간 충돌 검사에서 제외한다. 차단 원인 필드를 집계하며, 검색 매칭 수를 실제 채움 가능 수로 오인하던 추정치도 수정했다. 이 방어는 이미 섞인 기록을 자동 정상화하거나 원천이 알려지지 않은 기록의 완전한 정합성을 보증하지 않는다.
+
+## 기존 발행 코호트의 가격 원천 민감도
+
+사전등록 `research/prereg_kr_touch10_price_source_20261007.json` (c322478): 기존 64픽·39종목·신호/계약/비용을 고정하고, 2026-08-24~10-02의 KIS KRX 수정 OHLC로 같은 계약을 재계산했다. 초기 두 종목 진단을 공개했으며 신규 미관측 홀드아웃이라고 부르지 않는다.
+
+실행: `python3 research/audit_kr_touch10_price_source.py --root /Users/dongdong/Projects/codex_swing/swing-main --collect`. 결과: 원천/코호트 가격 커버리지 오류 0, 터치/정산 상태/계약 수익률 차이 0. H10 합산 정산 42건·13발행일, 터치율 85.7143%, 평균 순수익 +3.6722%, 5세션 블록 CI [2.8424, 4.3395]. 21건 미성숙·1건 진입 미체결을 승패로 바꾸지 않았다. JSON은 운영 `runtime_state/reports/validation/kr_touch10_kis_price_audit.json`, 원문별 SHA와 진입가격 단위 비율을 포함한다.
+
+같은 날짜 대조군을 KIS로 다시 수집한 검증은 아니며, 표본·빈도 실패는 여전하다. `publication_allowed=false`; 새 레인 승격이나 70%의 미래 확률 보장이 아니다.
