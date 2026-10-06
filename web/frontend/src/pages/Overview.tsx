@@ -2,10 +2,13 @@ import { useEffect, useState } from "react";
 import { api, Overview as OV } from "../api";
 import { C, fmt } from "../theme";
 import { Card, MarketBadge, LaneBadge, Term, StatusChips } from "../components/ui";
+import { LaneRunStatus } from "../components/LaneRunStatus";
+import { useApi } from "../components/useApi";
+import { LoadFail } from "../components/LoadFail";
 
 export function Overview() {
-  const [ov, setOv] = useState<OV | null>(null);
-  useEffect(() => { api.overview(6).then(setOv).catch(() => {}); }, []);
+  const { data: ov, err } = useApi<OV>(() => api.overview(6));
+  if (err) return <LoadFail err={err} what="개요" />;
   if (!ov) return <div style={{ height: 200, background: C.surface, borderRadius: 12, opacity: .5 }} />;
 
   const fr = ov.freshness;
@@ -13,6 +16,7 @@ export function Overview() {
     <div style={{ display: "grid", gap: 16 }}>
       <Compass />
       <Card>
+        <LaneRunStatus rows={ov.lane_status} />
         {/* 총 건수만 적으면 사용자가 그걸 '살 수 있는 픽 수'로 읽는다. 실측(2026-08-20)은
             10건 전부 차단이었는데 헤더는 "A 10 · B 0" 이라 열 개가 대기 중인 것처럼 보였다.
             실행 가능한 수를 먼저 말하고, 0이면 0이라고 말한다. */}

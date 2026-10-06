@@ -1699,17 +1699,9 @@ def ops_status():
            # 판정기·경보 산출을 운영 화면으로 올린다. 이 자리가 비어 있어서
            # 매일 나오는 critical 이 화면 어디에도 없었다.
            "escalations": _ops_escalations()}
-    # 세션 상태(primary_market_session_state.json)
-    sp = os.path.join(REPO, "runtime_state/long_term/ops/primary_market_session_state.json")
-    try:
-        st = json.load(open(sp))
-        sessions = st.get("sessions", st) if isinstance(st, dict) else {}
-        for sid, v in (sessions.items() if isinstance(sessions, dict) else []):
-            if isinstance(v, dict):
-                out["sessions"].append({"id": sid, "last_run": v.get("last_run_date") or v.get("last_ran_at") or v.get("last_run"),
-                                        "status": v.get("status") or v.get("last_status")})
-    except Exception:
-        pass
+    from modules.pipeline_status import session_status
+    out.update(session_status(REPO))
+    out["lane_status"] = lane_status()
     # B 모델 메타
     try:
         m = json.load(open(os.path.join(REPO, "b_engine/data/b_model_meta.json")))
@@ -1723,6 +1715,11 @@ def ops_status():
         {"id": "kr_nxt_close", "time": "20:05 KST", "desc": "NXT 마감 갱신"},
     ]
     return out
+
+
+def lane_status(lane=None):
+    from modules.pipeline_status import kr_producer_status
+    return kr_producer_status(REPO, daily_date=freshness().get("daily"), lane=lane)
 
 
 def pick_blockers(p):
@@ -1777,7 +1774,7 @@ def overview(top=6):
                        "blocked": len(allp) - len(actionable),
                        # 조용히 사라지지 않게 — 만료 N일 초과로 화면에서 내린 수.
                        "hidden_expired": _hidden},
-            "hidden_expired_days": EXPIRED_HIDE_DAYS}
+            "hidden_expired_days": EXPIRED_HIDE_DAYS, "lane_status": lane_status()}
 
 
 # ── 매수 타이밍 (§26 후속, 운영자 요청): "지금 가격에 사도 되나" — 계약 오버레이 판단 ──

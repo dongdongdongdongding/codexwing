@@ -87,7 +87,8 @@ def overview(top: int = 6):
 @app.get("/api/picks")
 def picks(lane: str = Query("", description="kospi_swing|kosdaq_swing|kospi_intraday|kosdaq_intraday|b_market_neutral|'' 전체")):
     rows = S.picks(lane or None)
-    return {"lane": lane or "all", "count": len(rows), "picks": rows}
+    return {"lane": lane or "all", "count": len(rows), "picks": rows,
+            "lane_status": S.lane_status(lane or None)}
 
 
 @app.get("/api/prices")

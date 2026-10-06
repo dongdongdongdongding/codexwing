@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useIsMobile } from "../useIsMobile";
-import { api, Pick, Lane, Price } from "../api";
+import { api, Pick, Lane, Price, LaneStatus } from "../api";
+import { LaneRunStatus } from "../components/LaneRunStatus";
+import { LoadFail } from "../components/LoadFail";
 import { C, fmt, pct, signColor } from "../theme";
 import { MarketBadge, LaneBadge, Term, WarnBadge, StatusChips } from "../components/ui";
 import { Chart } from "../components/Chart";
@@ -13,11 +15,21 @@ export function Picks() {
   const [prices, setPrices] = useState<Record<string, Price>>({});
   const [sel, setSel] = useState<Pick | null>(null);
   const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
+  const [laneStatus, setLaneStatus] = useState<LaneStatus[]>([]);
 
   useEffect(() => { api.lanes().then((d) => setLanes(d.lanes)).catch(() => {}); }, []);
   useEffect(() => {
+    let alive = true;
     setLoading(true);
-    api.picks(lane).then((d) => { setPicks(d.picks); setLoading(false); loadPrices(d.picks); }).catch(() => setLoading(false));
+    setErr("");
+    setPicks([]);
+    setLaneStatus([]);
+    api.picks(lane).then((d) => {
+      if (!alive) return;
+      setPicks(d.picks); setLaneStatus(d.lane_status || []); setLoading(false); loadPrices(d.picks);
+    }).catch((e) => { if (alive) { setErr(e?.message || String(e)); setLoading(false); } });
+    return () => { alive = false; };
   }, [lane]);
 
   const loadPrices = (ps: Pick[]) => {
@@ -36,7 +48,8 @@ export function Picks() {
         {lanes.map((l) => <Tab key={l.key} on={lane === l.key} onClick={() => setLane(l.key)}>{l.badge} {l.label}</Tab>)}
       </div>
 
-      {loading ? <Skeleton /> : picks.length === 0 ? (
+      <LaneRunStatus rows={laneStatus} />
+      {err ? <LoadFail err={err} what="픽" /> : loading ? <Skeleton /> : picks.length === 0 ? (
         <div style={{ color: C.mut, padding: 40, textAlign: "center" }}>
           표시할 픽이 없습니다 — 스캔이 아직 돌지 않았거나 조건을 통과한 종목이 없습니다.
         </div>

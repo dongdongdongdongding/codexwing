@@ -37,8 +37,11 @@ export interface ContractPerf {
   selective?: Record<string, { rank1?: { n: number; ev_avg?: number; win_pct?: number }; primary?: { n: number; ev_avg?: number; win_pct?: number } }> | null;
 }
 export interface Lane { key: string; label: string; kind: string; badge: string; }
+export interface LaneStatus { lane: string; label: string; status: string; reason: string;
+  as_of: string | null; pick_count: number; scored_rows?: number | null; }
 export interface Freshness { daily?: string; minute?: string; flow?: string; dart?: string; pead?: string; }
 export interface Overview {
+  lane_status?: LaneStatus[];
   generated_at: string; top_picks: Pick[]; freshness: Freshness; counts: { A: number; B: number; actionable: number; blocked: number };
 }
 export interface Price { price?: number | null; change_pct?: number | null; status?: string; }
@@ -128,7 +131,7 @@ export const api = {
   scanAnalyze: (id: string, ticker: string) => j<Analysis & { scan_id: string; cached_at: string }>(`/api/scans/${encodeURIComponent(id)}/analyze/${ticker}`),
   archive: (q: { from?: string; to?: string; market?: string; ticker?: string; limit?: number; offset?: number } = {}) =>
     j<Archive>(`/api/archive?date_from=${q.from || ""}&date_to=${q.to || ""}&market=${q.market || ""}&ticker=${q.ticker || ""}&limit=${q.limit || 100}&offset=${q.offset || 0}`),
-  picks: (lane = "") => j<{ count: number; picks: Pick[] }>(`/api/picks?lane=${lane}`),
+  picks: (lane = "") => j<{ count: number; picks: Pick[]; lane_status?: LaneStatus[] }>(`/api/picks?lane=${lane}`),
   lanes: () => j<{ lanes: Lane[] }>(`/api/lanes`),
   prices: (codes: string[]) => j<Record<string, Price>>(`/api/prices?codes=${codes.join(",")}`),
   chart: (code: string, tf: "day" | "minute") => j<ChartData>(`/api/chart?code=${code}&tf=${tf}`),

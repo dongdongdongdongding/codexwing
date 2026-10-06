@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import { C } from "../theme";
 import { Card, Term } from "../components/ui";
+import { LaneRunStatus } from "../components/LaneRunStatus";
+import { LoadFail } from "../components/LoadFail";
 
 // ⑦ 운영 [운영자] — 백그라운드 스캔(R4) + 스케줄러/신선도/모델 상태.
 export function Ops() {
@@ -9,8 +11,9 @@ export function Ops() {
   const [scan, setScan] = useState<any>(null);
   const [target, setTarget] = useState("all");
   const [targets, setTargets] = useState<Array<{ key: string; label: string }>>([]);
+  const [statusError, setStatusError] = useState("");
 
-  const refresh = () => { api.opsStatus().then(setStatus).catch(() => {}); api.scanStatus().then(setScan).catch(() => {}); };
+  const refresh = () => { api.opsStatus().then((d) => { setStatus(d); setStatusError(""); }).catch((e) => setStatusError(e?.message || String(e))); api.scanStatus().then(setScan).catch(() => {}); };
   useEffect(() => { refresh(); api.scanTargets().then((d) => setTargets(d.targets)).catch(() => {}); const t = setInterval(() => api.scanStatus().then(setScan).catch(() => {}), 3000); return () => clearInterval(t); }, []);
 
   const [err, setErr] = useState<string>("");
@@ -31,6 +34,15 @@ export function Ops() {
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
+      {statusError && <LoadFail err={statusError} what="운영 상태" />}
+      {status?.session_error && <LoadFail err={status.session_error} what="배치 실행 이력" />}
+      <LaneRunStatus rows={status?.lane_status} />
+      {status?.sessions?.filter((s: any) => s.failures?.length).map((s: any) =>
+        <Card key={s.id}><b>{s.id} · {s.status}</b>
+          {s.failures.map((f: any, i: number) => <div key={i} style={{ color: C.down, fontSize: 12, marginTop: 6 }}>
+            {f.step}: 종료 코드 {f.returncode} {f.details?.join(" · ")}
+          </div>)}
+        </Card>)}
       <Card>
         <div style={{ color: C.mut, fontSize: 12, marginBottom: 12, fontWeight: 600 }}>스캔 제어 (백그라운드 — 탭 이동해도 계속)</div>
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
