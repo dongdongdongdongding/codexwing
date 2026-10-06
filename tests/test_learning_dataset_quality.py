@@ -116,3 +116,41 @@ def test_dedupe_archive_rows_keeps_distinct_source_refs():
 
     assert removed == 0
     assert len(result) == 2
+
+
+def test_resolved_missing_outcomes_are_unknown_not_losses():
+    from multi_agent.tools.export_scan_archive_learning_dataset import observed_label
+    values = pd.Series([None, float('nan'), float('inf'), float('-inf'), -2., 0., 3., 5.])
+    resolved = pd.Series([True]*7 + [False])
+    result = observed_label(values, values.gt(0), resolved)
+    assert result.iloc[:4].isna().all()
+    assert result.iloc[4:7].tolist() == [0, 0, 1]
+    assert pd.isna(result.iloc[7])
+
+
+def test_export_main_preserves_missing_labels_in_csv_and_json(tmp_path, monkeypatch):
+    import json
+    import sys
+    from types import SimpleNamespace
+    from multi_agent.tools import export_scan_archive_learning_dataset as module
+    from modules import db_manager
+    rows = [
+        _gold_row(ticker='MISSING.KS', return_1d_pct=None, return_3d_pct=None, return_close_pct=None),
+        _gold_row(ticker='LOSS.KS', return_1d_pct=-1., return_3d_pct=-2., return_close_pct=-.5),
+        _gold_row(ticker='PENDING.KS', outcome_status='PENDING', return_1d_pct=10., return_3d_pct=12., return_close_pct=5.),
+    ]
+    class Query:
+        def table(self, *_): return self
+        def select(self, *_): return self
+        def order(self, *_, **kw): return self
+        def range(self, *_): return self
+        def execute(self): return SimpleNamespace(data=rows)
+    monkeypatch.setattr(db_manager, 'DBManager', lambda: SimpleNamespace(client=Query()))
+    monkeypatch.setattr(sys, 'argv', ['export', '--output-dir', str(tmp_path)])
+    module.main()
+    csv = pd.read_csv(tmp_path/'scan_archive_learning_dataset_all.csv').set_index('ticker')
+    js = {row['ticker']: row for row in json.loads((tmp_path/'scan_archive_learning_dataset_all.json').read_text())}
+    for col in ['label_win_close', 'label_win_1d', 'label_win_3d']:
+        assert pd.isna(csv.loc['MISSING.KS', col]) and js['MISSING.KS'][col] is None
+        assert csv.loc['LOSS.KS', col] == 0 and js['LOSS.KS'][col] == 0
+        assert pd.isna(csv.loc['PENDING.KS', col]) and js['PENDING.KS'][col] is None

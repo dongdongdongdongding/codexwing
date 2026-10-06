@@ -27,6 +27,13 @@ def atomic_export(path, writer):
         temp.unlink(missing_ok=True)
 
 
+def observed_label(series, condition, is_resolved):
+    """An unavailable outcome remains unknown even when the row is RESOLVED."""
+    numeric = pd.to_numeric(series, errors="coerce")
+    observed = numeric.notna() & numeric.ne(float("inf")) & numeric.ne(float("-inf"))
+    return condition.astype("Int8").where(is_resolved & observed)
+
+
 RETURN_COLS = [
     "return_30m_pct",
     "return_1h_pct",
@@ -418,9 +425,7 @@ def main() -> None:
             df["min_return_observed_pct"] = numeric.min(axis=1, skipna=True).where(is_resolved)
 
             def _label(series: pd.Series, condition) -> pd.Series:
-                """Return 1/0 only for RESOLVED rows; NaN for others."""
-                result = condition.astype("Int8")  # nullable int
-                return result.where(is_resolved)
+                return observed_label(series, condition, is_resolved)
 
             if "max_high_return_5d_pct" in df.columns:
                 high_5d = pd.to_numeric(df["max_high_return_5d_pct"], errors="coerce")
