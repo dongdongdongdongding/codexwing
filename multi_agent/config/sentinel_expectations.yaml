@@ -1093,6 +1093,20 @@ prereg_kill_criteria_not_machine_readable:
 # ---------------------------------------------------------------------------
 prereg_track_gates:
 
+  - id: ext_transfer_residual_20261007
+    source: "research/prereg_ext_transfer_20261007.json"
+    prose: "고정 203종목 코호트의 연장장 양의 잔차 → 익일 시가 이후 H10 전이"
+    kind: one_shot
+    status: adjudicated
+    adjudicated_at: "2026-10-07"
+    outcome: "REJECT_FIXED_RULE: n80, touch63.75%, net -2.9804%, matched excess -2.2291pp, placebo p0.9892"
+    adjudication_record: "docs/research/EXT_TRANSFER_VERDICT_2026-10-07.md; runtime_state/reports/validation/ext_transfer_20261007.json"
+    criterion_at_termination: "순EV·같은날 초과수익 CI하단>0, 티커 플라시보p<=0.05, 터치>=70%, 5세션당2~3회"
+    narrowing: >
+      사전등록한 단일 잔차 연속 규칙만 기각했다. 연장시장 전체 또는 모든 다른 가설의 기각이 아니다.
+      신호 부호·문턱·표본을 결과에 맞춰 바꿔 재개하지 않는다. 이 후향 코호트는 PIT 유니버스도
+      독립 전향 표본도 아니며, 통과했더라도 이 결과만으로 발행할 수 없었다.
+
   - id: mech_flow_h4_blockdeal_overhang
     source: "RESEARCH_LOG.md §40 PKG-C ② / PREREG_MECH_FLOW_CALENDAR_2026-08.md H4"
     prose: "H4 블록딜 오버행 회피 — 사전공시~실행일 창의 픽 감점 근거"
@@ -1391,4 +1405,3 @@ prereg_reopen_conditions:
     reopen_is_not_publication: >
       R1~R5 를 전부 통과해도 "다시 연구할 수 있다"는 뜻이며 발행/라우팅 금지는 별도 승인
       없이 해제되지 않는다.
-
