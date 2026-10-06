@@ -49,5 +49,6 @@
     "controls": "Frozen same-date market/liquidity universe excluding original selected tickers; identical executable next-open TP5/H10 and costs. Random ticker relabel and circular date-shift diagnostics."
   },
   "kill_criteria": "At the fixed mature window, any target miss rejects this candidate for promotion; report every miss. Before then report PENDING. Do not combine prior replay with this cohort.",
-  "publication": "Shadow only, no routing or sizing. A passing report still needs matching recursion gate and reviewed producer/consumer wiring; this collector never publishes picks."
+  "publication": "Shadow only, no routing or sizing. A passing report still needs matching recursion gate and reviewed producer/consumer wiring; this collector never publishes picks.",
+  "targets_scope": "Joint candidate: sample, touch, net/excess and ticker-placebo targets apply to each market and combined. Frequency target is combined firing dates. No post-hoc market subset promotion. Circular date-shift is a timing diagnostic, not a stock-alpha gate."
 }
