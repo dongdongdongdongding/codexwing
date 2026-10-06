@@ -351,10 +351,27 @@ def _apply_operator_ev_floor(row, lane_key):
     이 리포가 반복해 온 fail-open 이다.
     """
     try:
-        from modules.stream_exclusion import GATE_LANE_MAP
+        from modules.stream_exclusion import GATE_LANE_MAP, load_gate_state
         gate_lane = GATE_LANE_MAP.get(lane_key)
     except Exception:
         gate_lane = None
+    if gate_lane == "swing_candidate":
+        state = load_gate_state()
+        gate = (state.get("lanes") or {}).get(gate_lane) or {}
+        if gate.get("epoch_scope_required"):
+            market = {"kospi_swing":"KOSPI", "kosdaq_swing":"KOSDAQ"}.get(lane_key, row.get("market"))
+            epoch = (gate.get("current_epochs") or {}).get(market) if state.get("usable") else None
+            row["operator_verdict"] = "OBSERVE" if epoch else "UNKNOWN"
+            if epoch:
+                row.update(forward_ev=epoch.get("fwd_ev"), forward_win=epoch.get("fwd_win"),
+                           forward_n=epoch.get("n"), forward_evidence_scope=epoch.get("scope"),
+                           forward_unique_dates=epoch.get("unique_dates"),
+                           forward_epoch=_forward_epoch(lane_key, market=market))
+            if not epoch or epoch.get("publication_block"):
+                _add_block(row, "epoch_qualification", "현행 구성 관측 중",
+                           f"현행 {market} 구성의 발행 자격 미충족. 과거·타시장 합산 판정은 승계하지 않는다. "
+                           f"정산 {epoch.get('n') if epoch else 0}건 / 고유 {epoch.get('unique_dates') if epoch else 0}일")
+            return row
     ev, win, n = (_lane_forward_ev().get(gate_lane) or (None, None, None))
     if not isinstance(ev, (int, float)):
         if row.get("size_pct_total") is not None:
@@ -1944,7 +1961,10 @@ def buy_timing(days=5):
     def _w(p):
         try:
             from modules.stream_exclusion import GATE_LANE_MAP
-            ev, win, n = (_lane_forward_ev().get(GATE_LANE_MAP.get(p["lane"])) or (None, None, None))
+            if "forward_evidence_scope" in p:
+                ev, win, n = p.get("forward_ev"), p.get("forward_win"), p.get("forward_n")
+            else:
+                ev, win, n = (_lane_forward_ev().get(GATE_LANE_MAP.get(p["lane"])) or (None, None, None))
         except Exception:
             ev = win = n = None
         if isinstance(win, (int, float)):

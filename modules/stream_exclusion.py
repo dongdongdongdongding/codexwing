@@ -254,6 +254,10 @@ def load_gate_state(gate_path: Optional[Path] = None, *, now: Optional[datetime]
                         "verdict": entry.get("verdict"),
                         "fwd_ev": entry.get("fwd_ev"),
                         "n": entry.get("n"),
+                        "publication_block": entry.get("publication_block"),
+                        "publication_block_reason": entry.get("publication_block_reason"),
+                        "epoch_scope_required": entry.get("epoch_scope_required"),
+                        "current_epochs": entry.get("current_epochs"),
                     }
             if not lanes:
                 state["error"] = "gate_report_empty"
@@ -283,7 +287,8 @@ def exclusion_enabled() -> bool:
 
 
 def stream_status(lane_key: Any, *, gate_state: Optional[Dict[str, Any]] = None,
-                  gate_path: Optional[Path] = None, strict: bool = False) -> Dict[str, Any]:
+                  gate_path: Optional[Path] = None, strict: bool = False,
+                  market: Optional[str] = None) -> Dict[str, Any]:
     """레인 하나의 발행 자격. 세 소비자가 전부 이걸 통해서 묻는다.
 
     `strict=True`는 **발행 관문**(웹 `_pick_row`)용이다. 거기 오는 lane_key는 반드시
@@ -325,6 +330,18 @@ def stream_status(lane_key: Any, *, gate_state: Optional[Dict[str, Any]] = None,
         }
 
     verdict_row = state["lanes"].get(gate_lane) or {}
+    if verdict_row.get("epoch_scope_required"):
+        market = {"kospi_swing":"KOSPI", "kosdaq_swing":"KOSDAQ"}.get(key, market)
+        epoch = (verdict_row.get("current_epochs") or {}).get(market)
+        if not isinstance(epoch, dict):
+            return {"gated":True, "excluded":True, "reason":"epoch_evidence_missing",
+                    "gate_lane":gate_lane, "verdict":None}
+        verdict_row = epoch
+    if verdict_row.get("publication_block"):
+        return {"gated":True, "excluded":True, "reason":"publication_block",
+                "gate_lane":gate_lane, "verdict":verdict_row.get("verdict"),
+                "n":verdict_row.get("n"), "fwd_ev":verdict_row.get("fwd_ev"),
+                "detail":verdict_row.get("publication_block_reason")}
     verdict = verdict_row.get("verdict")
     if verdict is None and gate_lane not in state["lanes"]:
         # 게이트는 읽혔는데 이 레인 판정이 없다 = 덮인다고 믿었던 레인이 사라졌다. 닫는다.
@@ -350,6 +367,14 @@ def stream_status(lane_key: Any, *, gate_state: Optional[Dict[str, Any]] = None,
 
 def _size_note(status: Dict[str, Any]) -> str:
     reason = status.get("reason")
+    if reason in {"publication_block", "epoch_evidence_missing"}:
+        labels = {"n_below_30":"정산 30건 미달", "unique_dates_below_20":"고유 발행일 20일 미달",
+                  "positive_block_ci_not_established":"순수익 신뢰구간 미충족",
+                  "matching_research_basis_not_validated":"현행 구성 연구 검증 미완료"}
+        detail = " · ".join(labels.get(k,"발행 차단 조건 확인 필요")
+                            for k in str(status.get("detail") or "").split(";") if k)
+        return ("⛔ 발행 제외(관측) — 현행 구성의 발행 자격 미확인 "
+                f"(n={status.get('n')}, EV={status.get('fwd_ev')}; {detail or '판정 자료 없음'})")
     if reason == "degrade":
         return (f"⛔ 발행 제외(관측) — 재귀게이트 DEGRADE (forward n={status.get('n')} "
                 f"EV {status.get('fwd_ev')}, §20 스트림 제외 정책)")
@@ -393,7 +418,8 @@ def apply_stream_exclusion(
     if not exclusion_enabled():
         return row
 
-    status = stream_status(lane_key, gate_state=gate_state, gate_path=gate_path, strict=strict)
+    status = stream_status(lane_key, gate_state=gate_state, gate_path=gate_path, strict=strict,
+                           market=row.get("market"))
     if not status.get("excluded"):
         return row
 

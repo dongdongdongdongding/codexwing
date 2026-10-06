@@ -670,6 +670,13 @@ def main() -> None:
     today = _today()
     # verdict_since 는 evaluate() 안에서 소비·산출된다(③). main 은 저장만 한다.
     results = [evaluate(name, cfg, state, today) for name, cfg in LANES.items()]
+    from modules.swing_epoch_evidence import current_epochs
+    from modules.market_sessions import price_sessions
+    sessions, _ = price_sessions("KR", today)
+    for result in results:
+        if result["lane"] == "swing_candidate":
+            result["epoch_scope_required"] = True
+            result["current_epochs"] = current_epochs(_rows(LANES["swing_candidate"]["ledger"]), sessions)
     tickets = []
 
     for r in results:
@@ -719,6 +726,14 @@ def main() -> None:
         lines.append(f"| {r['lane']} | **{r['verdict']}** | {r['n']} | {r.get('fwd_ev','–')} | "
                      f"{r.get('fwd_ci','–')} | {r['expect_ev']} | "
                      f"{r.get('fwd_win','–')}% ({r['expect_win']}%) | {r['win_verdict']} | {r['note']} |")
+    for r in results:
+        if r.get("epoch_scope_required"):
+            lines.append("\n위 swing_candidate는 과거 합산 진단이다. 현행 발행 자격은 다음 시장별 구성으로 판단한다.\n")
+            for market, epoch in r["current_epochs"].items():
+                lines.append(f"- {market}: {epoch['verdict']}, n={epoch['n']}, 고유일={epoch['unique_dates']}, "
+                             f"net EV={epoch['fwd_ev']}, block CI={epoch['fwd_ci']}; "
+                             f"발행 차단: {epoch['publication_block_reason']}")
+            lines.append("")
     if tickets:
         lines += ["", "## Auto tickets", *[f"- {t}" for t in tickets]]
     OUT_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
