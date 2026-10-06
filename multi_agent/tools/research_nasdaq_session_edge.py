@@ -244,7 +244,10 @@ def _load_raw_daily(symbol: str, raw_dir: Path) -> pd.DataFrame:
     for col in ("open", "high", "low", "close", "volume"):
         if col in raw.columns:
             raw[col] = pd.to_numeric(raw[col], errors="coerce")
-    return raw.dropna(subset=["date", "close"]).sort_values("date", kind="mergesort")
+    if raw.date.isna().any() or raw.date.duplicated().any():
+        raise ValueError('invalid_or_duplicate_raw_dates')
+    # Preserve invalid-price dates so an outcome window cannot skip over them.
+    return raw.sort_values("date", kind="mergesort")
 
 
 def _ordered_first_touch(window: pd.DataFrame, entry_price: float) -> Tuple[float, float]:
@@ -281,6 +284,9 @@ def _outcome_from_raw_daily(
     start = matches[0] if include_current_date else matches[0] + 1
     window = raw.iloc[start : start + 5].copy()
     if len(window) < 5:
+        return None
+    from modules.ohlcv_quality import bar_issues
+    if bar_issues(window, require_volume=False).ne('').any():
         return None
     first3 = window.iloc[:3]
     close3 = float(first3.iloc[-1]["close"])

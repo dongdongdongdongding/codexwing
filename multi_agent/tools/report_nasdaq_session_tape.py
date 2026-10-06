@@ -112,6 +112,9 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
             _TP = float(row.get("contract_tp") or CONTRACT_TP_DEFAULT)
             tgt = entry * (1.0 + _TP)
             win5 = h.iloc[:_H]
+            from modules.ohlcv_quality import bar_issues
+            if bar_issues(win5.rename(columns=str.lower), require_volume=False).ne('').any():
+                continue
             ret = (float(win5["Close"].iloc[-1]) / entry - 1) * 100
             touched = 0
             for k in range(_H):

@@ -36,9 +36,10 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from modules.quant_analysis import QuantStrategy
+from modules.ohlcv_quality import bar_issues
 
 
-FEATURE_VERSION = "us_daily_price_features_v1"
+FEATURE_VERSION = "us_daily_price_features_v2_quality_segments"
 DEFAULT_START = "2018-01-01"
 DEFAULT_MARKET = "NASDAQ"
 
@@ -507,9 +508,9 @@ def _future_extreme(series: pd.Series, horizon: int, reducer: str) -> pd.Series:
     shifted = [series.shift(-i) for i in range(1, horizon + 1)]
     matrix = pd.concat(shifted, axis=1)
     if reducer == "max":
-        return matrix.max(axis=1, skipna=True)
+        return matrix.max(axis=1).where(matrix.notna().all(axis=1))
     if reducer == "min":
-        return matrix.min(axis=1, skipna=True)
+        return matrix.min(axis=1).where(matrix.notna().all(axis=1))
     raise ValueError(f"unsupported reducer={reducer}")
 
 
@@ -533,8 +534,8 @@ def _first_touch_labels(close: pd.Series, high: pd.Series, low: pd.Series, horiz
     return pd.DataFrame(
         {
             f"ft_5_5_{horizon}d": ft,
-            f"first_up_day_{horizon}d": up_day,
-            f"first_down_day_{horizon}d": dn_day,
+            f"first_up_day_{horizon}d": up_day.mask(no_future, np.nan),
+            f"first_down_day_{horizon}d": dn_day.mask(no_future, np.nan),
             f"first_touch_ambiguous_{horizon}d": ambiguous.mask(no_future, np.nan),
         },
         index=close.index,
@@ -542,8 +543,46 @@ def _first_touch_labels(close: pd.Series, high: pd.Series, low: pd.Series, horiz
 
 
 def compute_feature_frame(raw: pd.DataFrame) -> pd.DataFrame:
+    """Preserve dates, with invalid bars separating independent valid runs.
+
+    No return, rolling statistic, EMA or future label crosses an invalid bar.
+    Original prices stay in raw storage; the derived invalid row has null
+    numeric inputs and an explicit reason. This is not a missing-session audit.
+    """
     if raw is None or raw.empty:
         return pd.DataFrame()
+    ordered = raw.copy()
+    ordered['date'] = pd.to_datetime(ordered['date'], errors='coerce')
+    if ordered.date.isna().any() or ordered.date.duplicated().any():
+        raise ValueError('invalid_or_duplicate_raw_dates')
+    ordered = ordered.sort_values('date').reset_index(drop=True)
+    issues = bar_issues(ordered)
+    valid = issues.eq('')
+    segments = valid.ne(valid.shift()).cumsum()
+    parts = []
+    for _, block in ordered.groupby(segments, sort=False):
+        ok = bool(valid.loc[block.index[0]])
+        if ok:
+            part = _compute_valid_feature_frame(block)
+        else:
+            # A one-row valid scaffold obtains the complete stable schema;
+            # every numeric value in these derived rows is then nullified.
+            scaffold = block.iloc[:1].copy()
+            scaffold[['open', 'high', 'low', 'close', 'volume', 'dollar_volume']] = 1.
+            template = _compute_valid_feature_frame(scaffold)
+            part = template.iloc[[0] * len(block)].reset_index(drop=True)
+            numeric = part.select_dtypes(include=[np.number]).columns
+            part[numeric] = part[numeric].astype(float) * np.nan
+            part['date'] = block.date.to_numpy()
+            part['feature_ready'] = 0.
+        part['source_bar_valid'] = float(ok)
+        part['source_issue'] = issues.loc[block.index].to_numpy()
+        parts.append(part)
+    return pd.concat(parts, ignore_index=True)
+
+
+def _compute_valid_feature_frame(raw: pd.DataFrame) -> pd.DataFrame:
+    """Compute only within one contiguous structurally valid source run."""
     h = raw.copy()
     h["date"] = pd.to_datetime(h["date"], errors="coerce")
     h = h.dropna(subset=["date"]).sort_values("date")
@@ -690,6 +729,8 @@ def write_feature_panel(
     feature_rows = 0
     ready_rows = 0
     failed_features: List[str] = []
+    failed_feature_reasons: Dict[str, str] = {}
+    invalid_source_bars: Dict[str, int] = {}
 
     def flush() -> None:
         nonlocal writer, schema, pending
@@ -717,17 +758,21 @@ def write_feature_panel(
             dates = pd.to_datetime(raw["date"], errors="raise")
             raw = raw[(dates >= pd.Timestamp(start)) & (dates < pd.Timestamp(end))].copy()
             feat = compute_feature_frame(raw)
-        except Exception:
+        except Exception as exc:
             failed_features.append(sym)
+            failed_feature_reasons[sym] = str(exc) or type(exc).__name__
             continue
         if feat.empty:
             failed_features.append(sym)
             continue
         feature_symbols += 1
+        invalid_count = int(feat['source_bar_valid'].eq(0).sum())
+        if invalid_count:
+            invalid_source_bars[sym] = invalid_count
         feature_rows += len(feat)
         ready_rows += int(pd.to_numeric(feat["feature_ready"], errors="coerce").fillna(0).sum())
         pending.append(feat)
-        latest = feat.dropna(subset=["close"]).tail(1)
+        latest = feat.tail(1)
         if not latest.empty:
             latest_rows.append(latest)
         if len(pending) >= max(1, int(feature_batch_size)):
@@ -753,6 +798,8 @@ def write_feature_panel(
         "feature_rows": feature_rows,
         "feature_ready_rows": ready_rows,
         "failed_feature_symbols": failed_features,
+        "failed_feature_reasons": failed_feature_reasons,
+        "invalid_source_bars": invalid_source_bars,
     }
 
 

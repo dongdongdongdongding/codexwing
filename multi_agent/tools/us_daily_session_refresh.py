@@ -13,6 +13,7 @@ from zoneinfo import ZoneInfo
 import numpy as np
 import pandas as pd
 from multi_agent.tools.intraday_cache_journal import atomic_write, digest, save_json
+from modules.ohlcv_quality import bar_issues
 
 
 def latest_completed_session(paths, now=None):
@@ -149,10 +150,9 @@ def refresh_raw(universe,paths,target,*,start,batch_size,timeout,sleep,budget,au
                     frame=bf._merge_raw(existing,fetched)
                     if frame.date.duplicated().any():raise ValueError('duplicate_raw_dates')
                     if target not in set(pd.to_datetime(frame.date)):raise ValueError('merged_target_missing')
-                    prices=frame[['open','high','low','close']].apply(pd.to_numeric,errors='coerce')
-                    if not np.isfinite(prices).all().all() or (prices<=0).any().any():raise ValueError('invalid_raw_prices')
-                    if (frame.high<prices.max(axis=1)).any() or (frame.low>prices.min(axis=1)).any():raise ValueError('invalid_raw_OHLC_order')
-                    if not np.isfinite(frame.volume).all() or (frame.volume<0).any():raise ValueError('invalid_raw_volume')
+                    issues=bar_issues(frame)
+                    if issues.ne('').any():
+                        raise ValueError(issues[issues.ne('')].iloc[0].replace('invalid_','invalid_raw_',1))
                     if _store(path,frame,audit):written.append(symbol)
                     save_json(paths.market_root/'.refresh/receipts'/f'{bf._safe_filename(symbol)}.json',
                               {'required_through':str(target.date()),'sha256':digest(path),'audit':str(audit)})
@@ -190,7 +190,8 @@ def run(paths,*,required_through,output_prefix='daily_features',start='2018-01-0
         save_json(audit/'result.json',result);return result
     info=bf.write_feature_panel(universe,paths,start=start,end=end,output_prefix=output_prefix,feature_batch_size=feature_batch_size)
     after=coverage(info['output_feature_path'],required_through,universe.symbol)
-    complete=after['current'] and not raw['failed'] and not raw['unvisited'] and not info['failed_feature_symbols']
+    complete=(after['current'] and not raw['failed'] and not raw['unvisited']
+              and not info['failed_feature_symbols'] and not info.get('invalid_source_bars'))
     # Keep prior panels on incomplete recovery; an error must not delete evidence.
     removed=bf.prune_old_panels(paths,output_prefix=output_prefix,keep=keep_panels) if complete else []
     result={'status':'refreshed' if complete else 'partial','required_through':required_through,'audit':str(audit),
