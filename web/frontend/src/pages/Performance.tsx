@@ -73,9 +73,9 @@ function Summary() {
       {cp && (
         <Card>
           <div style={{ color: C.mut, fontSize: 12, marginBottom: 4, fontWeight: 600 }}>계약 실현 성과 (터치익절 자동 채점)</div>
-          <div style={{ color: C.mut, fontSize: 11, marginBottom: 10 }}>{cp.note} 위 표(마크투마켓: 익일종가→현재가)와 달리, 계약대로 익절/청산했을 때의 확정 수익입니다. 해상까지 ~9일 소요.</div>
+          <div style={{ color: C.mut, fontSize: 11, marginBottom: 10 }}>{cp.note} 계약에 따른 익절·청산 결과입니다. 계약 만기와 원천 가격 갱신 이후 정산합니다.</div>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-            <thead><tr style={{ color: C.mut, textAlign: "right" }}><th style={{ textAlign: "left", padding: 6 }}>레인 (계약)</th><th style={{ padding: 6 }}>해상</th><th style={{ padding: 6 }}>평균수익</th><th style={{ padding: 6 }}>승률</th><th style={{ padding: 6 }}>최악</th></tr></thead>
+            <thead><tr style={{ color: C.mut, textAlign: "right" }}><th style={{ textAlign: "left", padding: 6 }}>레인 (계약)</th><th style={{ padding: 6 }}>정산</th><th style={{ padding: 6 }}>평균수익</th><th style={{ padding: 6 }}>승률</th><th style={{ padding: 6 }}>최악</th></tr></thead>
             <tbody>
               {Object.entries(cp.lanes).map(([k, v]) => (
                 <tr key={k} style={{ borderTop: `1px solid ${C.line}`, fontVariantNumeric: "tabular-nums" }}>
@@ -113,10 +113,11 @@ function ArchiveView() {
         <button onClick={load} style={{ background: C.surface2, color: C.text, border: `1px solid ${C.line}`, borderRadius: 8, padding: "0 14px", cursor: "pointer" }}>조회</button>
         {ar && <span style={{ color: C.mut, fontSize: 12, alignSelf: "center" }}>총 {ar.count.toLocaleString()}행 (과거 모든 스캔 이력)</span>}
       </div>
+      <div style={{ color: C.mut, fontSize: 12, marginBottom: 12 }}>저장된 3일·5일 기간 수익률입니다. 기준가는 실제 체결가를 뜻하지 않으며, 터치익절 계약 성과는 집계 화면에서 확인할 수 있습니다.</div>
       {!ar ? <Sk /> : (
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, background: C.surface, border: `1px solid ${C.line}`, borderRadius: 12, overflow: "hidden" }}>
           <thead><tr style={{ color: C.mut, textAlign: "right", fontSize: 12 }}>
-            <th style={{ textAlign: "left", padding: "10px" }}>일자</th><th style={{ textAlign: "left", padding: 10 }}>종목</th><th style={{ padding: 10 }}>레인</th><th style={{ padding: 10 }}>진입</th><th style={{ padding: 10 }}>수익</th><th style={{ padding: 10 }}>결과</th></tr></thead>
+            <th style={{ textAlign: "left", padding: "10px" }}>신호일</th><th style={{ textAlign: "left", padding: 10 }}>종목</th><th style={{ padding: 10 }}>레인</th><th style={{ padding: 10 }}>기준가</th><th style={{ padding: 10 }}>기간 수익률</th><th style={{ padding: 10 }}>방향</th></tr></thead>
           <tbody>
             {ar.rows.map((r, i) => (
               <tr key={i} style={{ borderTop: `1px solid ${C.line}`, fontVariantNumeric: "tabular-nums" }}>
@@ -124,8 +125,8 @@ function ArchiveView() {
                 <td style={{ textAlign: "left", padding: 10 }}>{r.name} <span style={{ color: C.mut, fontSize: 11 }}>{r.code}</span></td>
                 <td style={{ textAlign: "right", padding: 10, color: C.mut }}>{r.lane}</td>
                 <td style={{ textAlign: "right", padding: 10 }}>{fmt(r.entry)}</td>
-                <td style={{ textAlign: "right", padding: 10, color: signColor(r.ret) }}>{r.ret != null ? pct(r.ret, 1) : "–"}</td>
-                <td style={{ textAlign: "right", padding: 10 }}>{r.result === "승" ? <span style={{ color: C.up }}>📈 승</span> : r.result === "패" ? <span style={{ color: C.down }}>📉 패</span> : <span style={{ color: C.mut }}>미해결</span>}</td>
+                <td style={{ textAlign: "right", padding: 10, color: signColor(r.ret) }}>{r.ret != null ? pct(r.ret, 1) : "–"}{r.ret_horizon != null && <span style={{ color: C.mut, fontSize: 11 }}> · {r.ret_horizon}일</span>}</td>
+                <td style={{ textAlign: "right", padding: 10, color: signColor(r.ret) }}>{r.result}</td>
               </tr>
             ))}
           </tbody>

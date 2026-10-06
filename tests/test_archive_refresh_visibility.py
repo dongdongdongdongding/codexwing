@@ -61,3 +61,17 @@ def test_model_archive_uses_signal_date_when_persisted_after_midnight(tmp_path,m
     assert out["rows"][0]["date"] == "2026-09-02"
     assert out["rows"][0]["lane"] == "swing_candidate"
     assert out["rows"][0]["ret"] == -18.72
+    assert out["rows"][0]["ret_horizon"] == 5
+    assert out["rows"][0]["result"] == "하락"
+
+
+def test_shorter_available_return_is_labeled_with_its_actual_period(tmp_path,monkeypatch):
+    monkeypatch.setattr(S,"REPO",str(tmp_path))
+    monkeypatch.setattr(S,"resolve_name",lambda *a,**k:"test")
+    path = tmp_path/"runtime_state/reports/archive/scan_archive_learning_dataset_all.csv"
+    path.parent.mkdir(parents=True)
+    path.write_text("ticker,run_id,recommended_at,return_5d_pct,return_3d_pct\n"
+                    "X,SWING-CAND-20260902,2026-09-02T08:00:00Z,,0\n")
+    row = S.archive()["rows"][0]
+    assert row["ret_horizon"] == 3
+    assert row["result"] == "보합"

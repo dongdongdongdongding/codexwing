@@ -104,7 +104,7 @@ export interface Performance {
   b_shadow: { settled: number; open?: number; alpha_mean?: number; alpha_win?: number };
   rows: Array<{ lane: string; date: string; code: string; name: string; ret: number; alpha: number | null; days: number }>;
 }
-export interface ArchiveRow { date: string; run_id: string; code: string; name: string; market: string; lane: string; entry: number | null; prob: number | null; ret: number | null; result: string; }
+export interface ArchiveRow { date: string; run_id: string; code: string; name: string; market: string; lane: string; entry: number | null; prob: number | null; ret: number | null; ret_horizon?: number | null; result: string; }
 export interface Archive { count: number; offset: number; limit: number; rows: ArchiveRow[]; note?: string; }
 
 export const api = {

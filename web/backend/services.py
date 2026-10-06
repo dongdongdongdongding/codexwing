@@ -1594,7 +1594,9 @@ def archive(date_from=None, date_to=None, market=None, ticker=None, limit=200, o
     out = []
     for _, r in d.iterrows():
         code = _s(r.get("ticker")).split(".")[0].zfill(6)
-        ret = r.get("return_5d_pct") if pd.notna(r.get("return_5d_pct")) else r.get("return_3d_pct")
+        r5, r3 = _num(r.get("return_5d_pct")), _num(r.get("return_3d_pct"))
+        ret = r5 if r5 is not None else r3
+        ret_horizon = 5 if r5 is not None else (3 if r3 is not None else None)
         nm = resolve_name(code, default="") or _s(r.get("stock_name")).strip() or code
         lane = _s(r.get("decision_bucket")).strip() or _s(r.get("scan_mode")).strip() or "–"
         # 과거 export가 모델레인 bucket을 unknown으로 눌러쓴 행 폴백: run_id로 레인 복원
@@ -1614,7 +1616,9 @@ def archive(date_from=None, date_to=None, market=None, ticker=None, limit=200, o
         out.append({"date": (r["_d"].strftime("%Y-%m-%d") if dcol and pd.notna(r.get("_d")) else None), "run_id": _s(r.get("run_id")),
                     "code": code, "name": nm, "market": _s(r.get("market")) or _s(r.get("market_type")),
                     "lane": lane, "entry": _num(r.get("entry_reference_price")), "prob": _num(r.get("alpha_score")),
-                    "ret": rv, "result": ("승" if rv is not None and rv > 0 else ("패" if rv is not None else "미해결"))})
+                    "ret": rv, "ret_horizon": ret_horizon,
+                    "result": ("상승" if rv is not None and rv > 0 else
+                               ("하락" if rv is not None and rv < 0 else ("보합" if rv is not None else "미확정")))})
     return {"count": total, "offset": offset, "limit": limit, "rows": out}
 
 
