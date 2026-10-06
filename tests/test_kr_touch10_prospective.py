@@ -55,6 +55,22 @@ def test_selection_drift_missing_universe_and_known_outcome_fail_closed():
         capture(r,[pick],p,s,now)
 
 
+def test_valid_original_pick_is_captured_under_new_h10_contract():
+    s,r,p = fixture()
+    pick = {"date":"2026-10-07","market":"KOSDAQ","ticker":"222222.KQ","p":.8,"close":100.,
+            "top_k":1,"rank":1,"in_contract":True,"contract_h":5,"input_sig":"frozen-input",
+            "label_max_date":"2026-09-25","gate_kind":"mkt_weakness","gate_q":.5,
+            "logged_at":"2026-10-07T16:00:00+09:00","policy_ret":None}
+    r["picks"] = [pick]; r["gate"]["KOSDAQ"]["fire"] = True
+    out = capture(r,[pick],p,s,datetime.fromisoformat("2026-10-07T20:00:00+09:00"))
+    assert out["contract"]["horizon_sessions"] == 10
+    assert out["picks"][0]["p"] == .8
+    assert pick["contract_h"] == 5  # the original ledger remains untouched
+    r["gate"]["KOSPI"].pop("fire")
+    with pytest.raises(ValueError,match="missing_gate_fire"):
+        capture(r,[pick],p,s,datetime.fromisoformat("2026-10-07T20:00:00+09:00"))
+
+
 def synthetic():
     s = spec(); s["evaluation_sessions"] = 10; s["horizon_sessions"] = 2
     s["targets"]["min_resolved"] = 1; s["targets"]["min_unique_resolved_dates"] = 1

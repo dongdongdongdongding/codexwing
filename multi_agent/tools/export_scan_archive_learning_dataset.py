@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import tempfile
 from pathlib import Path
 
 import pandas as pd
@@ -13,6 +14,17 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from multi_agent.agents.kr_quant_reranker import is_kr_explosive_leader_eligible
 from modules.db_schema import REQUIRED_FEATURE_FIELDS_FOR_TRAINING
+
+
+def atomic_export(path, writer):
+    """Readers see the previous complete export until its replacement is ready."""
+    with tempfile.NamedTemporaryFile(dir=path.parent,prefix=path.name+".",suffix=".tmp",delete=False) as fh:
+        temp = Path(fh.name)
+    try:
+        writer(temp)
+        temp.replace(path)
+    finally:
+        temp.unlink(missing_ok=True)
 
 
 RETURN_COLS = [
@@ -467,11 +479,11 @@ def main() -> None:
     csv_path = out_dir / f"scan_archive_learning_dataset_{suffix}.csv"
     json_path = out_dir / f"scan_archive_learning_dataset_{suffix}.json"
     if not df.empty:
-        df.to_csv(csv_path, index=False)
-        json_path.write_text(df.to_json(orient="records", force_ascii=False), encoding="utf-8")
+        atomic_export(csv_path,lambda p:df.to_csv(p,index=False))
+        atomic_export(json_path,lambda p:p.write_text(df.to_json(orient="records",force_ascii=False),encoding="utf-8"))
     else:
-        csv_path.write_text("", encoding="utf-8")
-        json_path.write_text("[]", encoding="utf-8")
+        atomic_export(csv_path,lambda p:p.write_text("",encoding="utf-8"))
+        atomic_export(json_path,lambda p:p.write_text("[]",encoding="utf-8"))
 
     print(
         json.dumps(

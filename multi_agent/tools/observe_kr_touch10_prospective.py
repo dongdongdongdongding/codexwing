@@ -10,6 +10,7 @@ from datetime import datetime, time, timedelta, timezone
 import fcntl
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import sys
@@ -49,6 +50,8 @@ def capture(report, ledger, panel, spec, now):
         gate = (report.get("gate") or {}).get(market) or {}
         if any(gate.get(k) != rule[k] for k in ["gate_kind","gate_q"]):
             raise ValueError("selection_gate_changed_or_missing")
+        if not isinstance(gate.get("fire"),bool):
+            raise ValueError("missing_gate_fire_decision")
         selected = [r for r in picks if r.get("market") == market]
         if (gate.get("fire") is not True and selected) or (gate.get("fire") is True and not selected):
             raise ValueError("gate_pick_mismatch")
@@ -67,6 +70,14 @@ def capture(report, ledger, panel, spec, now):
                 raise ValueError("issued_contract_changed")
             if row.get("policy_ret") is not None:
                 raise ValueError("outcome_already_observed_at_capture")
+            if any(row.get(k) != rule[k] for k in ["gate_kind","gate_q"]):
+                raise ValueError("issued_selection_rule_changed")
+            if (not row.get("input_sig") or not row.get("label_max_date") or
+                    pd.Timestamp(row["label_max_date"]) > pd.Timestamp(day) or
+                    not isinstance(row.get("rank"),int) or not 1 <= row["rank"] <= rule["top_k"] or
+                    not isinstance(row.get("p"),(int,float)) or not math.isfinite(row["p"]) or
+                    not isinstance(row.get("close"),(int,float)) or not math.isfinite(row["close"]) or row["close"] <= 0):
+                raise ValueError("incomplete_or_noncausal_issued_provenance")
             if row["ticker"].split(".")[0] not in universes[market]:
                 raise ValueError("selected_ticker_missing_from_frozen_universe")
             frozen.append({k:row.get(k) for k in ["date","market","ticker","p","close","rank",

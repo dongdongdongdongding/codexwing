@@ -284,7 +284,6 @@ def _lane_frequency(lane_key, today=None):
             "worst_gap": worst_gap, "firing_days": len(dates), "frequency_ok": ok}
 
 
-@lru_cache(maxsize=1)
 def _lane_forward_ev():
     """게이트 산출에서 레인별 forward EV/승률/n. 운영자 기준 대조용.
 
@@ -293,6 +292,14 @@ def _lane_forward_ev():
     뜻이 아니다. 화면에 CONFIRM 만 보이면 사용자가 좋은 레인으로 읽는다.
     """
     fp = os.path.join(REPO, "runtime_state/reports/validation/research_recursion_gate_latest.json")
+    try:
+        return _read_lane_forward_ev(fp, os.stat(fp).st_mtime_ns)
+    except OSError:
+        return {}
+
+
+@lru_cache(maxsize=2)
+def _read_lane_forward_ev(fp, mtime_ns):
     out = {}
     try:
         with open(fp) as fh:
@@ -301,6 +308,9 @@ def _lane_forward_ev():
     except Exception:
         return {}
     return out
+
+
+_lane_forward_ev.cache_clear = _read_lane_forward_ev.cache_clear
 
 
 def _forward_epoch(lane_key, market=None):
@@ -1528,19 +1538,27 @@ def performance():
     return out
 
 
-@lru_cache(maxsize=1)
 def _archive_df():
     import pandas as pd
     fp = os.path.join(REPO, "runtime_state/reports/archive/scan_archive_learning_dataset_all.csv")
-    if not os.path.exists(fp):
+    try:
+        return _read_archive_df(fp, os.stat(fp).st_mtime_ns)
+    except (OSError, pd.errors.EmptyDataError):
         return None
+
+
+@lru_cache(maxsize=2)
+def _read_archive_df(fp, mtime_ns):
+    import pandas as pd
     # 큰 파일 → 필요한 컬럼만(있는 것만)
-    head = pd.read_csv(fp, nrows=1)
-    want = [c for c in ["recommended_at", "run_id", "ticker", "stock_name", "market", "market_type",
+    # One file descriptor keeps header and rows on the same atomic export version.
+    with open(fp) as source:
+        head = pd.read_csv(source, nrows=1)
+        want = [c for c in ["recommended_at", "run_id", "ticker", "stock_name", "market", "market_type",
                         "scan_mode", "decision_bucket", "entry_reference_price", "alpha_score",
                         "return_3d_pct", "return_5d_pct"] if c in head.columns]
-    df = pd.read_csv(fp, usecols=want or None)
-    return df
+        source.seek(0)
+        return pd.read_csv(source, usecols=want or None)
 
 
 def archive(date_from=None, date_to=None, market=None, ticker=None, limit=200, offset=0):
