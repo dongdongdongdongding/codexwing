@@ -20,9 +20,9 @@ return_3d_pct fill rate ≥ 95% on scanner_full rows aged ≥ 3 days.)
 What this does
 --------------
 1. Iterate RUN-* directories in shared_working/, load realized_outcomes.json
-2. Build an index keyed by (ticker, recommended_at YYYY-MM-DD)
+2. Build an index keyed by (run_id, ticker)
    → return_{1,2,3,5,7,14,30}d_pct, latest_return_pct, base_trade_date
-3. For each (ticker, date) key, look up matching market_scan_results rows
+3. For each (run_id, ticker) key, look up matching market_scan_results rows
    with feature_origin in {scanner_full, scanner_partial_legacy, scanner_archive_outcome} where any
    return_*_pct column is NULL
 4. UPDATE only the missing return columns (never overwrite non-NULL values)
@@ -34,7 +34,7 @@ Safety
   by `update_outcome_return_metrics.py` from yfinance close prices ≥ scan
   date. We never touch features or labels other than return_* columns.
 - Idempotent: only writes when target column is NULL.
-- Dry-run by default has --dry-run flag for inspection.
+- Use --dry-run for inspection; the daily job applies coherent missing values.
 """
 from __future__ import annotations
 
@@ -45,6 +45,7 @@ import sys
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 from typing import Any, Dict, List, Optional, Tuple
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -150,38 +151,39 @@ def _load_json(path: Path) -> Dict[str, Any]:
         return {}
 
 
-def _parse_iso_date(value: Any) -> Optional[str]:
+def _parse_iso_date(value: Any, timezone_name: str = "UTC") -> Optional[str]:
     text = str(value or "").strip()
     if not text:
         return None
-    if text.endswith("Z"):
-        text = text[:-1] + "+00:00"
     try:
-        dt = datetime.fromisoformat(text)
-    except Exception:
-        return text[:10] if len(text) >= 10 else None
-    if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    return dt.date().isoformat()
+        # Date-only values already name a market day; do not timezone-shift them.
+        if len(text) == 10:
+            return datetime.fromisoformat(text).date().isoformat()
+        dt = datetime.fromisoformat(text.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(ZoneInfo(timezone_name)).date().isoformat()
+    except (ValueError, TypeError):
+        return None
 
 
 def _iter_run_dirs(shared_dir: Path, limit_runs: int) -> List[Path]:
     if not shared_dir.exists():
         return []
     runs = [p for p in shared_dir.iterdir() if p.is_dir() and p.name.startswith("RUN-")]
-    runs = sorted(runs, key=lambda p: p.name)
+    runs = sorted(runs, key=lambda p: (p.stat().st_mtime_ns, p.name))
     if limit_runs > 0:
         runs = runs[-limit_runs:]
     return runs
 
 
 def _build_outcome_index(shared_dir: Path, limit_runs: int) -> Dict[Tuple[str, str], Dict[str, Any]]:
-    """Return {(ticker, scan_date_iso): outcome_subset} keyed by latest recommended_at.
+    """Return {(run_id, ticker): outcome_subset}; never borrow another run.
 
-    When multiple outcomes exist for the same (ticker, date), prefer the one
-    with more non-null return columns (i.e. the most resolved one).
+    Conflicting duplicate outcomes inside one run are ambiguous and omitted.
     """
     index: Dict[Tuple[str, str], Dict[str, Any]] = {}
+    ambiguous_keys = set()
     runs_seen = 0
     runs_with_outcomes = 0
     rows_indexed = 0
@@ -198,24 +200,31 @@ def _build_outcome_index(shared_dir: Path, limit_runs: int) -> Dict[Tuple[str, s
             ticker = str(row.get("ticker") or "").strip()
             if not ticker:
                 continue
-            scan_date = _parse_iso_date(row.get("recommended_at"))
+            scan_date = _row_scan_date(row)
             if not scan_date:
                 continue
+            key = (run_dir.name, ticker)
+            if key in ambiguous_keys:
+                continue
             subset = {col: row.get(col) for col in RETURN_COLUMNS}
-            non_null = sum(1 for v in subset.values() if v is not None)
+            subset["_source_run_id"] = run_dir.name
+            snapshot = row.get("feature_snapshot") or {}
+            if isinstance(snapshot, dict) and snapshot.get("daily_outcome_basis"):
+                subset["feature_snapshot"] = {"daily_outcome_basis":snapshot["daily_outcome_basis"]}
+            non_null = sum(subset.get(col) is not None for col in RETURN_COLUMNS)
             if non_null == 0:
                 continue
-            existing = index.get((ticker, scan_date))
-            if existing is None:
-                index[(ticker, scan_date)] = subset
-                rows_indexed += 1
+            existing = index.get(key)
+            if existing is not None and _conflicting_daily_field(existing, subset):
+                del index[key]
+                ambiguous_keys.add(key)
                 continue
-            existing_non_null = sum(1 for v in existing.values() if v is not None)
-            if non_null > existing_non_null:
-                index[(ticker, scan_date)] = subset
+            if existing is None or non_null > sum(existing.get(col) is not None for col in RETURN_COLUMNS):
+                index[key] = subset
+    rows_indexed = len(index)
     print(
         f"[INFO] outcome index: runs_seen={runs_seen} runs_with_outcomes={runs_with_outcomes} "
-        f"unique_keys={len(index)} rows_indexed={rows_indexed}"
+        f"unique_keys={len(index)} rows_indexed={rows_indexed} ambiguous_run_tickers={len(ambiguous_keys)}"
     )
     return index
 
@@ -274,13 +283,18 @@ def _fetch_scanner_rows_missing_returns(
 
 
 def _row_scan_date(row: Dict[str, Any]) -> Optional[str]:
-    return (
-        _parse_iso_date(row.get("recommended_at"))
-        or _parse_iso_date(row.get("created_at"))
-    )
+    ticker = str(row.get("ticker") or "")
+    market = str(row.get("market_type") or row.get("market") or "").upper()
+    tz = "Asia/Seoul" if ticker.endswith((".KS", ".KQ")) or market in {"KR", "KOSPI", "KOSDAQ"} else "America/New_York"
+    return (_parse_iso_date(row.get("recommended_at"), tz)
+            or _parse_iso_date(row.get("created_at"), tz)
+            or _parse_iso_date(row.get("base_trade_date"), tz))
 
 
 def _conflicting_daily_field(scanner_row, outcome):
+    source_run = outcome.get("_source_run_id")
+    if source_run and source_run != (scanner_row.get("run_id") or scanner_row.get("_source_run_id")):
+        return "_source_run_id"
     # A null-only merge can combine KRX and integrated-market prices: the
     # existing denominator/short horizon remains while a different provider's
     # longer horizon is appended. Refuse evidence of a different daily basis.
@@ -379,7 +393,7 @@ def run_backfill(
             continue
 
         source = None
-        outcome = index.get((ticker, scan_date))
+        outcome = index.get((str(row.get("run_id") or ""), ticker))
         if outcome is not None:
             matched_index += 1
             source = "outcome_index"
@@ -481,7 +495,7 @@ def main() -> int:
         "--limit-runs",
         type=int,
         default=400,
-        help="Number of recent RUN-* dirs to scan for outcomes (default 400).",
+        help="Number of most recently modified RUN-* dirs to scan for outcomes (default 400).",
     )
     parser.add_argument(
         "--market",

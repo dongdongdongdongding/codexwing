@@ -42,10 +42,10 @@ def test_backfill_reports_conflicting_bases_without_counting_them_as_filled(tmp_
     from modules import db_manager
     from multi_agent.tools import backfill_scanner_full_returns as m
     monkeypatch.setattr(db_manager, 'DBManager', lambda: SimpleNamespace(client=object()))
-    rows = [{'id':i,'ticker':str(i),'recommended_at':'2026-09-17T00:00:00Z',
+    rows = [{'id':i,'run_id':f'RUN-{i}','ticker':str(i),'recommended_at':'2026-09-17T00:00:00Z',
              'entry_reference_price':53800.,'return_1d_pct':1.} for i in [1,2]]
     monkeypatch.setattr(m, '_fetch_scanner_rows_missing_returns', lambda *a,**kw:rows)
-    index={(str(i),'2026-09-17'):{'entry_reference_price':price,'return_1d_pct':1.,'return_3d_pct':2.}
+    index={(f'RUN-{i}',str(i)):{'entry_reference_price':price,'return_1d_pct':1.,'return_3d_pct':2.}
            for i,price in [(1,53000.),(2,53800.)]}
     monkeypatch.setattr(m, '_build_outcome_index', lambda *a:index)
     report=m.run_backfill(shared_dir=tmp_path,limit_runs=1,dry_run=True,market_filter=None,allow_history_fallback=False)
@@ -85,3 +85,41 @@ def test_archive_fetch_uses_bounded_keyset_and_retains_any_missing_horizon():
     result=m._fetch_scanner_rows_missing_returns(db,page_size=2,market_filter='KR')
     assert [r['id'] for r in result]==[1,4]
     assert pages==[[1,2],[3,4]]
+
+
+def test_outcome_index_never_borrows_same_ticker_day_from_another_run(tmp_path):
+    import json
+    from multi_agent.tools import backfill_scanner_full_returns as m
+    for run,value in [('RUN-8BB50B37',-13.112885),('RUN-FB04A013',-13.340935)]:
+        d=tmp_path/run;d.mkdir()
+        row={'ticker':'037710.KS','recommended_at':'2026-07-12T00:37:42Z','return_14d_pct':value}
+        (d/'realized_outcomes.json').write_text(json.dumps({'outcomes':[row]}))
+    index=m._build_outcome_index(tmp_path,0)
+    assert index[('RUN-8BB50B37','037710.KS')]['return_14d_pct']==-13.112885
+    assert index[('RUN-FB04A013','037710.KS')]['return_14d_pct']==-13.340935
+    assert m._build_update_payload({'run_id':'RUN-8BB50B37'},index[('RUN-FB04A013','037710.KS')])=={}
+
+
+def test_ambiguous_duplicate_inside_same_run_is_omitted(tmp_path):
+    import json
+    from multi_agent.tools import backfill_scanner_full_returns as m
+    d=tmp_path/'RUN-A';d.mkdir()
+    rows=[{'ticker':'037710.KS','base_trade_date':'2026-07-13','return_1d_pct':x} for x in [1,2,1]]
+    (d/'realized_outcomes.json').write_text(json.dumps({'outcomes':rows}))
+    assert m._build_outcome_index(tmp_path,0)=={}
+
+
+def test_history_dates_follow_market_timezone_but_date_only_values_do_not_shift():
+    from multi_agent.tools.backfill_scanner_full_returns import _row_scan_date
+    assert _row_scan_date({'ticker':'005930.KS','recommended_at':'2026-07-06T22:00:00Z'})=='2026-07-07'
+    assert _row_scan_date({'ticker':'AAPL','recommended_at':'2026-07-07T01:00:00Z'})=='2026-07-06'
+    assert _row_scan_date({'ticker':'AAPL','base_trade_date':'2026-07-07'})=='2026-07-07'
+    assert _row_scan_date({'ticker':'AAPL','recommended_at':'garbage'}) is None
+
+
+def test_run_limit_uses_modification_time_not_random_run_id_order(tmp_path):
+    import os
+    from multi_agent.tools.backfill_scanner_full_returns import _iter_run_dirs
+    a=tmp_path/'RUN-A';z=tmp_path/'RUN-Z';a.mkdir();z.mkdir()
+    os.utime(a,(200,200));os.utime(z,(100,100))
+    assert _iter_run_dirs(tmp_path,1)==[a]
