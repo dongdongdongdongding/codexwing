@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from modules.us_symbol_lineage import daily_bar_issues, listing_symbols
+from modules.us_symbol_lineage import daily_bar_issues, listing_symbols, UNVERIFIED_SPLIT_BASIS
 from multi_agent.tools import backfill_us_daily_features as bf
 from multi_agent.tools import report_nasdaq_session_tape as tape
 from multi_agent.tools import research_nasdaq_session_edge as research
@@ -114,3 +114,38 @@ def test_new_cbio_epoch_cannot_inherit_old_catalyst_snapshot_across_gap(monkeypa
     monkeypatch.setattr(tape.pd,'read_parquet',lambda *a,**kw:listing.copy())
     panel=pd.DataFrame({'symbol':['CBIO','CBIO','GYRE'],'date':['2025-06-16','2025-08-21','2023-10-01']})
     assert tape._listed_pit(panel).tolist()==[False,True,True]
+
+
+@pytest.mark.parametrize('symbol,effective', UNVERIFIED_SPLIT_BASIS.items())
+def test_mixed_split_basis_positive_prices_and_exact_release_boundary(symbol,effective):
+    raw=sample().iloc[:3].copy()
+    raw['symbol']=symbol
+    boundary=pd.Timestamp(effective)
+    raw['date']=[boundary-pd.Timedelta(days=1),boundary,boundary+pd.Timedelta(days=1)]
+    original=raw.copy(deep=True)
+    assert daily_bar_issues(raw).tolist()==['unverified_mixed_split_basis','','']
+    pd.testing.assert_frame_equal(raw,original)
+    raw['source']='independently_verified'
+    assert daily_bar_issues(raw).eq('').all()
+    raw['source']='yfinance';raw['symbol']='ADBE'
+    assert daily_bar_issues(raw).eq('').all()
+
+
+def test_mixed_split_basis_does_not_overwrite_structural_error():
+    raw=sample().iloc[:2].copy();raw['symbol']='NFE'
+    raw.loc[raw.index[0],'close']=-1
+    assert daily_bar_issues(raw).tolist()==['invalid_prices','unverified_mixed_split_basis']
+
+
+def test_uncertified_series_preserves_raw_but_blocks_features_and_outcomes():
+    raw=sample();raw['symbol']='NFE'
+    # Positive and internally ordered prices can still mix incompatible units.
+    raw['date']=pd.bdate_range('2026-01-01',periods=len(raw))
+    old=raw.copy(deep=True);result=bf.compute_feature_frame(raw)
+    before=raw.date.lt('2026-09-14')
+    assert result.date.equals(raw.date)
+    assert result.loc[before,['close','ret_1d','fwd_high_ret_20d','touch5_10d']].isna().all().all()
+    assert result.loc[before,'source_bar_valid'].eq(0).all()
+    assert pd.isna(result.loc[~before,'ret_1d'].iloc[0])
+    assert research._outcome_from_raw_daily(raw,raw.iloc[0].date,entry_price=100,include_current_date=False) is None
+    pd.testing.assert_frame_equal(raw,old)

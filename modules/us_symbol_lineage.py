@@ -31,6 +31,37 @@ NASDAQ_STARTS = {
 CBIO_RENAME = pd.Timestamp('2025-06-16')
 CBIO_LAST_BAD_DIVIDEND = pd.Timestamp('2023-01-13')
 
+# Independent KIS MODP0/1 observations through 2026-10-05 show mixed nominal
+# and split-adjusted units within each of these Yahoo pre-event series. A full
+# Yahoo re-download reproduces that mixture; positive OHLC is insufficient.
+# Quarantine the uncertified pre-event series, not just the sampled bad dates.
+# These are release boundaries, not instructions to multiply prices. Removing
+# a quarantine requires a separately verified replacement history.
+# Nasdaq ECA2026 IDs are recorded alongside the official effective dates.
+UNVERIFIED_SPLIT_BASIS = {
+    'AIXI': '2026-09-08',  # 643
+    'ALP': '2026-09-09',   # 646
+    'BRTX': '2026-09-08',  # 636
+    'BTLN': '2026-09-28',  # 676
+    'CPOP': '2026-09-14',  # 658
+    'DLXY': '2026-09-28',  # 679
+    'GMEX': '2026-09-28',  # 675
+    'GTBP': '2026-09-08',  # 644
+    'HUBC': '2026-09-14',  # 657
+    'IMMP': '2026-09-28',  # 681
+    'IZM': '2026-09-15',   # 660
+    'LRHC': '2026-09-08',  # 641
+    'NFE': '2026-09-14',   # 654
+    'NRSN': '2026-09-14',  # 656
+    'NXXT': '2026-09-14',  # 655
+    'SFWL': '2026-09-08',  # 639
+    'TNMG': '2026-09-08',  # 640
+    'UCAR': '2026-09-09',  # 647
+    'VWAV': '2026-09-22',  # 667
+    'WCT': '2026-09-08',   # 642
+    'WHLR': '2026-09-22',  # 666
+}
+
 
 def listing_symbols(frame: pd.DataFrame) -> pd.Index:
     """Lookup aliases for current-provider price rows; keep input order/identity.
@@ -73,7 +104,7 @@ def listing_snapshot_eligible(frame: pd.DataFrame, snapshot_dates) -> np.ndarray
 
 
 def daily_bar_issues(frame: pd.DataFrame, *, require_volume: bool = True) -> pd.Series:
-    """Structural checks plus a known cross-issuer dividend contamination.
+    """Structural checks plus independently observed adjustment contamination.
 
     Yahoo attaches Catalyst's 2022-09-21 / 2023-01-13 dividends to the
     GLYC-derived CBIO series. GLYC SEC filings state no cash dividends.
@@ -91,4 +122,8 @@ def daily_bar_issues(frame: pd.DataFrame, *, require_volume: bool = True) -> pd.
     unit = np.isclose(adjusted, raw, rtol=1e-6, atol=0) & np.isfinite(raw) & raw.gt(0)
     # Keep a more immediate structural error when both reasons apply.
     issues.loc[affected & ~unit & issues.eq('')] = 'incompatible_issuer_dividend_adjustment'
+    boundaries = pd.to_datetime(frame['symbol'].map(UNVERIFIED_SPLIT_BASIS))
+    uncertain = (frame['source'].eq('yfinance') & boundaries.notna()
+                 & pd.to_datetime(frame['date'], errors='coerce').lt(boundaries))
+    issues.loc[uncertain & issues.eq('')] = 'unverified_mixed_split_basis'
     return issues
