@@ -184,30 +184,37 @@ def _latest_panel() -> str:
     return max(fs, key=os.path.getmtime)
 
 
-def _listed_pit(P: pd.DataFrame) -> pd.Series:
-    """시점기준 상장 여부. 각 (symbol, date) 에 대해 **`snapshot_ts <= date` 인 최신 스냅샷**을 보고
-    거기 있으면서 `test_issue=N ∧ etf=N ∧ 부정목록 미해당` 이면 True.
+def _listed_pit(P: pd.DataFrame) -> np.ndarray:
+    """Membership in the latest complete listing snapshot on/before each date.
 
-    이것이 오라클을 없애는 부품이다 — 오늘의 종목 목록으로 과거를 거래하지 않는다.
-    ⚠️ 스냅샷 간격 중앙 45일·최대 273일이라 **상폐 종목이 최대 273일 남을 수 있다.**
-    방향은 보수적이다(죽은 종목을 더 오래 살려두므로 EV 를 낮추는 쪽)."""
+    Select the snapshot globally BEFORE testing eligibility. Looking up the last
+    eligible row per symbol would keep removed/reclassified securities forever.
+    Snapshot gaps still limit knowledge: changes between captures remain unknown,
+    and this predicate alone does not certify intraday capture availability.
+    """
     t1 = pd.read_parquet(T1_PATH, columns=["snapshot_ts", "symbol", "security_name", "test_issue", "etf"])
     t1["snapshot_ts"] = pd.to_datetime(t1["snapshot_ts"])
+    if t1["snapshot_ts"].isna().any() or t1["symbol"].isna().any():
+        raise ValueError("invalid_listing_snapshot_key")
+    if t1.duplicated(["snapshot_ts", "symbol"]).any():
+        raise ValueError("duplicate_listing_snapshot_symbol")
+    restored = np.zeros(len(P), dtype=bool)
+    if t1.empty or P.empty:
+        return restored
+    snapshots = pd.DatetimeIndex(t1["snapshot_ts"].unique()).sort_values()
+    dates = pd.DatetimeIndex(pd.to_datetime(P["date"]))
+    positions = snapshots.searchsorted(dates, side="right") - 1
+    valid = dates.notna() & (positions >= 0)
     ok = (t1["test_issue"].astype(str).str.upper().isin(["N", "FALSE", "0"])
           & t1["etf"].astype(str).str.upper().isin(["N", "FALSE", "0"])
           & ~t1["security_name"].astype(str).str.contains(T1_EXCLUDE, na=False))
-    t1 = t1.loc[ok, ["snapshot_ts", "symbol"]].assign(_pit=True).sort_values("snapshot_ts")
-    # 🔴 `merge_asof` 는 왼쪽을 `on` 키로 정렬해야 한다. 정렬한 결과를 그대로 돌려주면
-    # 호출부(=(symbol,date) 정렬)와 **행 순서가 어긋나** 엉뚱한 종목에 판정이 붙는다.
-    # 첫 이식에서 이 버그로 AAPL 이 탈락했다(검증벡터 2/10). 원본 인덱스를 들고 다녀 복원한다.
-    left = P[["date", "symbol"]].copy()
-    left["_ix"] = np.arange(len(left))
-    left = left.sort_values("date")
-    out = pd.merge_asof(left, t1, left_on="date", right_on="snapshot_ts",
-                        by="symbol", direction="backward")
-    pit = out["_pit"].fillna(False).to_numpy()
-    restored = np.empty(len(P), dtype=bool)
-    restored[out["_ix"].to_numpy()] = pit
+    eligible = {stamp: pd.Index(group["symbol"]) for stamp, group in t1.loc[ok].groupby("snapshot_ts")}
+    symbols = pd.Index(P["symbol"])
+    for position in np.unique(positions[valid]):
+        # Assign by input position, independent of index labels and date order.
+        _ix = np.flatnonzero(valid & (positions == position))
+        members = eligible.get(snapshots[position], pd.Index([]))
+        restored[_ix] = symbols.take(_ix).isin(members)
     return restored
 
 

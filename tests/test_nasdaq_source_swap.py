@@ -98,3 +98,40 @@ def test_gap_bonus_still_applies_on_day_one():
     KR 익일시가용 `k > 0` 가드가 다시 들어오면 안 된다."""
     src = _p.Path("multi_agent/tools/report_nasdaq_session_tape.py").read_text(encoding="utf-8")
     assert "if (k > 0 and np.isfinite(o) and o > 0)" not in src
+
+
+def snapshot_frame(records):
+    return pd.DataFrame([{'snapshot_ts':date,'symbol':symbol,'security_name':name,
+                          'test_issue':'N','etf':'N'} for date,symbol,name in records])
+
+
+def test_membership_uses_latest_global_snapshot_and_can_remove_then_readmit(monkeypatch):
+    snapshots=snapshot_frame([
+        ('2026-01-01','A','A Common Stock'),('2026-01-01','B','B Common Stock'),
+        ('2026-02-01','B','B Common Stock'),
+        ('2026-03-01','A','A Common Stock'),('2026-03-01','B','B Common Stock')])
+    monkeypatch.setattr(nst.pd,'read_parquet',lambda *a,**kw:snapshots.copy())
+    # Unsorted dates and duplicate index labels must preserve original row positions.
+    panel=pd.DataFrame({'symbol':['A','A','A','A','B'],
+                        'date':pd.to_datetime(['2026-02-15','2026-01-15','2026-03-01','2025-12-31','2026-02-01'])},index=[7,7,2,0,2])
+    assert nst._listed_pit(panel).tolist()==[False,True,True,False,True]
+
+
+def test_ineligible_latest_snapshot_does_not_fall_back_to_older_valid_row(monkeypatch):
+    snapshots=snapshot_frame([
+        ('2026-01-01','A','A Common Stock'),
+        ('2026-02-01','A','A Preferred Stock')])
+    monkeypatch.setattr(nst.pd,'read_parquet',lambda *a,**kw:snapshots.copy())
+    panel=pd.DataFrame({'symbol':['A','A','A'],'date':pd.to_datetime(['2026-01-20','2026-02-01',None])})
+    assert nst._listed_pit(panel).tolist()==[True,False,False]
+
+
+def test_duplicate_or_missing_listing_key_is_explicit_failure(monkeypatch):
+    snapshots=snapshot_frame([('2026-01-01','A','A Common Stock')]*2)
+    monkeypatch.setattr(nst.pd,'read_parquet',lambda *a,**kw:snapshots.copy())
+    panel=pd.DataFrame({'symbol':['A'],'date':pd.to_datetime(['2026-01-02'])})
+    with pytest.raises(ValueError,match='duplicate_listing_snapshot_symbol'):
+        nst._listed_pit(panel)
+    snapshots=snapshots.iloc[:1].copy();snapshots['snapshot_ts']=None
+    with pytest.raises(ValueError,match='invalid_listing_snapshot_key'):
+        nst._listed_pit(panel)

@@ -62,6 +62,7 @@
 | `intraday/*.parquet` | 1분봉 종목당 1파일 | `multi_agent/tools/backfill_kr_intraday.py` (daily ops) | 장중 레인 · 일중 경로 연구 | **소급 조정이다.** `adj_factor` 곱셈으로 안 맞는다 — 하루 단위 종가 자가보정 필요. 최신 관측 거래일 우선·전 관측 종목·요청별 시간예산·원자 저장. `.backfill/journal/<code>`에 최초 전체 백업과 추가 행 차분을 보존하고 저장 전 복원을 검증한다. 여유 공간 10GiB 하한, 기존 증거 자동 삭제 없음. `.backfill/latest.json`은 수집 상태이며 전일 완전성이나 PIT 유니버스를 보증하지 않는다 |
 | `intraday_ext/*.parquet` | KIS UN 통합시장 08:00–20:00 분봉 | `multi_agent/tools/backfill_kr_extended_intraday.py` (daily ops) | 확장세션 가격발견 연구; 발행 없음 | 기존 203종목 코호트 유지, 전체시장/PIT 유니버스 아님. `px_long` 관측 날짜 기준·20시 이후 당일 포함·최신 날짜 우선. 기본 600초(`EXT_TIME_BUDGET`), 부분 요청 재개·오류 기록·차분 백업/복원 검사. 정규장 J 파일과 별도 경로/잠금. 6구간 응답을 전일 완전성으로 간주하지 않음 |
 | `us_daily/NASDAQ/` | 미국 일봉 패널 118열 | (수집기 별도) | 나스닥 레인 | **생존편향 심각** — 사라진 3,272 심볼 중 35개(1.1%)만 보유 |
+| `T1_nasdaq_listing_snapshots.parquet` | NASDAQ 과거 상장목록 스냅샷 | 기존 아카이브 수집본; 정기 갱신 미확인 | `report_nasdaq_session_tape._listed_pit` | 평가일 이전의 **전역 최신 스냅샷** 내 적격 멤버십을 사용한다. 종목별 마지막 적격 행을 이월하면 퇴출·ETF/우선주 전환을 놓친다. 2026-10-07 확인한 최신 스냅샷은 06-11이며, 사이 구간과 당일 수집 시각의 완전성은 별도 문제 |
 
 ### 학습 데이터 ≠ 픽 데이터
 - **픽**: `px_long` 의 **오늘 행**으로 스코어링
