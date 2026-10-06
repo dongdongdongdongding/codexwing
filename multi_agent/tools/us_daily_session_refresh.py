@@ -13,7 +13,7 @@ from zoneinfo import ZoneInfo
 import numpy as np
 import pandas as pd
 from multi_agent.tools.intraday_cache_journal import atomic_write, digest, save_json
-from modules.ohlcv_quality import bar_issues
+from modules.us_symbol_lineage import daily_bar_issues as bar_issues
 
 
 def latest_completed_session(paths, now=None):

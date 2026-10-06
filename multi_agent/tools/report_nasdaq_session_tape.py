@@ -217,7 +217,8 @@ def _listed_pit(P: pd.DataFrame) -> np.ndarray:
           & t1["etf"].astype(str).str.upper().isin(["N", "FALSE", "0"])
           & ~t1["security_name"].astype(str).str.contains(T1_EXCLUDE, na=False))
     eligible = {stamp: pd.Index(group["symbol"]) for stamp, group in t1.loc[ok].groupby("snapshot_ts")}
-    symbols = pd.Index(P["symbol"])
+    from modules.us_symbol_lineage import listing_symbols
+    symbols = listing_symbols(P)
     for position in np.unique(positions[valid]):
         # Assign by input position, independent of index labels and date order.
         _ix = np.flatnonzero(valid & (positions == position))

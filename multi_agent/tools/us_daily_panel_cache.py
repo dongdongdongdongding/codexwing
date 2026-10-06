@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pyarrow as pa
 
-from modules import ohlcv_quality
+from modules import ohlcv_quality, us_symbol_lineage
 from multi_agent.tools.intraday_cache_journal import save_json
 
 
@@ -32,7 +32,7 @@ def inputs(universe, paths, *, start, end, output_prefix, feature_batch_size):
         'raw': {str(bf._raw_path(paths, s)): file_sha(bf._raw_path(paths, s))
                 for s in universe.symbol.astype(str)},
         'implementation': {Path(p).name: file_sha(p) for p in
-                           [bf.__file__, ohlcv_quality.__file__, __file__]},
+                           [bf.__file__, ohlcv_quality.__file__, us_symbol_lineage.__file__, __file__]},
         'libraries': {'pandas': pd.__version__, 'numpy': np.__version__, 'pyarrow': pa.__version__},
     }
 

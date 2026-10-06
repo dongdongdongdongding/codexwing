@@ -287,7 +287,7 @@ def _outcome_from_raw_daily(
     window = raw.iloc[start : start + 5].copy()
     if len(window) < 5:
         return None
-    from modules.ohlcv_quality import bar_issues
+    from modules.us_symbol_lineage import daily_bar_issues as bar_issues
     if bar_issues(window, require_volume=False).ne('').any():
         return None
     first3 = window.iloc[:3]

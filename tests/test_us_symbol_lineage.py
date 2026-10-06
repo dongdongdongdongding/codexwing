@@ -1,0 +1,68 @@
+import numpy as np
+import pandas as pd
+import pytest
+
+from modules.us_symbol_lineage import daily_bar_issues, listing_symbols
+from multi_agent.tools import backfill_us_daily_features as bf
+from multi_agent.tools import report_nasdaq_session_tape as tape
+from multi_agent.tools import research_nasdaq_session_edge as research
+
+
+def sample():
+    dates = pd.bdate_range('2022-09-01', '2024-06-01')
+    p = np.arange(len(dates)) * .1 + 100
+    return pd.DataFrame(dict(date=dates, symbol='CBIO', source='yfinance', name='Crescent',
+        market='NASDAQ', open=p, high=p+2, low=p-2, close=p, raw_close=p,
+        adj_close=p, adj_factor=1., volume=1000., dollar_volume=p*1000))
+
+
+def test_aliases_preserve_identity_order_and_boundary():
+    frame = pd.DataFrame({'symbol':['CBIO','GYRE','CBIO','CBIO','GLYC'],
+        'date':['2025-06-16','2022-09-20','2024-10-25','2025-06-13','2024-10-25']},index=[5,5,3,1,0])
+    original=frame.copy(deep=True)
+    assert listing_symbols(frame).tolist()==['CBIO','GYRE','GLYC','GLYC','GLYC']
+    pd.testing.assert_frame_equal(frame,original)
+
+
+@pytest.mark.parametrize('adjustment',[11/12,np.nan,-1.1])
+def test_known_wrong_dividend_not_only_negative_prices(adjustment):
+    raw=sample();raw['adj_close']=raw.raw_close*adjustment
+    issue=daily_bar_issues(raw)
+    assert issue[raw.date<'2023-01-13'].eq('incompatible_issuer_dividend_adjustment').all()
+    assert issue[raw.date>='2023-01-13'].eq('').all()
+
+
+def test_rule_is_scoped_to_provider_and_series_and_allows_unit_adjustment():
+    raw=sample();assert daily_bar_issues(raw).eq('').all()
+    raw.adj_close*=11/12
+    for field,value in [('symbol','GYRE'),('source','independent')]:
+        other=raw.copy();other[field]=value
+        assert daily_bar_issues(other).eq('').all()
+    raw.loc[0,'close']=-1
+    assert daily_bar_issues(raw).iloc[0]=='invalid_prices'
+
+
+def test_quarantine_preserves_dates_resets_features_and_prevents_outcomes():
+    raw=sample();bad=raw.date<'2023-01-13';raw.loc[bad,'adj_close']*=11/12
+    original=raw.copy(deep=True)
+    result=bf.compute_feature_frame(raw)
+    assert result.date.equals(raw.date)
+    assert result.loc[bad,'source_bar_valid'].eq(0).all()
+    assert result.loc[bad,['close','fwd_high_ret_20d','ret_1d']].isna().all().all()
+    assert pd.isna(result.loc[~bad,'ret_1d'].iloc[0])
+    assert result.iloc[-1].feature_ready==1
+    assert research._outcome_from_raw_daily(raw,raw.iloc[0].date,entry_price=100,include_current_date=False) is None
+    pd.testing.assert_frame_equal(raw,original)
+
+
+def test_listing_does_not_use_old_catalyst_or_backfill_snapshot_gaps(monkeypatch):
+    listing=pd.DataFrame([
+        ['2024-01-01','CBIO','Catalyst Common Stock','N','N'],
+        ['2024-01-01','GLYC','GlycoMimetics Common Stock','N','N'],
+        ['2024-02-01','CBIO','Catalyst Common Stock','N','N'],
+        ['2025-03-01','GLYC','GlycoMimetics Common Stock','N','N'],
+        ['2025-08-21','CBIO','Crescent Common Stock','N','N'],
+    ],columns=['snapshot_ts','symbol','security_name','test_issue','etf'])
+    monkeypatch.setattr(tape.pd,'read_parquet',lambda *a,**kw:listing.copy())
+    panel=pd.DataFrame({'symbol':['CBIO']*5,'date':['2024-01-10','2024-02-10','2025-06-13','2025-06-16','2025-08-21']})
+    assert tape._listed_pit(panel).tolist()==[True,False,True,False,True]

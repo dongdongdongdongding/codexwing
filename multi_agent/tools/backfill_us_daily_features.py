@@ -36,7 +36,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from modules.quant_analysis import QuantStrategy
-from modules.ohlcv_quality import bar_issues
+from modules.us_symbol_lineage import daily_bar_issues as bar_issues
 
 
 FEATURE_VERSION = "us_daily_price_features_v2_quality_segments"

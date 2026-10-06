@@ -199,3 +199,15 @@ JSON·Markdown·원장의 변경 전 파일을 별도 백업하고 원자적 교
 이것을 모두 공급자 누락으로 단정할 수 없다. [NASDAQ의 2025년 공지](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2025-303)는 GLYC와 Crescent의 합병 및 CBIO 표기를 2025-06-16부터 설명한다. 별도로 [Gyre의 2023년 공지](https://ir.gyretx.com/news-releases/news-release-details/catalyst-biosciences-announces-completion-business-combination)는 당시 Catalyst의 CBIO를 2023-10-31부터 GYRE로 변경했다고 기록한다. 티커 문자열은 영구적인 회사 식별자가 아니다. 현재 Yahoo CBIO 과거 봉이 어느 계보인지 추가 대조해야 하며, 이 두 공지만으로 잘못 연결됐다고 확정하지 않는다. `swing-main-t30t`에서 기업·증권 식별자와 효력일을 추적한다.
 
 모든 시세 요청은 별도 감사 디렉터리에 요청값·수신시각·응답 필드·직렬화 응답 SHA를 남겼다. `cohort/plan.json`은 결과를 보기 전 종목 선택을 고정했고, `comparison.json`, `history_comparison.json`과 재현 스크립트가 대조를 담는다. 167개 보존 raw와 현재 전체 패널·T1·원장의 SHA를 재확인했다. 원천 교체나 실패 503개 해결을 주장하지 않는다. 근거가 부족한 이력을 붙이거나 음수 가격을 임의 양수화하지 않았으며, 신규 엣지레인 자격 판단도 그대로 미완료다.
+
+## CBIO 티커 재사용과 배당 계보 오류
+
+`swing-main-t30t`에서 2026-10-06 22:18 UTC Yahoo chart 원문을 CBIO·GYRE·GLYC 각각 수집했다. CBIO/GYRE는 2,202행, GLYC는 404였다. 현재 CBIO 원문은 2014년 최초 거래 및 2025-06-16 1:100 병합을 나타낸다. [NASDAQ ECA2025-303](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2025-303)은 GLYC CUSIP 38000Q102 → Crescent CBIO 38000Q201을 확인한다. [ECA2023-623](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2023-623)의 옛 Catalyst CBIO 14888D208 → GYRE 403783103, 2023-10-31 1:15 병합과 다른 계보다.
+
+CBIO raw_close의 2024-10-25 값 17은 [GLYC 합병 S-4](https://www.sec.gov/Archives/edgar/data/1253689/000110465925014838/glyc-20241231xs4.htm)의 해당일 종가 0.17에 100배 병합을 적용한 값과 일치한다. 이 공시 및 [2023년 GLYC 10-K](https://www.sec.gov/Archives/edgar/data/1253689/000155837024004013/glyc-20231231x10k.htm)는 현금배당 이력이 없음을 명시한다. 따라서 현재 CBIO 계열을 과거 Catalyst CBIO 가격이라고 간주하거나 그 회사의 상장 이력에 연결하면 안 된다. 이 표본 대조는 모든 과거 OHLC의 정확성 인증이 아니다.
+
+Yahoo는 CBIO에 2022-09-21 배당 143, 2023-01-13 배당 24를 연결했다. GYRE에는 같은 시각에 21.45와 3.6을 연결했다. 각각 병합배수 100과 15로 나누면 1.43과 0.24로 동일하다. [Catalyst 8-K](https://www.sec.gov/Archives/edgar/data/1124105/000114036122030838/brhc10041231_8k.htm)는 1.43 배당의 실제 발행사를 확인한다. CBIO의 직전 종가 65와 288을 쓰면 조정계수는 `(1−143/65)×(1−24/288)=−1.1`, 두 번째 배당 전 구간은 `1−24/288=11/12`다. 실제 저장 계수와 맞는다. 음수만 검사하면 양수인 11/12 구간의 오류를 놓친다.
+
+`modules/us_symbol_lineage.py`는 이 좁은 근거를 공통으로 적용한다. Yahoo CBIO의 2023-01-13 이전 비단위/미상 배당조정은 원본을 유지하고 파생 계산에서 격리한다. 구조 오류가 있으면 기존 이유를 유지한다. 일봉 생성·갱신 검사·raw 기반 연구 정산에 동일 규칙을 사용하고, 패널 재사용 키에도 코드 해시를 포함한다. 현행 공급자 가격 행의 상장 조회만 2025-06-16 이전에는 GLYC로 연결한다. 과거 발행 티커/계약의 일괄 이름 변경이 아니며 관측 스냅샷 공백을 채우지 않는다. 이 모듈은 전체 증권 마스터가 아니다.
+
+원문·요청시각·응답 SHA와 공식 공시 캡처는 운영 `runtime_state/audit/us_symbol_lineage_20261007/`에 보존한다. 원천가격의 임의 재계산이나 기존 발행계약 변경은 하지 않는다. 별도 실측 결과를 아래에 기록한다.
