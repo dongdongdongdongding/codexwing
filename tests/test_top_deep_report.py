@@ -15,6 +15,8 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
         patch("modules.top_deep_report._fetch_price_snapshot") as price,
         patch("modules.top_deep_report._fetch_news_snapshot") as news,
         patch("modules.top_deep_report._fetch_investor_flow_snapshot") as flow,
+        patch("modules.top_deep_report.get_stock_theme_record", return_value={
+            "primary_theme": "반도체", "source_theme_reference": "test-fixture"}),
     ):
         price.return_value = {
             "warnings": [],
@@ -439,6 +441,13 @@ def test_upsert_reports_to_supabase_filters_columns_when_schema_cache_empty():
     captured = {}
 
     class FakeTable:
+        @property
+        def not_(self):
+            return self
+
+        def in_(self, *_args):
+            return self
+
         def delete(self):
             return self
 
@@ -484,6 +493,13 @@ def test_upsert_reports_to_supabase_retries_after_remote_schema_column_miss():
     captured = {"attempts": 0}
 
     class FakeTable:
+        @property
+        def not_(self):
+            return self
+
+        def in_(self, *_args):
+            return self
+
         def delete(self):
             return self
 

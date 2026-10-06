@@ -741,11 +741,13 @@ def main() -> None:
         lines.append(f"| {p['market']} | {p['ticker']} | {p['p']} | {p['liq_eok']} | {p['close']} |")
     REPORT_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
     # 일일 운영이 잡는 것은 이 한 줄뿐이다. 건강 필드를 여기 안 실으면 아무도 못 본다.
-    print(json.dumps({"as_of": scored["as_of"], "picks": len(scored["picks"]), "forward": summary,
+    print(json.dumps({"as_of": scored["as_of"], "picks": len(scored["picks"]), "forward": summary, "routed": routed,
                       "label_stale_days": scored.get("label_stale_days"),
                       "universe_anomalous": sorted(m for m, u in (scored.get("universe") or {}).items()
                                                    if u.get("anomalous"))},
                      ensure_ascii=False))
+    if routed < 0:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

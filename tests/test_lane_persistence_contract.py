@@ -42,10 +42,13 @@ def test_persisted_deep_report_preserves_per_pick_contract(monkeypatch):
     from multi_agent.tools.report_swing_ensemble import _route_live
     captured = []
     class DB:
-        def upsert_scan_result(self, payload):
+        def upsert_scan_result(self, payload, **kwargs):
             return True
     monkeypatch.setattr(db_manager, "DBManager", DB)
-    monkeypatch.setattr(top_deep_report, "upsert_reports_to_supabase", lambda rows: captured.extend(rows))
+    def persist(rows):
+        captured.extend(rows)
+        return {"rows_upserted": len(rows)}
+    monkeypatch.setattr(top_deep_report, "upsert_reports_to_supabase", persist)
     _route_live([{"ticker": "002990.KS", "market": "KOSPI", "p": .75, "entry_reference_price": 100,
                   "date": "2026-10-01", "contract_h": 10, "contract_tp": .07, "model_label": "t5_5"}],
                 "SWING-CAND-20261001", "2026-10-02T01:00:00Z", bucket="swing_candidate")

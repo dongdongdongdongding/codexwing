@@ -1711,8 +1711,8 @@ def upsert_reports_to_supabase(reports: List[Dict[str, Any]]) -> Dict[str, Any]:
                 filtered = {key: value for key, value in row.items() if key in SCAN_DEEP_REPORT_COLUMNS}
             filtered_reports.append(filtered)
         run_ids = sorted({str(row.get("run_id") or "") for row in reports if row.get("run_id")})
-        for run_id in run_ids:
-            db.client.table("scan_deep_reports").delete().eq("run_id", run_id).execute()
+        if not filtered_reports or any(not row.get("report_id") or not row.get("run_id") for row in filtered_reports):
+            return {"rows_seen": len(reports), "rows_upserted": 0, "warning": "missing_report_identity"}
         dropped_columns: List[str] = []
         for _attempt in range(6):
             try:
@@ -1737,6 +1737,14 @@ def upsert_reports_to_supabase(reports: List[Dict[str, Any]]) -> Dict[str, Any]:
                 "warning": f"schema_retry_exhausted:dropped={','.join(dropped_columns)}",
             }
         warning = f"schema_columns_dropped:{','.join(dropped_columns)}" if dropped_columns else ""
+        # Keep the last working snapshot until the replacement is safely stored.
+        # Cleanup failure leaves surplus old rows, not an empty live surface.
+        try:
+            for run_id in run_ids:
+                keep = [row["report_id"] for row in filtered_reports if row["run_id"] == run_id]
+                db.client.table("scan_deep_reports").delete().eq("run_id", run_id).not_.in_("report_id", keep).execute()
+        except Exception as exc:
+            warning = ";".join(filter(None, [warning, f"stale_cleanup_failed:{exc}"]))
         return {"rows_seen": len(reports), "rows_upserted": len(filtered_reports), "warning": warning}
     except Exception as exc:
         return {"rows_seen": len(reports), "rows_upserted": 0, "warning": str(exc)}

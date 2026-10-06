@@ -69,7 +69,9 @@ def kr_producer_status(repo, *, daily_date=None, lane=None):
         count = sum(1 for p in report.get("picks", []) if p.get("market") == market)
         gate = (report.get("gate") or {}).get(market, {})
         status, reason = "picks", f"최근 실행 후보 {count}건"
-        if error or report.get("error"):
+        if report.get("routed", 0) == -1:
+            status, reason = "error", "후보 계산 후 DB 저장에 실패했습니다"
+        elif error or report.get("error"):
             status, reason = "error", "생산자 실행 결과를 확인할 수 없습니다"
         elif not asof or (daily_date and asof < str(daily_date)[:10]):
             status, reason = "stale", "최신 데이터에 대한 생산자 실행 결과가 아직 없습니다"

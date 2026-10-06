@@ -206,7 +206,7 @@ def _route_live(picks: List[Dict[str, Any]], run_id: str, recommended_at: str,
                "entry_reference_price": p.get("entry_reference_price")}
         payload = build_scan_result_payload(src, overrides={"market": p["market"], "recommended_at": recommended_at})
         payload["allow_incomplete_scan_result"] = True
-        db.upsert_scan_result(payload); n += 1
+        db.upsert_scan_result(payload, strict=True); n += 1
     _hnote = f"{_hd}거래일 종가 보유 · 분산(타이트 손절 X)"
     _plabel = "3일내 +5% 터치 확률" if _hd == 3 else "5일내 +5% 선터치(ft_5_5) 확률"
     if bucket == "nasdaq_session_edge":
@@ -253,11 +253,10 @@ def _route_live(picks: List[Dict[str, Any]], run_id: str, recommended_at: str,
                }}
         row["candidate_interpretation"] = build_candidate_interpretation(row)
         deep_rows.append(row)
-    try:
-        if deep_rows:
-            upsert_reports_to_supabase(deep_rows)
-    except Exception as exc:
-        print(json.dumps({"deep_report_error": repr(exc)[:160]}, ensure_ascii=False))
+    if deep_rows:
+        result = upsert_reports_to_supabase(deep_rows)
+        if result.get("rows_upserted") != len(deep_rows) or "stale_cleanup_failed" in str(result.get("warning")):
+            raise RuntimeError(f"deep report persistence failed: {result}")
     return n
 
 
@@ -309,6 +308,8 @@ def main() -> None:
     REPORT_MD.write_text("\n".join(lines), encoding="utf-8")
     print(json.dumps({"per_market": per_market, "picks": len(picks), "routed": routed, "forward": summary,
                       "production": production}, ensure_ascii=False))
+    if routed < 0:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

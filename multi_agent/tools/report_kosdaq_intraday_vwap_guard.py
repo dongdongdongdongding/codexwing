@@ -546,7 +546,7 @@ def route_live_intraday(picks: List[Dict[str, Any]], *, run_id: str, recommended
             },
         )
         payload["allow_incomplete_scan_result"] = True
-        db.upsert_scan_result(payload)
+        db.upsert_scan_result(payload, strict=True)
         written += 1
 
     deep_rows = []
@@ -587,7 +587,9 @@ def route_live_intraday(picks: List[Dict[str, Any]], *, run_id: str, recommended
         row["candidate_interpretation"] = build_candidate_interpretation(row)
         deep_rows.append(row)
     if deep_rows:
-        upsert_reports_to_supabase(deep_rows)
+        result = upsert_reports_to_supabase(deep_rows)
+        if result.get("rows_upserted") != len(deep_rows) or "stale_cleanup_failed" in str(result.get("warning")):
+            raise RuntimeError(f"deep report persistence failed: {result}")
     return written
 
 
@@ -711,9 +713,8 @@ def main() -> int:
             ensure_ascii=False,
         )
     )
-    return 0
+    return 1 if routed < 0 else 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

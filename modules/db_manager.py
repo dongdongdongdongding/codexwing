@@ -825,14 +825,15 @@ class DBManager:
             print(f"Dashboard Fetch Error: {e}")
             return pd.DataFrame(), 0, 0
             
-    def upsert_scan_result(self, data):
+    def upsert_scan_result(self, data, *, strict=False):
         """
-        Upsert scan result — prevents duplicate rows for same ticker within same session.
-        Uses on_conflict='ticker' so repeated scans update the existing row instead of inserting.
-        NOTE: Supabase requires a UNIQUE constraint on 'ticker' col, OR we manually delete+insert.
-        We use a delete-then-insert strategy keyed on ticker to ensure clean dedup.
+        Merge a same-run peer, otherwise insert. Never delete before a successful write.
+        strict=True lets a producer report persistence failures rather than claim a routed pick.
         """
-        if not self.client: return
+        if not self.client:
+            if strict:
+                raise RuntimeError("scan database client unavailable")
+            return False
 
         try:
             from modules.db_schema import build_scan_result_payload, DEFAULT_FALLBACK_KEYS
@@ -846,7 +847,9 @@ class DBManager:
                 quarantined = self._write_scan_feature_quarantine(data, feature_quality, submarket, recommended_at)
                 missing = ",".join(quarantined.get("feature_missing_fields") or [])
                 print(f"⛔ DB Upsert blocked by feature quality gate: {ticker} missing={missing}")
-                return 0
+                if strict:
+                    raise RuntimeError(f"feature quality gate blocked {ticker}: {missing}")
+                return False
             overrides = {
                 "market": submarket,
                 "created_at": now_ts,
@@ -881,15 +884,18 @@ class DBManager:
                     deleted = self._delete_shadow_scan_rows(run_id, ticker, row_id)
                     suffix = f", shadows_deleted={deleted}" if deleted else ""
                     print(f"☁️ DB Upsert→Merge: {data.get('name', ticker)} id={row_id}{suffix}")
-                    return
+                    return True
 
-            delete_query = self.client.table("market_scan_results").delete().eq("ticker", ticker)
-            if run_id:
-                delete_query = delete_query.eq("run_id", run_id)
-            else:
+            if not run_id:
                 today_start = dt.now().replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
-                delete_query = delete_query.gte("created_at", today_start)
-            delete_query.execute()
+                peers = (self.client.table("market_scan_results").select("*").eq("ticker", ticker)
+                         .gte("created_at", today_start).limit(20).execute().data or [])
+                target = self._choose_authoritative_scan_row(peers)
+                if target:
+                    merged = self._merge_non_empty_payload(dict(target), payload)
+                    merged = self._filter_payload_to_existing_columns("market_scan_results", merged)
+                    self._update_by_id_with_schema_drift_retry("market_scan_results", target["id"], merged)
+                    return True
 
             # 2026-05-13: repeated same-day scans are valid distinct archive
             # rows when run_id differs. On conflict, merge only a same-run peer;
@@ -898,6 +904,7 @@ class DBManager:
             try:
                 self._insert_with_schema_drift_retry("market_scan_results", payload)
                 print(f"☁️ DB Upserted: {data.get('name', ticker)} [{data.get('market_type')}]")
+                return True
             except Exception as ie:
                 if "23505" in str(ie) or "duplicate key" in str(ie):
                     existing = self._find_scan_result_conflict_row(payload)
@@ -907,13 +914,16 @@ class DBManager:
                         merged_payload = self._filter_payload_to_existing_columns("market_scan_results", merged_payload)
                         self._update_by_id_with_schema_drift_retry("market_scan_results", row_id, merged_payload)
                         print(f"☁️ DB Upsert→Merge on same-run conflict: {ticker} id={row_id}")
-                        return
+                        return True
                     if run_id:
                         self._raise_cross_run_unique_conflict(payload)
                 raise
 
         except Exception as e:
             print(f"⚠️ DB Upsert Error: {e}")
+            if strict:
+                raise
+            return False
 
 
 
