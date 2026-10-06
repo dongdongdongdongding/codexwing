@@ -354,6 +354,9 @@ if [[ "${AG_KR_SWING_CANDIDATE_ENABLE:-1}" == "1" ]]; then
   run_optional "report_kr_swing_candidate" \
     python3 multi_agent/tools/report_kr_swing_candidate.py \
       ${KR_SWING_TOPK_ARGS[@]+"${KR_SWING_TOPK_ARGS[@]}"}
+  echo "[STEP] observe_kr_touch10_prospective (shadow only)"
+  run_optional "observe_kr_touch10_prospective" \
+    python3 multi_agent/tools/observe_kr_touch10_prospective.py
 fi
 if [[ "${AG_INTRADAY_BACKFILL:-1}" == "1" && -f "${HOME}/research_cache/intraday_backfill.py" ]]; then
   # 분봉 minute bars: incremental KIS backfill of today's full session (post-close). Only fetches
