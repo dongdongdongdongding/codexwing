@@ -4,6 +4,7 @@ prophet
 pillow
 yfinance
 pandas
+pyarrow
 numpy
 opencv-python
 pandas-ta-classic

@@ -9,6 +9,7 @@ import pandas as pd
 import pytest
 
 from multi_agent.tools import backfill_kr_intraday as m
+from multi_agent.tools.intraday_cache_journal import restore_state
 
 NOW = datetime(2026, 10, 7, 2, 30, tzinfo=m.KST)
 
@@ -75,8 +76,9 @@ def test_budget_check_inside_ticker_checkpoints_and_resumes(tmp_path):
     assert [c[2] for c in second.calls] == list(m.HOURS[2:])
     assert report["requested_all_slices"] == 1
     audit = Path(report["audit_path"])
-    record = json.loads(next(audit.glob("*.json")).read_text())
-    assert m.digest(Path(record["backup"])) == record["before_sha256"]
+    records = [json.loads(p.read_text()) for p in audit.glob("*.json")]
+    record = next(r for r in records if r["before_sha256"] is not None)
+    assert len(restore_state(record["recovery"]["before_state"])) == 2
     assert m.digest(tmp_path / "000001.parquet") == record["after_sha256"]
 
 
@@ -128,7 +130,7 @@ def test_failed_temp_write_preserves_original_and_no_checkpoint(tmp_path, monkey
     assert path.read_bytes() == original
     assert not (tmp_path / ".backfill/000001.json").exists()
     assert not list(tmp_path.glob(".backfill-*"))
-    backup = next(Path(report["audit_path"]).glob("*.parquet"))
+    backup = next((tmp_path/".backfill/journal/000001").glob("*.checkpoint.parquet"))
     assert backup.read_bytes() == original
 
 
@@ -226,3 +228,69 @@ def test_disk_budget_includes_backup_and_temporary_file(tmp_path,monkeypatch):
     with pytest.raises(m.StorageBudgetExceeded):
         m.persist_bars(path,frame,added,m.digest(path),tmp_path/'audit','000001','20261006')
     assert path.read_bytes()==before and not (tmp_path/'audit').exists()
+
+
+def test_journal_stores_one_base_and_only_new_rows_on_repeated_appends(tmp_path):
+    path = tmp_path/'000001.parquet'
+    original = pd.DataFrame({'x':range(1000)}, index=pd.date_range('2026-10-01', periods=1000, freq='min'))
+    original.to_parquet(path)
+    old = pd.read_parquet(path)
+    for day in ['20261002', '20261003', '20261004']:
+        added = pd.DataFrame({'x':[1001]}, index=pd.to_datetime([day]))
+        old = m.persist_bars(path,old,added,m.digest(path),tmp_path/'audit','000001',day)
+    journal=tmp_path/'.backfill/journal/000001'
+    assert len(list(journal.glob('*.checkpoint.parquet'))) == 1
+    deltas=[pd.read_parquet(p) for p in journal.glob('*.delta.parquet')]
+    assert len(deltas)==3 and sum(map(len,deltas))==3
+    records=[json.loads(p.read_text()) for p in (tmp_path/'audit').glob('*.json')]
+    for record in records:
+        before=restore_state(record['recovery']['before_state'])
+        after=restore_state(record['recovery']['after_state'])
+        assert len(after)==len(before)+1
+        assert after.loc[before.index].equals(before)
+    head=json.loads((journal/'head.json').read_text())
+    assert restore_state(head['state']).equals(pd.read_parquet(path))
+
+
+def test_corrupt_journal_fails_closed_without_mutating_live_cache(tmp_path):
+    run(tmp_path,Client())
+    path=tmp_path/'000001.parquet';before=path.read_bytes();old=pd.read_parquet(path)
+    delta=next((tmp_path/'.backfill/journal/000001').glob('*.delta.parquet'))
+    delta.write_bytes(b'corrupt journal')
+    with pytest.raises(ValueError,match='hash_mismatch'):
+        m.persist_bars(path,old,old.set_axis(old.index+pd.Timedelta(days=1)),m.digest(path),tmp_path/'audit','000001','20261007')
+    assert path.read_bytes()==before
+
+
+def test_external_writer_starts_new_checkpoint_without_discarding_history(tmp_path):
+    run(tmp_path,Client())
+    path=tmp_path/'000001.parquet';old=pd.read_parquet(path)
+    old['Close']+=.5;old.to_parquet(path)
+    added=old.set_axis(old.index+pd.Timedelta(days=1))
+    m.persist_bars(path,old,added,m.digest(path),tmp_path/'audit','000001','20261007')
+    journal=tmp_path/'.backfill/journal/000001'
+    assert len(list(journal.glob('*.checkpoint.parquet')))==1
+    assert len(list(journal.glob('*.delta.parquet')))==2
+    head=json.loads((journal/'head.json').read_text())
+    assert restore_state(head['state']).equals(pd.read_parquet(path))
+
+
+def test_crash_after_cache_replace_preserves_recovery_and_next_append(tmp_path,monkeypatch):
+    run(tmp_path,Client())
+    path=tmp_path/'000001.parquet';old=pd.read_parquet(path)
+    added=old.set_axis(old.index+pd.Timedelta(days=1));save=m.save_json
+    def fail_head(target,value):
+        if Path(target).name=='head.json':raise OSError('simulated crash')
+        return save(target,value)
+    monkeypatch.setattr(m,'save_json',fail_head)
+    with pytest.raises(OSError):
+        m.persist_bars(path,old,added,m.digest(path),tmp_path/'audit','000001','20261007')
+    after=pd.read_parquet(path)
+    assert len(after)==8
+    records=[json.loads(p.read_text()) for p in (tmp_path/'audit').glob('*.json')]
+    assert restore_state(records[0]['recovery']['before_state']).equals(old)
+    assert restore_state(records[0]['recovery']['after_state']).equals(after)
+    monkeypatch.setattr(m,'save_json',save)
+    final=m.persist_bars(path,after,added.set_axis(added.index+pd.Timedelta(days=1)),m.digest(path),tmp_path/'audit','000001','20261008')
+    head=json.loads((tmp_path/'.backfill/journal/000001/head.json').read_text())
+    assert restore_state(head['state']).equals(final)

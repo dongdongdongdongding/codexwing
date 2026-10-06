@@ -10,7 +10,6 @@ import argparse
 from contextlib import contextmanager
 from datetime import datetime
 import fcntl
-import hashlib
 import json
 import math
 import os
@@ -20,7 +19,6 @@ import shutil
 import signal
 import subprocess
 import sys
-import tempfile
 import time
 from zoneinfo import ZoneInfo
 
@@ -29,6 +27,8 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from modules.kis_operational_adapter import normalize_kis_minute_bars
+from multi_agent.tools.intraday_cache_journal import digest, atomic_write, save_json, prepare_states
+import uuid
 
 HOURS = ("153000", "133000", "113000", "100000")
 KST = ZoneInfo("Asia/Seoul")
@@ -41,28 +41,6 @@ class BudgetExpired(Exception):
 
 class StorageBudgetExceeded(Exception):
     pass
-
-
-def digest(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest() if path.exists() else None
-
-
-def atomic_write(path, writer):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fd, name = tempfile.mkstemp(prefix=".backfill-", dir=path.parent)
-    os.close(fd)
-    temp = Path(name)
-    try:
-        writer(temp)
-        with temp.open("rb") as stream:
-            os.fsync(stream.fileno())
-        os.replace(temp, path)
-    finally:
-        temp.unlink(missing_ok=True)
-
-
-def save_json(path, value):
-    atomic_write(path, lambda temp: temp.write_text(json.dumps(value, ensure_ascii=False, indent=2)))
 
 
 def targets(panel, now, retention):
@@ -147,14 +125,10 @@ def persist_bars(path, old, added, before_sha, audit, code, day, min_free_bytes=
     if shutil.disk_usage(path.parent).free < min_free_bytes + estimate:
         raise StorageBudgetExceeded("insufficient_space_for_verified_backup_and_replace")
     audit.mkdir(parents=True, exist_ok=True)
-    backup = audit / f"{code}-{day}.before.parquet"
-    if before_sha is not None:
-        shutil.copyfile(path, backup)
-        if digest(backup) != before_sha:
-            raise ValueError("backup_or_source_changed")
+    recovery = prepare_states(path, old, combined, before_sha)
     record = {"code": code, "day": day, "before_sha256": before_sha,
-              "backup": str(backup) if before_sha else None, "status": "PREPARED"}
-    record_path = audit / f"{code}-{day}.json"
+              "recovery": recovery, "status": "PREPARED"}
+    record_path = audit / f"{code}-{day}-{uuid.uuid4().hex}.json"
     save_json(record_path, record)
     def write(temp):
         combined.to_parquet(temp)
@@ -167,6 +141,8 @@ def persist_bars(path, old, added, before_sha, audit, code, day, min_free_bytes=
     atomic_write(path, write)
     record.update(status="APPLIED", after_sha256=digest(path), rows=len(combined))
     save_json(record_path, record)
+    save_json(Path(recovery["head_path"]), {"file_sha256": record["after_sha256"],
+                                          "state": recovery["after_state"]})
     return combined
 
 
