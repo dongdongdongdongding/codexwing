@@ -43,11 +43,13 @@ if str(PROJECT_ROOT) not in sys.path:
 PANELD = os.path.expanduser("~/research_cache/us_daily/NASDAQ")
 PANEL_PREFIX = "daily_features_"
 T1_PATH = os.path.expanduser("~/research_cache/T1_nasdaq_listing_snapshots.parquet")
-# 부정목록 — 워런트·유닛·우선주·채권성만 뺀다. **ADR·Ordinary Shares 는 남긴다**([X] §6-D).
+# 부정목록 — 워런트·권리증권·유닛·우선주·채권성만 뺀다. **ADR·Ordinary Shares 는 남긴다**([X] §6-D).
 # 🔴 `"Common Stock"` 정확일치로 거르지 마라 — 원장에 `"Common stock"`(소문자 s)이 섞여 있어
 # UPST·RGTI 가 통째로 빠진다. [X] 가 1차에 밟은 함정이고 부정목록 방식이 정본이다.
 T1_EXCLUDE = re.compile(
-    r"warrant|right(s)?\s|[- ]unit(s)?\b|\sunit$|preferred|"
+    # Official names also end in standalone Right/Rights (no trailing space).
+    # Keep the existing middle-name rule; the new suffix needs a word boundary.
+    r"warrant|right(s)?\s|\brights?$|[- ]unit(s)?\b|\sunit$|preferred|"
     r"depositary share.*preferred|notes?\s+due|debenture|contingent value|subordinated",
     re.IGNORECASE)
 MIN_CLOSE = 5.0          # [M] §6 — 현행 라이브엔 없었다. 실측 48픽 중 7건 위반, 최저 $3.38

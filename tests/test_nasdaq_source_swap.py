@@ -54,6 +54,39 @@ def test_price_floor_and_liquidity_are_pinned():
     assert nst.MIN_LIQ20 == 1e8
 
 
+@pytest.mark.parametrize('name', [
+    'Calisa Acquisition Corp - Right',
+    'StoneBridge Acquisition II Corporation - Rights',
+    'Amplitech Group, Inc. - Series B Right',
+    'ACME - RIGHTS', 'ACME - Rights ', 'ACME - Rights to acquire shares',
+])
+def test_negative_list_excludes_official_rights_names(name):
+    assert nst.T1_EXCLUDE.search(name)
+
+
+@pytest.mark.parametrize('name', [
+    'Bright', 'Wright', 'ACME Copyrights',
+    'UPST - Common stock', 'ACME - Ordinary Shares',
+    'Toyota - American Depositary Shares',
+])
+def test_terminal_rights_fix_preserves_other_names(name):
+    assert not nst.T1_EXCLUDE.search(name)
+
+
+def test_rights_suffix_is_excluded_in_pit_membership(monkeypatch):
+    snapshots = snapshot_frame([
+        ('2026-01-01', 'ALISR', 'Calisa Acquisition Corp - Right'),
+        ('2026-01-01', 'SBII', 'StoneBridge Acquisition II Corporation - Rights'),
+        ('2026-01-01', 'ORD', 'ACME - Ordinary Shares'),
+        ('2026-01-01', 'ADS', 'Toyota - American Depositary Shares'),
+        ('2026-01-01', 'PREF', 'ACME - Depositary Shares Preferred Stock'),
+    ])
+    monkeypatch.setattr(nst.pd, 'read_parquet', lambda *a, **kw: snapshots.copy())
+    panel = pd.DataFrame({'symbol': ['ALISR', 'SBII', 'ORD', 'ADS', 'PREF'],
+                          'date': pd.Timestamp('2026-01-02')})
+    assert nst._listed_pit(panel).tolist() == [False, False, True, True, False]
+
+
 def test_admission_is_a_quantile_not_an_absolute_cut():
     """규율 3 — 절대임계 금지. 보드가 「절대임계 금지」 사례를 다섯 번 쌓았다."""
     assert nst.ADMIT_Q == 0.10
