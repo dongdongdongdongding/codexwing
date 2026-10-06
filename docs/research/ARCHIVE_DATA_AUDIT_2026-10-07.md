@@ -75,3 +75,13 @@ KIS `daily_bars`를 `market_div=J/UN/NX`, 원주가/수정주가로 구분해 �
 첫 REST 반영은 약 44KB JSON 원본을 URL 필터로 보내다 HTTP 520으로 실패했고 해당 행이 미변경임을 확인했다. [Supabase Management API](https://supabase.com/docs/reference/api/v1-run-a-query)의 요청 본문으로 전환해 스키마 변경 없이 전체 원본 행을 타입에 맞게 CAS 대조한다. 응답의 NUMERIC 문자열 표현 차이로 첫 행이 반영 후 검증 중단됐지만 REST 재조회로 모든 필드 일치를 확인해 감사 로그에 남겼다. JSONB 응답으로 타입을 보존하도록 수정한 뒤 나머지 19건을 반영했다.
 
 운영 증거 디렉터리: `runtime_state/audit/archive_conflict_normalization/`. 첫 행 백업 SHA `26416ce0ef14baded0019d74f69a2573e4e5b932ff1478e6ad18b59659064386`, 나머지 19건 `fb026485615995f0546ec6f58d600fa08f4de008ea0d34ba3729b5039e729abb`. 재실행 결과 변경 0건(`e3a6148f59f51a937fa8c142d04ae0aee048695b26ff044ae05ebaa3f1adf63a`). DB 재조회에서 정상화 20건·미변경 17건을 확인했으며 실제 원본 결과를 일반 병합 함수에 재투입한 20건 모두 보호 필드가 유지됐다. 관련 테스트 47개 통과. 전체 한국·미국 아카이브 정상화나 신규 엣지 검증 완료를 뜻하지 않는다.
+
+## 스캐너 원본으로 나머지 17건 확인
+
+`swing-main-hv32`: 보류 17건 모두 해당 RUN의 `scanner_handoff.json.candidates`에서 유일한 종목을 찾았다. 실행 ID·티커·시장·스캔 방식·추천가격·현지 as-of 날짜가 DB와 일치했다. 최종 planner 결과에 해당 티커가 없다는 것은 원래 스캔이 없다는 뜻이 아니었다. 기존 outcome에 상충하는 티커 기록이 있으면 scanner로 우회하지 않고 거부하며, outcome에 없는 종목에만 scanner 원본 검증을 허용한다.
+
+동일하게 고정된 KIS 가격으로 추가 17건을 반영했다. 백업 SHA `6754e294b8b861735c07d471c7f49ccc6018e47c1c3d1a8f8a881b256b4bee0b`, 재실행 변경 0건·보류 0건(`71fc8bed4aaff679376fc1a1c56709c57c73cb6f5d083c47c00e6a5971faafc4`). DB 재조회 `scanner_verified_after.json`에서 37건 모두 원래 가격·기준일·추천시각·검증 제외 사유·기존 피처 내용 보존을 확인했다. 스캐너 피처를 임의 복원하거나 학습 적격성을 부여하지 않았다. 이 37건의 가격 증거 기준일은 10/06이며 이후 미성숙 기간 갱신까지 이 고정 증거 도구가 자동 수행하는 것은 아니다.
+
+테스트 과정에서 운영 Python 3.9의 `datetime.fromisoformat`이 PostgREST 소수초 5자리(예: `.17633`)를 거부하는 문제를 재현했다. 시장 날짜 파서에서 소수초를 6자리로 정규화해 다른 날짜 필드로 조용히 넘어가는 동작을 수정했다. 1~7자리 소수초와 KST 날짜 경계를 포함한 관련 테스트 24개 통과.
+
+실제 64,083행 내보내기 파일에서 기존 파서가 거부하던 추천시각은 6,171건이며 수정 파서는 모두 시장 날짜로 해석했다. 그중 653건은 저장 base_trade_date와 다른 날짜다. 이것은 날짜 경로를 추가 확인해야 한다는 진단이며 653건의 수익률 오류를 확정한 수치는 아니다. 원문 집계: `timestamp_precision_audit.json`.
