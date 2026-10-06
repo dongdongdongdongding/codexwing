@@ -62,6 +62,10 @@ KIS_ENDPOINTS: Dict[str, KISEndpoint] = {
         "FHKST03010100",
         "FHKST03010100",
     ),
+    "overseas_daily_bars": KISEndpoint(
+        "overseas_daily_bars", "Overseas daily price observations", "GET",
+        "/uapi/overseas-price/v1/quotations/dailyprice", "HHDFS76240000", "HHDFS76240000",
+    ),
     "today_minute_bars": KISEndpoint(
         "today_minute_bars",
         "Domestic same-day minute bars",
@@ -783,6 +787,26 @@ class KISOpenAPIClient:
                 "FID_ORG_ADJ_PRC": "0" if adjusted else "1",
             },
         )
+
+    def overseas_daily_bars(self, symbol: str, *, end_date: str,
+                            exchange: str = "NAS", adjusted: bool = True) -> Dict[str, Any]:
+        """One provider page, preserving raw response and MODP price-basis choice.
+
+        MODP=1 requests KIS adjusted prices; this does not assert equivalence to
+        Yahoo total-return adjustments, complete history, or an exchange calendar.
+        Official specification: koreainvestment/open-trading-api dailyprice.
+        """
+        symbol = str(symbol).strip().upper()
+        if not symbol or not all(c.isascii() and (c.isalnum() or c in '.-') for c in symbol):
+            raise ValueError("invalid_overseas_symbol")
+        if exchange not in {"NAS", "NYS", "AMS"}:
+            raise ValueError("unsupported_overseas_exchange")
+        if len(end_date) != 8 or not end_date.isdigit():
+            raise ValueError("invalid_overseas_end_date")
+        datetime.strptime(end_date, "%Y%m%d")
+        return self._request_json("overseas_daily_bars", params={
+            "AUTH": "", "EXCD": exchange, "SYMB": symbol, "GUBN": "0",
+            "BYMD": end_date, "MODP": "1" if adjusted else "0"})
 
     def today_minute_bars(
         self,

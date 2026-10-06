@@ -222,6 +222,34 @@ def test_daily_and_minute_bar_requests_use_documented_parameters():
     assert daily_minute_call["headers"]["tr_id"] == "FHKST03010230"
 
 
+def test_overseas_daily_page_preserves_response_and_adjustment_choice():
+    payload = {"rt_cd": "0", "output2": [{"xymd": "20261006", "clos": "237.4200"}]}
+    def responder(call):
+        if call["path"] == "/oauth2/tokenP":
+            return {"access_token": "token", "token_type": "Bearer", "expires_in": 86400}
+        return payload
+    client, calls = _client_with_transport(responder)
+    assert client.overseas_daily_bars(" adbe ", end_date="20261006") == payload
+    client.overseas_daily_bars("ADBE", end_date="20261006", adjusted=False)
+    pages = [c for c in calls if c["path"].endswith("/dailyprice")]
+    assert len(pages) == 2
+    for c, modp in zip(pages, ["1", "0"]):
+        assert c["method"] == "GET" and c["body"] is None
+        assert c["headers"]["tr_id"] == "HHDFS76240000"
+        assert c["query"] == {"EXCD": "NAS", "SYMB": "ADBE", "GUBN": "0", "BYMD": "20261006", "MODP": modp}
+
+
+@pytest.mark.parametrize("kwargs", [
+    {"symbol": "A&x=1"}, {"symbol": ""}, {"exchange": "KRX"},
+    {"end_date": "2026-10-06"}, {"end_date": "20260230"},
+])
+def test_overseas_daily_rejects_invalid_request_before_network(kwargs):
+    client, calls = _client_with_transport(lambda c: pytest.fail("unexpected network request"))
+    with pytest.raises(ValueError):
+        client.overseas_daily_bars(**{"symbol": "ADBE", "end_date": "20261006", **kwargs})
+    assert calls == []
+
+
 def test_investor_flow_parser_prefers_amount_and_keeps_quantity_fields():
     payload = {
         "output2": [
