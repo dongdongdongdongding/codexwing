@@ -114,8 +114,17 @@ def main():
                 if old is None:
                     q = q.is_(field,"null")
                 else:
-                    q = q.eq(field,json.dumps(old,ensure_ascii=False) if isinstance(old,(dict,list)) else old)
-            updated = q.execute().data
+                    # selection_thesis is JSONB even when its value is a scalar
+                    # string (schema: supabase_agent_tables.sql). Encode it too.
+                    json_column = table == "scan_deep_reports" and field in {
+                        "trade_plan", "candidate_interpretation", "realized_expectancy_admission",
+                        "selection_thesis", "price", "prediction"}
+                    q = q.eq(field,json.dumps(old,ensure_ascii=False) if json_column else old)
+            try:
+                updated = q.execute().data
+            except Exception as exc:
+                log({"state":"failed", "table":table,"id":before[key],"error_type":type(exc).__name__})
+                raise
             if len(updated) != 1 or any(updated[0].get(k) != v for k,v in patch.items()):
                 log({"state":"conflict", "table":table,"id":before[key]})
                 raise RuntimeError(f"compare-and-set conflict in {table}; replan")

@@ -1,0 +1,1727 @@
+{
+  "generated_at": "2026-10-06T16:21:38.523558+00:00",
+  "prereg_id": "kr_touch10_20261007",
+  "scope": {
+    "markets": [
+      "KOSPI",
+      "KOSDAQ"
+    ],
+    "signal_start": "2026-08-24",
+    "signal_end": "2026-10-02",
+    "universe_liq_krw": {
+      "KOSPI": 10000000000,
+      "KOSDAQ": 3000000000
+    },
+    "selection": "As originally stamped in live ledger, top_k KOSPI=3 KOSDAQ=1; no retrospective rerank or raw-p probability claim",
+    "research_type": "Retrospective contract replay of forward-recorded signals, not a new untouched holdout",
+    "future_confirmation_start": "2026-10-07"
+  },
+  "ledger_sha256": "c73eb9f943297216303f60a038ab6f79f248289ccee7cad4f9baef8c861d4765",
+  "price_source": "/Users/dongdong/research_cache/px_delisted.parquet",
+  "price_mtime_ns": 1791239974498484653,
+  "price_as_of": "2026-10-02",
+  "metrics": {
+    "KOSPI/baseline": {
+      "selected": 52,
+      "status_counts": {
+        "resolved": 31,
+        "pending": 21
+      },
+      "n": 31,
+      "unique_dates": 10,
+      "touch_rate": 0.8387096774193549,
+      "touch_rate_block_ci95": [
+        0.7077205882352942,
+        0.9473684210526315
+      ],
+      "net_ev_pct": 3.2942743936611274,
+      "net_ev_block_ci95": [
+        2.217447223973634,
+        4.172151080699472
+      ],
+      "worst_net_pct": -9.835596205962062,
+      "stress_ev_pct": {
+        "0.5": 3.0092743936611255,
+        "1.0": 2.509274393661126
+      }
+    },
+    "KOSPI/candidate_h10": {
+      "selected": 52,
+      "status_counts": {
+        "resolved": 31,
+        "pending": 21
+      },
+      "n": 31,
+      "unique_dates": 10,
+      "touch_rate": 0.8387096774193549,
+      "touch_rate_block_ci95": [
+        0.7077205882352942,
+        0.9473684210526315
+      ],
+      "net_ev_pct": 3.2942743936611274,
+      "net_ev_block_ci95": [
+        2.217447223973634,
+        4.172151080699472
+      ],
+      "worst_net_pct": -9.835596205962062,
+      "stress_ev_pct": {
+        "0.5": 3.0092743936611255,
+        "1.0": 2.509274393661126
+      }
+    },
+    "KOSDAQ/baseline": {
+      "selected": 12,
+      "status_counts": {
+        "resolved": 11,
+        "unfilled_entry": 1
+      },
+      "n": 11,
+      "unique_dates": 10,
+      "touch_rate": 0.8181818181818182,
+      "touch_rate_block_ci95": [
+        0.625,
+        1.0
+      ],
+      "net_ev_pct": 1.8242281378689393,
+      "net_ev_block_ci95": [
+        -1.398515505042772,
+        4.785000000000005
+      ],
+      "worst_net_pct": -12.940090036014407,
+      "stress_ev_pct": {
+        "0.5": 1.5392281378689396,
+        "1.0": 1.0392281378689396
+      }
+    },
+    "KOSDAQ/candidate_h10": {
+      "selected": 12,
+      "status_counts": {
+        "resolved": 11,
+        "unfilled_entry": 1
+      },
+      "n": 11,
+      "unique_dates": 10,
+      "touch_rate": 0.9090909090909091,
+      "touch_rate_block_ci95": [
+        0.7142857142857143,
+        1.0
+      ],
+      "net_ev_pct": 4.737206630058983,
+      "net_ev_block_ci95": [
+        4.6347922658996525,
+        4.785000000000005
+      ],
+      "worst_net_pct": 4.259272930648771,
+      "stress_ev_pct": {
+        "0.5": 4.452206630058984,
+        "1.0": 3.952206630058984
+      }
+    },
+    "combined/baseline": {
+      "selected": 64,
+      "status_counts": {
+        "resolved": 42,
+        "unfilled_entry": 1,
+        "pending": 21
+      },
+      "n": 42,
+      "unique_dates": 13,
+      "touch_rate": 0.8333333333333334,
+      "touch_rate_block_ci95": [
+        0.7027027027027027,
+        0.9210526315789473
+      ],
+      "net_ev_pct": 2.9092622790488867,
+      "net_ev_block_ci95": [
+        1.3538614778677787,
+        3.762757022672138
+      ],
+      "worst_net_pct": -12.940090036014407,
+      "stress_ev_pct": {
+        "0.5": 2.624262279048886,
+        "1.0": 2.124262279048886
+      }
+    },
+    "combined/candidate_h10": {
+      "selected": 64,
+      "status_counts": {
+        "resolved": 42,
+        "unfilled_entry": 1,
+        "pending": 21
+      },
+      "n": 42,
+      "unique_dates": 13,
+      "touch_rate": 0.8571428571428571,
+      "touch_rate_block_ci95": [
+        0.75,
+        0.9230769230769231
+      ],
+      "net_ev_pct": 3.6721852174796124,
+      "net_ev_block_ci95": [
+        2.842361067083271,
+        4.33951990366726
+      ],
+      "worst_net_pct": -9.835596205962062,
+      "stress_ev_pct": {
+        "0.5": 3.3871852174796118,
+        "1.0": 2.887185217479612
+      }
+    }
+  },
+  "same_day_controls": {
+    "KOSPI": {
+      "paired_n": 31,
+      "control_status_counts": {
+        "resolved": 3011,
+        "pending": 1630
+      },
+      "missing_control_dates": [],
+      "same_day_net_excess_pp": 3.037117076486818,
+      "excess_block_ci95": [
+        2.1460130498779577,
+        4.15846132267129
+      ],
+      "random_ticker_placebo_p_ge": 0.0005998800239952009,
+      "circular_timing_placebo": {
+        "statistic": "mean control return on firing days",
+        "actual": 0.16803448225228296,
+        "p_ge": 0.5,
+        "rotations": 17,
+        "scope": "inherited timing diagnostic, not alpha test"
+      }
+    },
+    "KOSDAQ": {
+      "paired_n": 11,
+      "control_status_counts": {
+        "resolved": 4851,
+        "unfilled_entry": 5,
+        "pending": 2774
+      },
+      "missing_control_dates": [],
+      "same_day_net_excess_pp": 2.9143925751777133,
+      "excess_block_ci95": [
+        2.0592508116912986,
+        3.604532696517412
+      ],
+      "random_ticker_placebo_p_ge": 0.05318936212757448,
+      "circular_timing_placebo": {
+        "statistic": "mean control return on firing days",
+        "actual": 1.7219006828843266,
+        "p_ge": 0.6666666666666666,
+        "rotations": 17,
+        "scope": "inherited timing diagnostic, not alpha test"
+      }
+    }
+  },
+  "frequency": {
+    "KOSPI": {
+      "sessions": 28,
+      "firing_dates": 17,
+      "per_five_sessions": 3.0357142857142856,
+      "calendar_week_firing_dates": {
+        "2026-08-24/2026-08-30": 2,
+        "2026-08-31/2026-09-06": 3,
+        "2026-09-07/2026-09-13": 2,
+        "2026-09-14/2026-09-20": 5,
+        "2026-09-21/2026-09-27": 1,
+        "2026-09-28/2026-10-04": 4
+      }
+    },
+    "KOSDAQ": {
+      "sessions": 28,
+      "firing_dates": 11,
+      "per_five_sessions": 1.9642857142857142,
+      "calendar_week_firing_dates": {
+        "2026-08-24/2026-08-30": 4,
+        "2026-08-31/2026-09-06": 4,
+        "2026-09-07/2026-09-13": 1,
+        "2026-09-14/2026-09-20": 2,
+        "2026-09-21/2026-09-27": 0,
+        "2026-09-28/2026-10-04": 0
+      }
+    },
+    "combined": {
+      "sessions": 28,
+      "firing_dates": 20,
+      "per_five_sessions": 3.5714285714285716,
+      "calendar_week_firing_dates": {
+        "2026-08-24/2026-08-30": 4,
+        "2026-08-31/2026-09-06": 4,
+        "2026-09-07/2026-09-13": 2,
+        "2026-09-14/2026-09-20": 5,
+        "2026-09-21/2026-09-27": 1,
+        "2026-09-28/2026-10-04": 4
+      }
+    }
+  },
+  "paired_h10_minus_baseline": {
+    "n": 42,
+    "mean_net_delta_pp": 0.7629229384307257,
+    "block_ci95": [
+      0.0,
+      1.8961909428200818
+    ]
+  },
+  "production_replacement_ready": false,
+  "blockers": [
+    "new_contract_forward_gate_not_available",
+    "KOSPI:insufficient_mature_sample",
+    "KOSDAQ:insufficient_mature_sample",
+    "combined_frequency_outside_2_to_3"
+  ],
+  "records": [
+    {
+      "date": "2026-08-24",
+      "ticker": "017900.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 7330.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-26",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-24",
+      "ticker": "017900.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 7330.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-26",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-24",
+      "ticker": "005935.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 9105000.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-25",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-24",
+      "ticker": "005935.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 9105000.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-25",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-24",
+      "ticker": "005930.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 12450000.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-26",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-24",
+      "ticker": "005930.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 12450000.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-26",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-24",
+      "ticker": "033340.KQ",
+      "market": "KOSDAQ",
+      "variant": "baseline",
+      "horizon": 5,
+      "status": "resolved",
+      "entry_open": 405.1640566741238,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-25",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-24",
+      "ticker": "033340.KQ",
+      "market": "KOSDAQ",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 405.1640566741238,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-25",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-24",
+      "ticker": "028260.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 364500.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-26",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-24",
+      "ticker": "028260.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 364500.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-26",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-24",
+      "ticker": "462860.KQ",
+      "market": "KOSDAQ",
+      "variant": "baseline",
+      "horizon": 5,
+      "status": "resolved",
+      "entry_open": 7336.290801186944,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-25",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-24",
+      "ticker": "462860.KQ",
+      "market": "KOSDAQ",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 7336.290801186944,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-25",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-25",
+      "ticker": "000880.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 84154.78408128706,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-27",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-25",
+      "ticker": "000880.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 84154.78408128706,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-27",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-25",
+      "ticker": "017900.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 7690.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-26",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-25",
+      "ticker": "017900.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 7690.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-26",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-25",
+      "ticker": "128940.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 527000.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-26",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-25",
+      "ticker": "128940.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 527000.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-26",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-25",
+      "ticker": "215600.KQ",
+      "market": "KOSDAQ",
+      "variant": "baseline",
+      "horizon": 5,
+      "status": "resolved",
+      "entry_open": 3115.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-26",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-25",
+      "ticker": "215600.KQ",
+      "market": "KOSDAQ",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 3115.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-26",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-26",
+      "ticker": "900300.KQ",
+      "market": "KOSDAQ",
+      "variant": "baseline",
+      "horizon": 5,
+      "status": "resolved",
+      "entry_open": 12.542699802057639,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-27",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-26",
+      "ticker": "900300.KQ",
+      "market": "KOSDAQ",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 12.542699802057639,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-08-27",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-08-27",
+      "ticker": "348370.KQ",
+      "market": "KOSDAQ",
+      "variant": "baseline",
+      "horizon": 5,
+      "status": "resolved",
+      "entry_open": 22350.0,
+      "touch": 0,
+      "policy_ret": -9.843400447427298,
+      "exit_date": "2026-09-03",
+      "net": -10.058400447427298
+    },
+    {
+      "date": "2026-08-27",
+      "ticker": "348370.KQ",
+      "market": "KOSDAQ",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 22350.0,
+      "touch": 0,
+      "policy_ret": 4.4742729306487705,
+      "exit_date": "2026-09-10",
+      "net": 4.259272930648771
+    },
+    {
+      "date": "2026-09-01",
+      "ticker": "067290.KQ",
+      "market": "KOSDAQ",
+      "variant": "baseline",
+      "horizon": 5,
+      "status": "resolved",
+      "entry_open": 3365.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-03",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-01",
+      "ticker": "067290.KQ",
+      "market": "KOSDAQ",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 3365.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-03",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-02",
+      "ticker": "003010.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 9730.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-03",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-02",
+      "ticker": "003010.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 9730.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-03",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-02",
+      "ticker": "006110.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 67700.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-03",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-02",
+      "ticker": "006110.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 67700.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-03",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-02",
+      "ticker": "012330.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 418500.0,
+      "touch": 0,
+      "policy_ret": -8.482676224611707,
+      "exit_date": "2026-09-16",
+      "net": -8.697676224611707
+    },
+    {
+      "date": "2026-09-02",
+      "ticker": "012330.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 418500.0,
+      "touch": 0,
+      "policy_ret": -8.482676224611707,
+      "exit_date": "2026-09-16",
+      "net": -8.697676224611707
+    },
+    {
+      "date": "2026-09-02",
+      "ticker": "033340.KQ",
+      "market": "KOSDAQ",
+      "variant": "baseline",
+      "horizon": 5,
+      "status": "unfilled_entry",
+      "reason": "scheduled_entry_suspended",
+      "entry_date": "2026-09-03"
+    },
+    {
+      "date": "2026-09-02",
+      "ticker": "033340.KQ",
+      "market": "KOSDAQ",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "unfilled_entry",
+      "reason": "scheduled_entry_suspended",
+      "entry_date": "2026-09-03"
+    },
+    {
+      "date": "2026-09-03",
+      "ticker": "003010.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 9800.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-04",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-03",
+      "ticker": "003010.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 9800.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-04",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-03",
+      "ticker": "017900.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 6950.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-07",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-03",
+      "ticker": "017900.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 6950.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-07",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-03",
+      "ticker": "336260.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 40450.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-04",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-03",
+      "ticker": "336260.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 40450.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-04",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-03",
+      "ticker": "443670.KQ",
+      "market": "KOSDAQ",
+      "variant": "baseline",
+      "horizon": 5,
+      "status": "resolved",
+      "entry_open": 4165.0,
+      "touch": 0,
+      "policy_ret": -12.725090036014407,
+      "exit_date": "2026-09-10",
+      "net": -12.940090036014407
+    },
+    {
+      "date": "2026-09-03",
+      "ticker": "443670.KQ",
+      "market": "KOSDAQ",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 4165.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-11",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-04",
+      "ticker": "007810.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 53000.0,
+      "touch": 0,
+      "policy_ret": -0.9433962264150941,
+      "exit_date": "2026-09-18",
+      "net": -1.1583962264150942
+    },
+    {
+      "date": "2026-09-04",
+      "ticker": "007810.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 53000.0,
+      "touch": 0,
+      "policy_ret": -0.9433962264150941,
+      "exit_date": "2026-09-18",
+      "net": -1.1583962264150942
+    },
+    {
+      "date": "2026-09-04",
+      "ticker": "003010.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 10650.0,
+      "touch": 0,
+      "policy_ret": -0.8450704225352101,
+      "exit_date": "2026-09-18",
+      "net": -1.0600704225352102
+    },
+    {
+      "date": "2026-09-04",
+      "ticker": "003010.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 10650.0,
+      "touch": 0,
+      "policy_ret": -0.8450704225352101,
+      "exit_date": "2026-09-18",
+      "net": -1.0600704225352102
+    },
+    {
+      "date": "2026-09-04",
+      "ticker": "006110.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 68200.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-08",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-04",
+      "ticker": "006110.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 68200.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-08",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-04",
+      "ticker": "032940.KQ",
+      "market": "KOSDAQ",
+      "variant": "baseline",
+      "horizon": 5,
+      "status": "resolved",
+      "entry_open": 10030.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-10",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-04",
+      "ticker": "032940.KQ",
+      "market": "KOSDAQ",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 10030.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-10",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-07",
+      "ticker": "003010.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 9000.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-09",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-07",
+      "ticker": "003010.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 9000.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-09",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-07",
+      "ticker": "007810.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 53000.0,
+      "touch": 0,
+      "policy_ret": -1.3207547169811318,
+      "exit_date": "2026-09-21",
+      "net": -1.5357547169811319
+    },
+    {
+      "date": "2026-09-07",
+      "ticker": "007810.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 53000.0,
+      "touch": 0,
+      "policy_ret": -1.3207547169811318,
+      "exit_date": "2026-09-21",
+      "net": -1.5357547169811319
+    },
+    {
+      "date": "2026-09-07",
+      "ticker": "066970.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 116300.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-09",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-07",
+      "ticker": "066970.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 116300.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-09",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-07",
+      "ticker": "351320.KQ",
+      "market": "KOSDAQ",
+      "variant": "baseline",
+      "horizon": 5,
+      "status": "resolved",
+      "entry_open": 2608.2490272373543,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-08",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-07",
+      "ticker": "351320.KQ",
+      "market": "KOSDAQ",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 2608.2490272373543,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-08",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-08",
+      "ticker": "028300.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 62620.96552134793,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-21",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-08",
+      "ticker": "028300.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 62620.96552134793,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-21",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-08",
+      "ticker": "033790.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 6902.906520031423,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-09",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-08",
+      "ticker": "033790.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 6902.906520031423,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-09",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-08",
+      "ticker": "004310.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 10180.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-09",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-08",
+      "ticker": "004310.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 10180.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-09",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-14",
+      "ticker": "001210.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 2590.8756217140144,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-16",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-14",
+      "ticker": "001210.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 2590.8756217140144,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-16",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-14",
+      "ticker": "011070.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 508000.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-18",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-14",
+      "ticker": "011070.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 508000.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-18",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-14",
+      "ticker": "307950.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 368500.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-22",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-14",
+      "ticker": "307950.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 368500.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-22",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-14",
+      "ticker": "226340.KQ",
+      "market": "KOSDAQ",
+      "variant": "baseline",
+      "horizon": 5,
+      "status": "resolved",
+      "entry_open": 940.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-15",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-14",
+      "ticker": "226340.KQ",
+      "market": "KOSDAQ",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 940.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-15",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-15",
+      "ticker": "004170.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 369000.0,
+      "touch": 0,
+      "policy_ret": -9.620596205962062,
+      "exit_date": "2026-10-01",
+      "net": -9.835596205962062
+    },
+    {
+      "date": "2026-09-15",
+      "ticker": "004170.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 369000.0,
+      "touch": 0,
+      "policy_ret": -9.620596205962062,
+      "exit_date": "2026-10-01",
+      "net": -9.835596205962062
+    },
+    {
+      "date": "2026-09-15",
+      "ticker": "011070.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 503000.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-18",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-15",
+      "ticker": "011070.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 503000.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-18",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-15",
+      "ticker": "004310.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 10190.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-16",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-15",
+      "ticker": "004310.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 10190.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-16",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-16",
+      "ticker": "011070.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 518000.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-22",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-16",
+      "ticker": "011070.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 518000.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-22",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-16",
+      "ticker": "483650.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 165300.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-17",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-16",
+      "ticker": "483650.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 165300.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-17",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-16",
+      "ticker": "004310.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 10280.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-17",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-16",
+      "ticker": "004310.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 10280.0,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-17",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-16",
+      "ticker": "072950.KQ",
+      "market": "KOSDAQ",
+      "variant": "baseline",
+      "horizon": 5,
+      "status": "resolved",
+      "entry_open": 18455.12325026132,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-18",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-16",
+      "ticker": "072950.KQ",
+      "market": "KOSDAQ",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "resolved",
+      "entry_open": 18455.12325026132,
+      "touch": 1,
+      "policy_ret": 5.000000000000004,
+      "exit_date": "2026-09-18",
+      "net": 4.785000000000005
+    },
+    {
+      "date": "2026-09-17",
+      "ticker": "004170.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-17",
+      "ticker": "004170.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-17",
+      "ticker": "004310.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-17",
+      "ticker": "004310.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-17",
+      "ticker": "010580.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-17",
+      "ticker": "010580.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-18",
+      "ticker": "010580.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-18",
+      "ticker": "010580.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-18",
+      "ticker": "004310.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-18",
+      "ticker": "004310.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-18",
+      "ticker": "317400.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-18",
+      "ticker": "317400.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-22",
+      "ticker": "002990.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-22",
+      "ticker": "002990.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-22",
+      "ticker": "000500.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-22",
+      "ticker": "000500.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-22",
+      "ticker": "007810.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-22",
+      "ticker": "007810.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-28",
+      "ticker": "336260.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-28",
+      "ticker": "336260.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-28",
+      "ticker": "317400.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-28",
+      "ticker": "317400.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-28",
+      "ticker": "007810.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-28",
+      "ticker": "007810.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-29",
+      "ticker": "001210.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-29",
+      "ticker": "001210.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-29",
+      "ticker": "064350.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-29",
+      "ticker": "064350.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-29",
+      "ticker": "010130.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-29",
+      "ticker": "010130.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-30",
+      "ticker": "001210.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-30",
+      "ticker": "001210.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-30",
+      "ticker": "010130.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-30",
+      "ticker": "010130.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-30",
+      "ticker": "352820.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-09-30",
+      "ticker": "352820.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-10-01",
+      "ticker": "002990.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-10-01",
+      "ticker": "002990.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-10-01",
+      "ticker": "192650.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-10-01",
+      "ticker": "192650.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-10-01",
+      "ticker": "001210.KS",
+      "market": "KOSPI",
+      "variant": "baseline",
+      "horizon": 10,
+      "status": "pending"
+    },
+    {
+      "date": "2026-10-01",
+      "ticker": "001210.KS",
+      "market": "KOSPI",
+      "variant": "candidate_h10",
+      "horizon": 10,
+      "status": "pending"
+    }
+  ],
+  "limitations": [
+    "Retrospective re-contracting is not a pristine holdout or a calibrated individual probability.",
+    "No capital allocation, execution queue, impact or portfolio drawdown simulation.",
+    "Adjusted prices use repository corporate-action heuristics, not a verified exchange action feed."
+  ]
+}
