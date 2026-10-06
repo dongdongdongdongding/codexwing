@@ -1,0 +1,70 @@
+{
+  "id": "kr_touch10_cadence_prospective_20261007",
+  "registered_at": "2026-10-06T18:23:37.255731+00:00",
+  "beads": "swing-main-5g5d",
+  "hypothesis": "A causal cap of three combined firing dates in any five observed market sessions preserves >=70% TP5/H10 touches and positive same-day selection excess while producing 2-3 combined firing dates per five sessions.",
+  "prior_evidence": "Unrestricted old cohort3.57/5sessions failed cadence. Cap3 is taken directly from user requirement, not selected by return testing. No historical capped-cohort outcomes were inspected. This is a cadence/contract variant, not evidence of a new alpha mechanism.",
+  "signal_start": "2026-10-07",
+  "evaluation_sessions": 120,
+  "horizon_sessions": 10,
+  "tp": 0.05,
+  "cost_pct": 0.215,
+  "selection": {
+    "KOSPI": {
+      "gate_kind": "mkt_weakness",
+      "gate_q": 0.4,
+      "top_k": 3
+    },
+    "KOSDAQ": {
+      "gate_kind": "mkt_weakness",
+      "gate_q": 0.5,
+      "top_k": 1
+    }
+  },
+  "universe_liq_krw": {
+    "KOSPI": 10000000000,
+    "KOSDAQ": 3000000000
+  },
+  "producer_sha256": "bc452be9d3a4d7786f197035c2af6eaf6d73acf5cb17a4c8aacf7b1496c8c6f8",
+  "capture": "Immutable first successful capture of producer report, original picks and eligible same-day ticker universe after signal close and before 09:00 Asia/Seoul on the next calendar day. Late/missing captures are coverage failures, never historical fills. Holidays make this deadline conservative.",
+  "evaluation": "First120 observed sessions starting20261007; adjudicate only after allH10 mature. Longer fixed window chosen before first observation to allow the less frequent KOSDAQ leg to reach unchangedn30/20dates under the cap. Existing separate60-session study unchanged. No interim promotion or optional stopping.",
+  "targets": {
+    "touch_rate_min": 0.7,
+    "firing_dates_per_five_sessions": [
+      2,
+      3
+    ],
+    "min_resolved": 30,
+    "min_unique_resolved_dates": 20,
+    "net_ev_block_ci_lower_gt": 0,
+    "same_day_excess_block_ci_lower_gt": 0,
+    "random_ticker_placebo_p_max": 0.05,
+    "missing_capture_days_max": 0,
+    "data_errors_max": 0
+  },
+  "statistics": {
+    "block_sessions": 5,
+    "bootstrap_draws": 5000,
+    "seed": 20261007,
+    "controls": "Frozen same-date market/liquidity universe excluding original selected tickers; identical executable next-open TP5/H10 and costs. Random ticker relabel and circular date-shift diagnostics."
+  },
+  "kill_criteria": "At the fixed mature window, any target miss rejects this candidate for promotion; report every miss. Before then report PENDING. Do not combine prior replay with this cohort.",
+  "publication": "Shadow only. No routing/sizing. No historical backfill to manufacture cohort. Passing this report cannot publish; requires matching current-epoch gate, family-aware review and all producer/consumer wiring.",
+  "targets_scope": "Joint candidate: sample, touch, net/excess and ticker-placebo targets apply to each market and combined. Frequency target is combined firing dates. No post-hoc market subset promotion. Circular date-shift is a timing diagnostic, not a stock-alpha gate.",
+  "cadence": {
+    "kind": "first_eligible_dates_in_rolling_sessions",
+    "window_sessions": 5,
+    "max_firing_dates": 3,
+    "count": "one date even if both markets fire",
+    "ordering": "chronological, no ranking/weekday/return search",
+    "missing_history": "fail capture; never treat missing prior snapshot as abstention"
+  },
+  "multiple_testing": {
+    "family_size": 2,
+    "members": [
+      "kr_touch10_prospective_20261007",
+      "kr_touch10_cadence_prospective_20261007"
+    ],
+    "method": "Bonferroni ticker-placebo p times2. Original standalone study keeps its report; any eventual promotion review must apply this family correction to either candidate. 95% block intervals remain descriptive marginal intervals, not simultaneous family intervals."
+  }
+}
