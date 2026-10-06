@@ -228,8 +228,8 @@ def _pick_is_stale(buy_date, today=None):
 
 OPERATOR_MAX_GAP_TRADING_DAYS = 3   # 운영자 기준: 픽은 3거래일에 한 번은 나와야 한다
 
-def _trading_days_between(a, b):
-    """주말 제외 거래일 수(공휴일 미반영 근사 — 게이트 달력과 달리 여기선 표시용)."""
+def _trading_days_between(a, b, market="KR"):
+    """완료된 가격 세션만 센다. 휴장과 무픽일은 서로 다르다."""
     import datetime as _dt
     try:
         d0 = _dt.date.fromisoformat(str(a)[:10]); d1 = _dt.date.fromisoformat(str(b)[:10])
@@ -237,12 +237,10 @@ def _trading_days_between(a, b):
         return None
     if d1 < d0:
         return 0
-    n = 0; d = d0
-    while d < d1:
-        d += _dt.timedelta(days=1)
-        if d.weekday() < 5:
-            n += 1
-    return n
+    from modules.market_sessions import price_sessions
+    cutoff = min(d1 + _dt.timedelta(days=1), _dt.date.today())
+    sessions, _ = price_sessions(market, cutoff.isoformat())
+    return sum(d0.isoformat() < d <= d1.isoformat() for d in sessions)
 
 
 def _lane_frequency(lane_key, today=None):
@@ -268,9 +266,15 @@ def _lane_frequency(lane_key, today=None):
     if not dates:
         return None
     td = str(today)[:10] if today else _dt.date.today().isoformat()
-    since = _trading_days_between(dates[-1], td)
-    gaps = [g for g in (_trading_days_between(dates[i], dates[i + 1]) for i in range(len(dates) - 1))
-            if g is not None]
+    market = "US" if "nasdaq" in lane_key else "KR"
+    try:
+        since = _trading_days_between(dates[-1], td, market)
+        gaps = [g for g in (_trading_days_between(dates[i], dates[i + 1], market) for i in range(len(dates) - 1))
+                if g is not None]
+    except Exception as exc:
+        return {"last_fired": dates[-1], "days_since": None, "median_gap": None,
+                "worst_gap": None, "firing_days": len(dates), "frequency_ok": False,
+                "calendar_error": f"{type(exc).__name__}: {exc}"}
     gaps.sort()
     median_gap = gaps[len(gaps) // 2] if gaps else None
     worst_gap = gaps[-1] if gaps else None

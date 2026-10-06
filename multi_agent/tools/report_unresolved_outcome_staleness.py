@@ -33,7 +33,6 @@ import argparse
 import datetime as dt
 import json
 import math
-from functools import lru_cache
 import sys
 from pathlib import Path
 from typing import Any, Dict, List
@@ -54,21 +53,9 @@ def _today() -> dt.date:
     return dt.datetime.now(dt.timezone.utc).date()
 
 
-@lru_cache(maxsize=8)
 def observed_sessions(market, today):
-    """Use traded price dates, never the lane's own (possibly sparse) firing dates."""
-    import pandas as pd
-    cache = Path.home() / "research_cache"
-    if market == "US":
-        from multi_agent.tools.report_nasdaq_session_tape import _latest_panel
-        path = Path(_latest_panel())
-    else:
-        path = cache / "px_long.parquet"
-    frame = pd.read_parquet(path, columns=["date"],
-                            filters=[("date", ">=", pd.Timestamp(today) - pd.Timedelta(days=365))])
-    # Today's partially collected bars must not make a contract mature early.
-    dates = pd.to_datetime(frame["date"], errors="coerce").dropna().dt.strftime("%Y-%m-%d")
-    return sorted(set(d for d in dates if d < today)), str(path)
+    from modules.market_sessions import price_sessions
+    return price_sessions(market, today)
 
 
 def scan_lane(name: str, cfg: Dict[str, Any], today: dt.date, stale_days: int) -> Dict[str, Any]:

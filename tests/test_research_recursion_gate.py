@@ -28,6 +28,16 @@ gate = importlib.import_module("multi_agent.tools.report_research_recursion_gate
 TODAY = "2026-08-14"
 
 
+@pytest.fixture(autouse=True)
+def synthetic_price_calendar(monkeypatch):
+    """Duration fixtures use a market price calendar independent of pick fixtures."""
+    import pandas as pd
+    from modules import market_sessions as M
+    days = [d.strftime("%Y-%m-%d") for d in pd.bdate_range("2026-01-01", "2026-08-20")
+            if d.strftime("%Y-%m-%d") != "2026-08-17"]
+    monkeypatch.setattr(M, "price_sessions", lambda market, before: ([d for d in days if d < before], "fixture"))
+
+
 def bdays_before(anchor: str, n: int) -> str:
     return str(np.busday_offset(np.datetime64(anchor), -n, roll="backward"))
 
@@ -1110,7 +1120,9 @@ def test_derivation_stops_at_the_family_change(tmp_path):
     cfg = cfg_for(led, expect_ev=1.0, n_min=5, market="KR")
     r = gate.evaluate("lane", cfg, {}, TODAY)
     assert r["verdict"] == "DEGRADE"
-    assert 0 < r["verdict_hold_trading_days"] < 20, r["verdict_hold_trading_days"]
+    assert r["verdict_hold_trading_days"] > 0
+    derived = gate.derive_verdict_hold("lane", cfg, gate._family(r["verdict"]), TODAY)
+    assert derived["since"] > "2026-07-10"  # reset after the positive regime
 
 
 def test_lookback_is_capped_and_says_so(tmp_path, monkeypatch):
@@ -1135,6 +1147,8 @@ def test_gate_calendar_is_data_derived_not_weekdays(tmp_path, monkeypatch):
     달력 구현이 게이트에 있고 sentinel 이 그걸 쓰므로, 여기서 깨지면 판정기도 함께 틀린다.
     """
     days = ["2026-08-12", "2026-08-13", "2026-08-14", "2026-08-18"]   # 08-17 휴장
+    from modules import market_sessions as M
+    monkeypatch.setattr(M, "price_sessions", lambda market, before: ([d for d in days if d < before], "fixture"))
     led = write_ledger(tmp_path / "cal.jsonl", [1.0] * len(days), dates=days)
     monkeypatch.setitem(gate.LANES, "kospi_intraday_t5", cfg_for(led, market="KR"))
     monkeypatch.setattr(gate, "KR_CALENDAR_LANES", ["kospi_intraday_t5"])
@@ -1145,6 +1159,8 @@ def test_gate_calendar_is_data_derived_not_weekdays(tmp_path, monkeypatch):
 
 def test_gate_calendar_excludes_today(tmp_path, monkeypatch):
     days = ["2026-08-13", "2026-08-14", "2026-08-17"]
+    from modules import market_sessions as M
+    monkeypatch.setattr(M, "price_sessions", lambda market, before: ([d for d in days if d < before], "fixture"))
     led = write_ledger(tmp_path / "cal.jsonl", [1.0] * len(days), dates=days)
     monkeypatch.setitem(gate.LANES, "kospi_intraday_t5", cfg_for(led, market="KR"))
     monkeypatch.setattr(gate, "KR_CALENDAR_LANES", ["kospi_intraday_t5"])

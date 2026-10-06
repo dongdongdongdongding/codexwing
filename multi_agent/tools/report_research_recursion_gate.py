@@ -243,12 +243,8 @@ def trading_days(market: str, today: str) -> List[str]:
     달력 정의를 sentinel 판정기와 나눠 갖지 않는다 — 레인 정의가 여기 있으므로 여기서 만든다.
     두 벌로 두면 이 리포가 반복해 온 어휘 드리프트가 하나 더 생긴다.
     """
-    names = KR_CALENDAR_LANES if market == "KR" else US_CALENDAR_LANES
-    union: set = set()
-    for n in names:
-        if n in LANES:
-            union |= lane_firing_days(LANES[n])
-    return sorted(d for d in union if d < today)
+    from modules.market_sessions import price_sessions
+    return price_sessions(market, today)[0]
 
 
 def derive_verdict_hold(name: str, cfg: Dict[str, Any], family: str, today: str) -> Dict[str, Any]:

@@ -205,9 +205,12 @@ def test_ledger_reader_accepts_the_symbol_key():
 
 # ── 4. 발화 빈도 (운영자 기준: 3거래일 1회) ──────────────────────────────────
 
-def test_trading_days_skips_weekends():
+def test_trading_days_skips_weekends_and_holidays(monkeypatch):
+    from modules import market_sessions as M
+    days = ["2026-08-14", "2026-08-18", "2026-08-19", "2026-08-20"]
+    monkeypatch.setattr(M, "price_sessions", lambda market, before: ([d for d in days if d < before], "fixture"))
     assert S._trading_days_between("2026-08-19", "2026-08-20") == 1
-    assert S._trading_days_between("2026-08-14", "2026-08-18") == 2   # 금->화, 주말 제외
+    assert S._trading_days_between("2026-08-14", "2026-08-18") == 1   # 8/17 대체휴일
     assert S._trading_days_between("2026-08-20", "2026-08-19") == 0
     assert S._trading_days_between("깨진값", "2026-08-20") is None
 
