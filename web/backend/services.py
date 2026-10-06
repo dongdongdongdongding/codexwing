@@ -1571,6 +1571,12 @@ def archive(date_from=None, date_to=None, market=None, ticker=None, limit=200, o
     dcol = "recommended_at" if "recommended_at" in d.columns else None
     if dcol:
         d["_d"] = pd.to_datetime(d[dcol], errors="coerce", utc=True).dt.tz_convert("Asia/Seoul").dt.tz_localize(None)
+        if "run_id" in d.columns:
+            # Model archives may be persisted/rerun after midnight. Their fixed
+            # signal-date ID, not the storage timestamp, owns the trading date.
+            signal = pd.to_datetime(d["run_id"].astype(str).str.extract(
+                r"^SWING-CAND-(\d{8})$",expand=False),format="%Y%m%d",errors="coerce")
+            d.loc[signal.notna(),"_d"] = signal[signal.notna()]
         if date_from:
             d = d[d["_d"] >= pd.Timestamp(date_from)]
         if date_to:
@@ -1596,6 +1602,8 @@ def archive(date_from=None, date_to=None, market=None, ticker=None, limit=200, o
             rid = _s(r.get("run_id"))
             if rid.startswith("SWING-ENS"):
                 lane = "swing_ensemble"
+            elif rid.startswith("SWING-CAND-"):
+                lane = "swing_candidate"
             elif rid.startswith("KOSPI-ITD"):
                 lane = "kospi_intraday"
             elif rid.startswith("KQ-ITD"):
