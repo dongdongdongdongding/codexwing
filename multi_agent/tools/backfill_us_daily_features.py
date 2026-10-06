@@ -199,7 +199,7 @@ def _write_md(path: Path, report: Mapping[str, Any]) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def _fetch_universe(market: str) -> pd.DataFrame:
+def _fetch_universe(market: str, *, allow_fallback: bool = True) -> pd.DataFrame:
     market = str(market or DEFAULT_MARKET).upper()
     try:
         import FinanceDataReader as fdr
@@ -224,6 +224,8 @@ def _fetch_universe(market: str) -> pd.DataFrame:
     except Exception:
         pass
 
+    if not allow_fallback:
+        return pd.DataFrame(columns=["symbol", "name", "market"])
     fallback = QuantStrategy._fallback_us_tickers(market)
     if not fallback:
         return pd.DataFrame(columns=["symbol", "name", "market"])
@@ -712,6 +714,8 @@ def write_feature_panel(
             continue
         try:
             raw = pd.read_parquet(path)
+            dates = pd.to_datetime(raw["date"], errors="raise")
+            raw = raw[(dates >= pd.Timestamp(start)) & (dates < pd.Timestamp(end))].copy()
             feat = compute_feature_frame(raw)
         except Exception:
             failed_features.append(sym)
@@ -770,6 +774,8 @@ def parse_args() -> argparse.Namespace:
     # --- dailyops 진입점 (impl-nasdaq-daily-panel-seaslug.md 배선 계약) ---
     parser.add_argument("--daily-refresh", action="store_true",
                         help="증분 갱신 모드. 패널이 이미 최신이면 아무 일도 하지 않고 즉시 반환한다.")
+    parser.add_argument("--through-session", default=None, help="Explicit completed US session for reproducible recovery")
+    parser.add_argument("--refresh-budget", type=float, default=600, help="Raw fetch budget, checked between batches")
     parser.add_argument("--force-refresh", action="store_true",
                         help="--daily-refresh 와 함께: 최신이어도 강제 재생성.")
     parser.add_argument("--keep-panels", type=int,
@@ -885,68 +891,39 @@ def panel_status(paths: BackfillPaths, *, output_prefix: str = "daily_features")
     return out
 
 
-def _run_refresh(
-    paths: BackfillPaths,
-    *,
-    output_prefix: str = "daily_features",
-    start: str = "2018-01-01",
-    end: Optional[str] = None,
-    batch_size: int = 80,
-    feature_batch_size: int = 100,
-    timeout: int = 30,
-    sleep: float = 0.1,
-    max_symbols: int = 0,
-    keep_panels: int = 3,
-) -> Dict[str, Any]:
-    """증분 갱신 1회분: 낡은 raw만 병합 갱신 → 패널 재생성 → 오래된 패널 정리."""
-    end = end or (date.today() + timedelta(days=1)).isoformat()
+def _run_refresh(paths: BackfillPaths, **kwargs: Any) -> Dict[str, Any]:
+    from multi_agent.tools.us_daily_session_refresh import run
+    return run(paths, **kwargs)
+
+
+def daily_refresh(paths: BackfillPaths, *, output_prefix: str = "daily_features",
+                  force: bool = False, **kwargs: Any) -> Dict[str, Any]:
+    """Refresh against a completed observed US session, never a multi-day TTL."""
+    import fcntl
+    from multi_agent.tools.us_daily_session_refresh import latest_completed_session
+    from multi_agent.tools.intraday_cache_journal import digest
     paths.market_root.mkdir(parents=True, exist_ok=True)
-    universe = _fetch_universe(paths.market)
-    if universe.empty:
-        return {"status": "failed", "reason": f"no universe for market={paths.market}"}
-    if int(max_symbols or 0) > 0:
-        universe = universe.head(int(max_symbols)).copy()
-    universe.to_csv(paths.universe_path, index=False)
-
-    fetched, skipped, failed = fetch_raw_ohlcv(
-        universe, paths, start=start, end=end, batch_size=batch_size,
-        timeout=timeout, sleep=sleep, force_raw=False, refresh_stale=True,
-    )
-    feature_info = write_feature_panel(
-        universe, paths, start=start, end=end,
-        output_prefix=output_prefix, feature_batch_size=feature_batch_size,
-    )
-    removed = prune_old_panels(paths, output_prefix=output_prefix, keep=keep_panels)
-    after = panel_status(paths, output_prefix=output_prefix)
-    return {"status": "refreshed", "universe_size": int(len(universe)),
-            "raw_refreshed": int(fetched), "raw_skipped_fresh": int(skipped),
-            "raw_failed": len(failed), "pruned_panels": removed,
-            "panel_max_date": after.get("panel_max_date"),
-            **{k: feature_info.get(k) for k in ("output_feature_path", "output_latest_path",
-                                                "feature_symbols", "feature_rows")}}
+    with (paths.market_root/".daily_refresh.lock").open("a") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return {"status": "busy", "reason": "US_daily_writer_lock"}
+        required = kwargs.pop("required_through", None) or latest_completed_session(paths)
+        target = pd.Timestamp(required)
+        if target > pd.Timestamp.now(tz="America/New_York").tz_localize(None).normalize():
+            raise ValueError("future_US_required_session")
+        panel = _consumer_panel(paths, output_prefix)
+        receipt_path = paths.market_root/".refresh/current.json"
+        receipt = json.loads(receipt_path.read_text()) if receipt_path.exists() else {}
+        identity = {"path": str(panel), "mtime_ns": panel.stat().st_mtime_ns, "size": panel.stat().st_size} if panel else None
+        if (not force and receipt.get("required_through") == str(target.date())
+                and receipt.get("panel_identity") == identity and receipt.get("status") == "refreshed"
+                and receipt.get("universe_sha256") == digest(paths.universe_path)):
+            return {"status": "already_current", **{k: v for k, v in receipt.items() if k != "status"}}
+        return _run_refresh(paths, required_through=str(target.date()), output_prefix=output_prefix, **kwargs)
 
 
-def daily_refresh(
-    paths: BackfillPaths,
-    *,
-    output_prefix: str = "daily_features",
-    force: bool = False,
-    **kwargs: Any,
-) -> Dict[str, Any]:
-    """dailyops 진입점. **이미 최신이면 아무 일도 하지 않고 즉시 반환한다.**
-
-    `primary_daily_ops`가 하루 3회 돌기 때문에(중앙값 4.46h/회) 멱등성이 없으면
-    같은 3.4GB 패널을 하루 3번 재생성한다 — 2회분은 순수 낭비다.
-    배선으로는 막을 수 없어 생산자 쪽에 둔다.
-    """
-    status = panel_status(paths, output_prefix=output_prefix)
-    if status["current"] and not force:
-        return {"status": "already_current", **status}
-    return _run_refresh(paths, output_prefix=output_prefix, **kwargs)
-
-
-def main() -> int:
-    args = parse_args()
+def _main(args: argparse.Namespace) -> int:
     if bool(getattr(args, "daily_refresh", False)):
         paths = BackfillPaths(root=Path(args.output_root).expanduser(), market=str(args.market).upper())
         result = daily_refresh(
@@ -957,6 +934,7 @@ def main() -> int:
             batch_size=int(args.batch_size), feature_batch_size=int(args.feature_batch_size),
             timeout=int(args.timeout), sleep=float(args.sleep),
             max_symbols=int(args.max_symbols or 0), keep_panels=int(args.keep_panels),
+            required_through=args.through_session, budget=float(args.refresh_budget),
         )
         print(json.dumps(result, ensure_ascii=False, default=str))
         return 0 if result.get("status") in {"already_current", "refreshed"} else 1
@@ -1043,6 +1021,22 @@ def main() -> int:
         )
     )
     return 0
+
+
+def main() -> int:
+    args = parse_args()
+    if args.daily_refresh:
+        return _main(args)  # daily_refresh holds this same writer lock.
+    import fcntl
+    paths = BackfillPaths(root=Path(args.output_root).expanduser(), market=str(args.market).upper())
+    paths.market_root.mkdir(parents=True, exist_ok=True)
+    with (paths.market_root/".daily_refresh.lock").open("a") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            print(json.dumps({"status":"busy","reason":"US_daily_writer_lock"}))
+            return 2
+        return _main(args)
 
 
 if __name__ == "__main__":

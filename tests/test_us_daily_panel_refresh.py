@@ -29,6 +29,12 @@ import pandas as pd
 import pytest
 
 from multi_agent.tools import backfill_us_daily_features as bf
+from multi_agent.tools import us_daily_session_refresh as sr
+
+
+@pytest.fixture(autouse=True)
+def fixed_reference_session(monkeypatch):
+    monkeypatch.setattr(sr, "latest_completed_session", lambda paths: _today_minus(1))
 
 RAW_COLUMNS = ["date", "symbol", "name", "market", "open", "high", "low", "close",
                "raw_close", "adj_close", "volume", "adj_factor", "dollar_volume", "source"]
@@ -303,16 +309,16 @@ def test_missing_panel_is_not_current(paths):
     assert status["panel_max_date"] is None
 
 
-def test_daily_refresh_short_circuits_when_current(paths, monkeypatch):
+def test_legacy_panel_without_verified_refresh_receipt_is_rechecked(paths, monkeypatch):
     """하루 3회 실행 중 2회는 즉시 반환해야 한다 — 이게 3배 비용을 막는 장치다."""
     _write_latest_panel(paths, "20260816_010101", _today_minus(1))
     called = []
-    monkeypatch.setattr(bf, "fetch_raw_ohlcv", lambda *a, **k: called.append("fetch") or (0, 0, []))
+    monkeypatch.setattr(bf, "_run_refresh", lambda *a, **k: called.append("refresh") or {"status":"refreshed"})
 
     result = bf.daily_refresh(paths, output_prefix="daily_features", force=False)
 
-    assert result["status"] == "already_current"
-    assert called == [], "이미 최신인데 fetch 를 돌렸다"
+    assert result["status"] == "refreshed"
+    assert called == ["refresh"], "미검증 과거 패널을 최신으로 오인했다"
 
 
 def test_daily_refresh_can_be_forced(paths, monkeypatch):

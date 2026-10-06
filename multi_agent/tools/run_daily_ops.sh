@@ -460,7 +460,7 @@ if [[ "${AG_NASDAQ_SWING_MODEL_ENABLE:-1}" == "1" ]]; then
   # 생산자 계약: orca/reports/impl-nasdaq-daily-panel-seaslug.md
   #   - 이미 최신이면 즉시 반환(멱등) — primary_daily_ops 가 하루 3회 돌기 때문에 필수다
   #   - stdout 에 JSON 한 줄, 종료코드 0 = already_current|refreshed
-  #   - AG_US_DAILY_PANEL_MAX_AGE_DAYS(4) / _RAW_MAX_AGE_DAYS(5) / _KEEP_PANELS(3)
+  #   - 완료된 US 관측 세션별 원본 갱신·검증 후 패널 생성. 일부 최신 행은 전체 최신의 증거가 아니다.
   if [[ "${AG_US_DAILY_PANEL_REFRESH_ENABLE:-1}" == "1" ]]; then
     US_DAILY_PANEL_ARGS=(--daily-refresh --market NASDAQ)
     if [[ "${AG_US_DAILY_PANEL_FORCE_REFRESH:-0}" == "1" ]]; then
@@ -480,7 +480,8 @@ if [[ "${AG_NASDAQ_SWING_MODEL_ENABLE:-1}" == "1" ]]; then
     if [[ "${US_DAILY_PANEL_RC}" == "0" ]]; then
       echo "[OK] backfill_us_daily_features"
     else
-      echo "[WARN] backfill_us_daily_features failed rc=${US_DAILY_PANEL_RC} — 소비자는 이전 패널로 채점한다(원장 정체 가능)"
+      OPTIONAL_FAILURES+=("us_daily_panel(rc=${US_DAILY_PANEL_RC})")
+      echo "[WARN] backfill_us_daily_features failed rc=${US_DAILY_PANEL_RC} — 부분/누락 상태를 실패 집계에 포함"
     fi
   else
     echo "[SKIP] backfill_us_daily_features — AG_US_DAILY_PANEL_REFRESH_ENABLE=0 (재개: =1)"

@@ -490,3 +490,16 @@ def test_intraday_uses_repo_runner_and_dry_run_is_read_only(tmp_path, dry, expec
     assert 'research_cache/intraday_backfill.py' not in result.stdout
     if dry == '0':
         assert '--plan' not in result.stdout
+
+
+def test_us_panel_failure_reaches_final_batch_exit_code(tmp_path):
+    source=OPS.read_text()
+    failure_functions=source[source.index('OPTIONAL_FAILURES=()'):source.index('\ntrim()')]
+    block=guard_block(PANEL_STEP,PANEL_FLAG)
+    script=tmp_path/'panel-failure-summary.sh'
+    script.write_text('set -euo pipefail\n'+failure_functions+'\npython3() { echo partial; return 1; }\n'+block+'\necho AFTER_PANEL\nreport_optional_failures\n')
+    env={k:v for k,v in os.environ.items() if not k.startswith('AG_US_DAILY')}
+    r=subprocess.run([SYSTEM_BASH,str(script)],text=True,capture_output=True,env=env,timeout=10)
+    assert r.returncode==9
+    assert 'AFTER_PANEL' in r.stdout
+    assert '[FAILED] us_daily_panel(rc=1)' in r.stdout
