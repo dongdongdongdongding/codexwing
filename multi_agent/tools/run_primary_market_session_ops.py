@@ -172,20 +172,33 @@ def due_sessions(
     state: Optional[Mapping[str, Any]] = None,
     due_window_minutes: int = 10,
     include_weekends: bool = False,
+    catch_up: bool = True,
 ) -> List[SessionSpec]:
     runs = (state or {}).get("runs") if isinstance((state or {}).get("runs"), dict) else {}
     due: List[SessionSpec] = []
     window = timedelta(minutes=max(1, int(due_window_minutes)))
+    latest: Dict[str, tuple[datetime, SessionSpec]] = {}
     for spec in SESSION_SPECS:
         tz = ZoneInfo(spec.timezone_name)
         local_now = now_utc.astimezone(tz)
         if not include_weekends and local_now.weekday() >= 5:
             continue
         scheduled = datetime.combine(local_now.date(), spec.trigger_clock, tzinfo=tz)
+        if catch_up and scheduled <= local_now:
+            previous = latest.get(spec.timezone_name)
+            if previous is None or scheduled > previous[0]:
+                latest[spec.timezone_name] = (scheduled, spec)
+            continue
         if scheduled <= local_now < scheduled + window:
             key = _state_key(spec, now_utc)
             if key not in runs:
                 due.append(spec)
+    # A wake-up runs the latest elapsed boundary per market-local day. Earlier
+    # boundaries are superseded, not replayed with an obsolete scan cutoff.
+    # Never catch up yesterday, nor rerun an already recorded latest boundary.
+    if catch_up:
+        due = [spec for _, spec in sorted(latest.values(), key=lambda pair: pair[0])
+               if _state_key(spec, now_utc) not in runs]
     return due
 
 
@@ -470,7 +483,9 @@ def main() -> int:
     parser.add_argument("--print-schedule", action="store_true", help="Print the six-window schedule and command plan.")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--continue-on-error", action="store_true", default=True)
-    parser.add_argument("--due-window-minutes", type=int, default=10)
+    parser.add_argument("--due-window-minutes", type=int, default=10,
+                        help="Window for --no-catch-up (default: latest elapsed boundary today).")
+    parser.add_argument("--no-catch-up", action="store_true")
     parser.add_argument("--include-weekends", action="store_true")
     parser.add_argument("--now", default=None, help="ISO timestamp for tests/replays. Defaults to current UTC.")
     parser.add_argument("--state-path", default=str(DEFAULT_STATE_PATH))
@@ -502,6 +517,7 @@ def main() -> int:
             state=state,
             due_window_minutes=int(args.due_window_minutes),
             include_weekends=bool(args.include_weekends),
+            catch_up=not args.no_catch_up,
         )
         reports = []
         for spec in sessions:
@@ -515,6 +531,9 @@ def main() -> int:
             reports.append(report)
             if not args.dry_run:
                 state = mark_session_state(state, spec=spec, now_utc=now_utc, report=report)
+                # A later market's long job must not lose this completed run on
+                # interruption and cause it to run again at the next poll.
+                _write_state(state_path, state)
         if not args.dry_run:
             _write_state(state_path, state)
         payload = {

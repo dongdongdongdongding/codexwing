@@ -38,7 +38,7 @@ def test_primary_market_schedule_has_user_requested_windows():
 def test_due_sessions_detects_kr_regular_close_in_kst_window():
     now = datetime.fromisoformat("2026-06-09T15:42:00+09:00").astimezone(timezone.utc)
 
-    due = due_sessions(now, state={"runs": {}}, due_window_minutes=10)
+    due = due_sessions(now, state={"runs": {}}, due_window_minutes=10, catch_up=False)
 
     assert [spec.session_id for spec in due] == ["kr_regular_close"]
 
@@ -46,7 +46,7 @@ def test_due_sessions_detects_kr_regular_close_in_kst_window():
 def test_due_sessions_detects_nasdaq_premarket_in_new_york_time():
     now = datetime.fromisoformat("2026-06-09T04:16:00-04:00").astimezone(timezone.utc)
 
-    due = due_sessions(now, state={"runs": {}}, due_window_minutes=10)
+    due = due_sessions(now, state={"runs": {}}, due_window_minutes=10, catch_up=False)
 
     assert [spec.session_id for spec in due] == ["nasdaq_premarket_early"]
 
@@ -55,9 +55,28 @@ def test_due_sessions_uses_state_to_avoid_duplicate_same_local_date():
     now = datetime.fromisoformat("2026-06-09T04:16:00-04:00").astimezone(timezone.utc)
     state = {"runs": {"2026-06-09::nasdaq_premarket_early": {"status": "ok"}}}
 
-    due = due_sessions(now, state=state, due_window_minutes=10)
+    due = due_sessions(now, state=state, due_window_minutes=10, catch_up=False)
 
     assert due == []
+
+
+def test_wake_after_close_catches_latest_boundary_without_replaying_old_scans():
+    now = datetime.fromisoformat("2026-08-21T22:32:00+09:00").astimezone(timezone.utc)
+    due = due_sessions(now, state={"runs": {}})
+    assert [s.session_id for s in due if s.timezone_name == "Asia/Seoul"] == ["kr_nxt_close"]
+    assert [s.session_id for s in due if s.timezone_name == "America/New_York"] == ["nasdaq_premarket_early"]
+
+
+def test_completed_latest_boundary_does_not_resurrect_earlier_missed_boundary():
+    now = datetime.fromisoformat("2026-08-21T22:32:00+09:00").astimezone(timezone.utc)
+    due = due_sessions(now, state={"runs": {"2026-08-21::kr_nxt_close": {"status": "ok"}}})
+    assert not any(s.timezone_name == "Asia/Seoul" for s in due)
+
+
+def test_catchup_does_not_replay_previous_local_day_or_weekend():
+    for stamp in ["2026-08-22T00:30:00+09:00", "2026-08-22T22:30:00+09:00"]:
+        due = due_sessions(datetime.fromisoformat(stamp).astimezone(timezone.utc), state={"runs": {}})
+        assert not any(s.timezone_name == "Asia/Seoul" for s in due)
 
 
 def test_command_plan_runs_session_scan_then_primary_daily_ops():
