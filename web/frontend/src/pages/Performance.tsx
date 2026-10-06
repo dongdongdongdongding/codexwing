@@ -79,7 +79,9 @@ function Summary() {
             <tbody>
               {Object.entries(cp.lanes).map(([k, v]) => (
                 <tr key={k} style={{ borderTop: `1px solid ${C.line}`, fontVariantNumeric: "tabular-nums" }}>
-                  <td style={{ textAlign: "left", padding: 6 }}>{v.label}</td>
+                  <td style={{ textAlign: "left", padding: 6 }}>{v.label}
+                    {v.note && <div style={{ color: C.mut, fontSize: 11, marginTop: 4 }}>{v.note}</div>}
+                  </td>
                   <td style={{ textAlign: "right", padding: 6 }}>{v.n}</td>
                   <td style={{ textAlign: "right", padding: 6, color: signColor(v.ev_avg) }}>{v.n ? pct(v.ev_avg) : "관측중"}</td>
                   <td style={{ textAlign: "right", padding: 6 }}>{v.n ? `${v.win_pct}%` : "–"}</td>

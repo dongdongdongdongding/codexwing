@@ -338,6 +338,14 @@ def _forward_epoch(lane_key, market=None):
             rows = [json.loads(l) for l in fh if l.strip()]
     except Exception:
         return None
+    if lane_key == "nasdaq_swing":
+        from modules.nasdaq_epoch_evidence import current_rows, statistics
+        current = current_rows(rows)
+        previous = [r for r in rows if r.get("xq") is None]
+        return {tag: {"picks": len(group), "resolved": (stats := statistics(group))["n"],
+                      "ev": stats["fwd_ev"], "win": stats["win_pct"],
+                      "since": min((r.get("date") for r in group), default=None)}
+                for tag, group in (("current", current), ("previous", previous))}
     if market:
         rows = [r for r in rows if str(r.get("market") or "") == market]
     out = {}
@@ -365,11 +373,11 @@ def _apply_operator_ev_floor(row, lane_key):
         gate_lane = GATE_LANE_MAP.get(lane_key)
     except Exception:
         gate_lane = None
-    if gate_lane == "swing_candidate":
+    if gate_lane in {"swing_candidate", "nasdaq_session_tape"}:
         state = load_gate_state()
         gate = (state.get("lanes") or {}).get(gate_lane) or {}
         if gate.get("epoch_scope_required"):
-            market = {"kospi_swing":"KOSPI", "kosdaq_swing":"KOSDAQ"}.get(lane_key, row.get("market"))
+            market = {"kospi_swing":"KOSPI", "kosdaq_swing":"KOSDAQ", "nasdaq_swing":"US"}.get(lane_key, row.get("market"))
             epoch = (gate.get("current_epochs") or {}).get(market) if state.get("usable") else None
             row["operator_verdict"] = "OBSERVE" if epoch else "UNKNOWN"
             if epoch:
@@ -1390,12 +1398,20 @@ def contract_performance():
         out["lanes"]["swing_exit_mix"] = {"label": "스윙 출구혼합 shadow (§29 검증중)", **_agg(vals)}
     except Exception:
         pass
-    # 나스닥 세션테이프 (관측 shadow, +5% 터치/5일 정책 채점)
+    # NASDAQ: current issued H20 and legacy contracts remain distinct.
     try:
         fp = os.path.join(REPO, "runtime_state/reports/us_research/nasdaq_session_tape_ledger.jsonl")
         rows = [json.loads(l) for l in open(fp, encoding="utf-8") if l.strip()] if os.path.exists(fp) else []
-        vals = [float(r["policy_ret"]) for r in rows if isinstance(r.get("policy_ret"), (int, float))]
-        out["lanes"]["nasdaq_tape"] = {"label": "나스닥 세션테이프 (+5% 터치/5일, 관측)", **_agg(vals)}
+        from modules.nasdaq_epoch_evidence import current_epoch, contract_groups
+        current = current_epoch(rows)
+        out["lanes"]["nasdaq_tape"] = {
+            "label": "나스닥 현행 (+5% / 20거래일, 종가 기준 관측)", **current,
+            "note": "기록 수익률이며 실제 체결 미검증. 승률은 비용 차감 후 양수 비율입니다. "
+                    "현행 소표본으로 10거래일 +5% 확률을 인증하지 않습니다."}
+        for i, group in enumerate(contract_groups(rows)):
+            out["lanes"][f"nasdaq_tape_legacy_{i}"] = {
+                "label": f"나스닥 과거 구성 (+{group['contract_tp']*100:g}% / {group['contract_h']}거래일)",
+                **group, "note": "과거 구성의 기록 수익률. 현행 발행 자격으로 승계하지 않습니다."}
     except Exception:
         pass
     # B 시장중립 (알파 = 시장대비 %p — 절대수익 아님 주의)

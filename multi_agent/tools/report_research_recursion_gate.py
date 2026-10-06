@@ -193,7 +193,7 @@ LANES: Dict[str, Dict[str, Any]] = {
         "publish_scope": WHOLE_LEDGER,
         "expect_ev": 0.75, "expect_win": 79.3,
         "n_min_adjudicate": 20, "deff_prior": 1.29,
-        "basis": "§12-D 29개월 (정직 추정 +0.5~1.0 — 기대는 중간값 0.75)"},
+        "basis": "과거 351종목 시간봉 §12-D 기대치/혼합 원장 진단. 현행 일봉 H20 자격 근거 아님"},
 }
 
 
@@ -677,6 +677,15 @@ def main() -> None:
         if result["lane"] == "swing_candidate":
             result["epoch_scope_required"] = True
             result["current_epochs"] = current_epochs(_rows(LANES["swing_candidate"]["ledger"]), sessions)
+        elif result["lane"] == "nasdaq_session_tape":
+            from modules.nasdaq_epoch_evidence import current_epoch
+            us_sessions, _ = price_sessions("US", today)
+            epoch = current_epoch(_rows(LANES["nasdaq_session_tape"]["ledger"]), us_sessions)
+            result.update(epoch_scope_required=True, current_epochs={"US": epoch},
+                          evidence_scope="legacy_pooled_diagnostic_only",
+                          legacy_expectation_applicable_to_current=False,
+                          publication_block=True,
+                          publication_block_reason=epoch["publication_block_reason"])
     tickets = []
 
     for r in results:
@@ -728,7 +737,7 @@ def main() -> None:
                      f"{r.get('fwd_win','–')}% ({r['expect_win']}%) | {r['win_verdict']} | {r['note']} |")
     for r in results:
         if r.get("epoch_scope_required"):
-            lines.append("\n위 swing_candidate는 과거 합산 진단이다. 현행 발행 자격은 다음 시장별 구성으로 판단한다.\n")
+            lines.append(f"\n위 {r['lane']}는 과거 합산 진단이다. 현행 발행 자격은 다음 시장별 구성으로 판단한다.\n")
             for market, epoch in r["current_epochs"].items():
                 lines.append(f"- {market}: {epoch['verdict']}, n={epoch['n']}, 고유일={epoch['unique_dates']}, "
                              f"net EV={epoch['fwd_ev']}, block CI={epoch['fwd_ci']}; "

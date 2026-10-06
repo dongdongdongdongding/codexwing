@@ -12,11 +12,14 @@ import argparse
 import json
 import os
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 CACHE = Path(os.path.expanduser("~/research_cache"))
 STATE = PROJECT_ROOT / "runtime_state" / "long_term" / "learning" / "reopen_queue_state.json"
 OUT = PROJECT_ROOT / "runtime_state" / "reports" / "validation" / "research_reopen_queue_latest.json"
@@ -66,6 +69,13 @@ def _lanes_resolved_total() -> int:
             + _ledger_resolved("runtime_state/reports/experimental/kr_swing_candidate_ledger.jsonl", "policy_ret"))
 
 
+def _nasdaq_current_resolved() -> int:
+    from modules.nasdaq_epoch_evidence import current_rows, statistics
+    fp = PROJECT_ROOT / "runtime_state/reports/us_research/nasdaq_session_tape_ledger.jsonl"
+    rows = [json.loads(line) for line in fp.read_text().splitlines() if line.strip()] if fp.exists() else []
+    return statistics(current_rows(rows))["n"]
+
+
 # 사전등록: 가설·조건·근거. 조건 함수는 지연 평가.
 QUEUE: Dict[str, Dict[str, Any]] = {
     # short_squeeze_hypothesis: 제거(2026-08-05, §40 킬대조 후속) — 등록 당일 §23이 8.7y 백필로
@@ -84,8 +94,8 @@ QUEUE: Dict[str, Dict[str, Any]] = {
                 "2층 캘리브레이터 — 라이브-백테스트 갭 자체를 학습. §19 측정하한 준수(시드3+노이즈 플라시보).",
     },
     "nasdaq_tape_verdict_deep": {
-        "need": 30, "have": lambda: _ledger_resolved("runtime_state/reports/us_research/nasdaq_session_tape_ledger.jsonl", "policy_ret"),
-        "title": "[재개봉] 나스닥 테이프 forward 판정 + 어닝스 메타 (정산 30건 도달)",
+        "need": 30, "have": _nasdaq_current_resolved,
+        "title": "[재개봉] 나스닥 테이프 forward 판정 + 어닝스 메타 (현행 구성 정산 30건 도달)",
         "desc": "사전등록: 게이트 판정과 별도로 어닝스 근접 조건부 성과 분해(£12-D 후속). CONFIRM 시 실자본 승격 검토 재료.",
     },
 }

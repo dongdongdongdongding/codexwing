@@ -331,7 +331,7 @@ def stream_status(lane_key: Any, *, gate_state: Optional[Dict[str, Any]] = None,
 
     verdict_row = state["lanes"].get(gate_lane) or {}
     if verdict_row.get("epoch_scope_required"):
-        market = {"kospi_swing":"KOSPI", "kosdaq_swing":"KOSDAQ"}.get(key, market)
+        market = {"kospi_swing":"KOSPI", "kosdaq_swing":"KOSDAQ", "nasdaq_swing":"US"}.get(key, market)
         epoch = (verdict_row.get("current_epochs") or {}).get(market)
         if not isinstance(epoch, dict):
             return {"gated":True, "excluded":True, "reason":"epoch_evidence_missing",

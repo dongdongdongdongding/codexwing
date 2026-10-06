@@ -31,7 +31,7 @@ export interface Pick {
   lane_frequency?: { last_fired?: string; days_since?: number; median_gap?: number;
                      worst_gap?: number; firing_days?: number; frequency_ok?: boolean };
 }
-export interface ContractLane { label: string; n: number; ev_avg?: number; win_pct?: number; worst?: number; }
+export interface ContractLane { label: string; n: number; ev_avg?: number; win_pct?: number; worst?: number; note?: string; }
 export interface ContractPerf {
   note: string; lanes: Record<string, ContractLane>;
   selective?: Record<string, { rank1?: { n: number; ev_avg?: number; win_pct?: number }; primary?: { n: number; ev_avg?: number; win_pct?: number } }> | null;
