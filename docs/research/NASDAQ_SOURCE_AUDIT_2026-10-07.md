@@ -143,3 +143,8 @@ CBIO·NFE·GMEX의 음수 조정 OHLC와 CNL·SPRC의 저가 0은 별도 전체 
 | 게이트·부검·재개봉 | `report_research_recursion_gate.py`, `build_pick_autopsy.py`, `research_reopen_queue.py`는 원장 직접 소비. 게이트의 과거 79.3 기대치와 전 구성 정산수 사용은 별도 결함 |
 
 웹 계약성과·게이트·재개봉의 구성 혼합은 `swing-main-5kyi`로 추적하며 이 보고서 표기 수정으로 해결됐다고 간주하지 않는다. 기존 게이트 문턱이나 발행 정책을 결과에 맞춰 조정하지 않았다.
+
+
+운영 코드 `6c0c4d8` 적용 후 기존 최신 JSON/Markdown의 메타데이터만 2026-10-06 21:50:59 UTC에 정정했다. 원래 실행시각 `2026-10-06T19:01:56.484360+00:00`, `as_of`, `status=no_candidates`, `universe=0`, 학습 행수, 빈 picks, 전체 forward_summary는 그대로 보존했다. 따라서 이 보고서는 복구된 현재 후보 320개를 재스캔한 결과가 아니다. 수정시각은 별도 `metadata_updated_at`에 기록하고 화면에도 신규 스캔·정산이 아님을 명시했다.
+
+JSON·Markdown·원장의 변경 전 파일을 별도 백업하고 원자적 교체 전후 바이트/해시를 대조했다. 원장 SHA `cf6fbc6bc771f3ec192104088a303fed5edc83b0c6faf7773352750287851003`은 유지됐다. 감사 위치는 운영 `runtime_state/audit/nasdaq_report_metadata_20261007/`의 `apply.py`, `write.json`, 세 원본 백업이다. 전체 서비스·게이트 정상화 완료나 신규 레인 승격으로 보고하지 않는다.
