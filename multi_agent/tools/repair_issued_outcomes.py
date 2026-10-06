@@ -74,7 +74,7 @@ def recompute(row, original, prices, sessions, *, price_source="px_delisted.parq
     return patch, basis
 
 
-def audit_and_apply(plan, audit_dir, provenance, client, apply=False, source_guard=None):
+def audit_and_apply(plan, audit_dir, provenance, client, apply=False, source_guard=None, cas_update=None):
     """Verify a complete reversible plan before the first compare-and-set write."""
     audit_dir.mkdir(parents=True, exist_ok=True)
     payload = json.dumps({**provenance,"plan":plan},
@@ -101,7 +101,7 @@ def audit_and_apply(plan, audit_dir, provenance, client, apply=False, source_gua
                 q = q.is_(key,"null") if old is None else q.eq(
                     key, json.dumps(old,ensure_ascii=False) if isinstance(old,(dict,list)) else old)
             try:
-                updated = q.execute().data
+                updated = cas_update(before, patch) if cas_update else q.execute().data
             except Exception as exc:
                 log("failed", id=before["id"], error_type=type(exc).__name__)
                 raise

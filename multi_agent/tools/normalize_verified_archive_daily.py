@@ -10,6 +10,10 @@ import hashlib
 import json
 from pathlib import Path
 import sys
+import base64
+import os
+import re
+from urllib.parse import urlparse
 
 import pandas as pd
 
@@ -18,6 +22,40 @@ sys.path.insert(0, str(ROOT))
 from multi_agent.tools.repair_issued_outcomes import audit_and_apply, recompute
 from research.audit_kr_touch10_price_source import parse_bars
 from multi_agent.tools.backfill_scanner_full_returns import _row_scan_date
+
+
+def cas_sql(before, patch):
+    """Typed full-row CAS in the request body avoids oversized REST URLs."""
+    if not patch or any(not re.fullmatch(r"[a-z_][a-z0-9_]*", k) for k in set(before) | set(patch)):
+        raise ValueError("invalid column identifier")
+    if set(patch) - {"feature_snapshot", "latest_return_pct", "max_high_return_5d_pct",
+                      "hit_5pct_within_5d", "hit_5pct_within_5d_at", "swing_target_label_version",
+                      *(f"return_{h}d_pct" for h in (1, 2, 3, 5, 7, 14, 30))}:
+        raise ValueError("outside daily normalization fields")
+    def record(value):
+        encoded = base64.b64encode(json.dumps(value, allow_nan=False).encode()).decode()
+        return "jsonb_populate_record(NULL::public.market_scan_results, convert_from(decode('" + encoded + "','base64'),'UTF8')::jsonb)"
+    assignments = ", ".join(f'"{key}" = p."{key}"' for key in sorted(patch))
+    predicates = " AND ".join(f't."{key}" IS NOT DISTINCT FROM b."{key}"' for key in sorted(before))
+    return (f"WITH b AS (SELECT * FROM {record(before)}), p AS (SELECT * FROM {record(patch)}) "
+            f"UPDATE public.market_scan_results t SET {assignments}, performance_updated_at = now() "
+            f"FROM b, p WHERE t.id = b.id AND {predicates} RETURNING t.*")
+
+
+def management_cas(before, patch):
+    import requests
+    token = os.environ.get("SUPABASE_ACCESS_TOKEN", "")
+    ref = (urlparse(os.environ.get("SUPABASE_URL", "")).hostname or "").split(".")[0]
+    if not token or not re.fullmatch(r"[a-z0-9]+", ref):
+        raise RuntimeError("Management API credentials unavailable")
+    response = requests.post(f"https://api.supabase.com/v1/projects/{ref}/database/query",
+        headers={"Authorization": f"Bearer {token}"}, json={"query": cas_sql(before, patch)}, timeout=30)
+    if response.status_code != 201 and response.status_code != 200:
+        raise RuntimeError(f"Management API CAS failed: HTTP {response.status_code}")
+    result = response.json()
+    if not isinstance(result, list):
+        raise RuntimeError("unexpected CAS response")
+    return result
 
 
 def original_matches(row, outcomes):
@@ -100,7 +138,8 @@ def main():
 
     guard()
     result = audit_and_apply(plan, args.evidence/"normalization", {"source_sha256": hashes,
-        "skipped": skipped, "contract_pnl": False}, client, args.apply, guard)
+        "skipped": skipped, "contract_pnl": False, "cas_transport": "management_api_full_row"},
+        client, args.apply, guard, cas_update=management_cas)
     print(json.dumps({**result, "skipped": skipped}, ensure_ascii=False))
 
 

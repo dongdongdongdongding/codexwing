@@ -3,6 +3,22 @@ import pandas as pd
 from modules.db_manager import DBManager
 from multi_agent.tools.normalize_verified_archive_daily import original_matches
 from multi_agent.tools.repair_issued_outcomes import recompute
+from multi_agent.tools.normalize_verified_archive_daily import cas_sql
+import pytest
+
+
+def test_sql_transport_keeps_large_snapshot_in_body_and_compares_full_typed_row():
+    before = {"id": 158828, "feature_snapshot": {"text": "'; DROP TABLE x; --" * 3000},
+              "performance_updated_at": None, "entry_reference_price": 48804}
+    sql = cas_sql(before, {"return_14d_pct": -13.340935})
+    assert 'DROP TABLE' not in sql
+    assert 't."feature_snapshot" IS NOT DISTINCT FROM b."feature_snapshot"' in sql
+    assert 't."performance_updated_at" IS NOT DISTINCT FROM b."performance_updated_at"' in sql
+    assert 't.id = b.id' in sql
+    with pytest.raises(ValueError):
+        cas_sql(before, {"entry_reference_price": 43850})
+    with pytest.raises(ValueError):
+        cas_sql(before, {'bad"column': 1})
 
 
 def test_original_identity_requires_unique_ticker_reference_and_timestamp():
