@@ -145,7 +145,7 @@ export function Timing() {
         <span style={{ width: 8 }} />
         <button onClick={() => setLaneSel("")} style={chip(laneSel === "")}>전레인</button>
         {lanes.map((l) => <button key={l} onClick={() => setLaneSel(l)} style={chip(laneSel === l)}>{l}</button>)}
-        <span style={{ marginLeft: "auto", color: C.mut, fontSize: 11, alignSelf: "center" }}>{asof} 기준 · 버블크기=적중확률</span>
+        <span style={{ marginLeft: "auto", color: C.mut, fontSize: 11, alignSelf: "center" }}>{asof} 기준 · 버블크기=모델 점수</span>
       </div>
 
       {/* 오늘의 최선 (레인 교차) */}
@@ -195,7 +195,7 @@ export function Timing() {
             <span>현재 <b>{sel.current != null ? fmt(sel.current) : "-"}</b>{sel.pos_vs_ref != null && <span style={{ color: SM[sel.state]?.color }}> (기준가 {sel.pos_vs_ref >= 0 ? "+" : ""}{sel.pos_vs_ref}%)</span>}</span>
             {sel.headroom != null && <span>목표까지 <b>{sel.headroom >= 0 ? "+" : ""}{sel.headroom}%</b></span>}
             <span>잔여 <b>{sel.sessions_left}</b>세션</span>
-            <span style={{ color: C.mut }}>{sel.entry_note} · 미터치 시 5일 종가청산 · 손절 없음 · 비중 2%</span>
+            <span style={{ color: C.mut }}>{sel.entry_note} · 미터치 시 {sel.contract_h ?? "계약"}거래일 종가청산</span>
           </div>
         </div>
       )}

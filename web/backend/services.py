@@ -1798,9 +1798,26 @@ def buy_timing(days=5):
     상태: DONE(터치완료=추격금지) EXPIRED(만기) GREEN(기준가~+1%) YELLOW(+1~2.5%) RED(>+2.5%).
     근거: 진입가 초과분은 검증된 엣지를 1:1로 소진 (first-touch 계약 구조)."""
     import pandas as pd
-    oh = pd.read_parquet(os.path.join(RESEARCH, "ohlc_daily.parquet"))
+    # Same adjusted settlement source as the ledger. Express historical bars in
+    # the latest raw-price scale so today's raw quote remains comparable.
+    today = pd.Timestamp.now().normalize()
+    oh = pd.read_parquet(os.path.join(RESEARCH, "px_delisted.parquet"),
+                         columns=["code", "date", "adj_open", "adj_high", "adj_close", "adj_factor", "volume"],
+                         filters=[("date", ">=", today-pd.Timedelta(days=max(90, days*2+60))),
+                                  ("date", "<", today)])
     oh["date"] = pd.to_datetime(oh["date"])
+    oh = oh.sort_values(["code", "date"])
+    factor = oh.groupby("code")["adj_factor"].transform("last")
+    for col in ["open", "high", "close"]:
+        oh[col] = oh["adj_"+col] / factor.where(factor > 0)
     sessions = sorted(oh["date"].unique())
+    if not sessions:
+        return {"days": days, "asof": datetime.now().isoformat(), "picks": [],
+                "coverage_note": "계약 조정가격 세션이 없습니다"}
+    from modules.market_sessions import price_sessions
+    observed, _ = price_sessions("KR", today.date().isoformat())
+    price_asof = str(pd.Timestamp(sessions[-1]).date())
+    price_lag = bool(observed and observed[-1] > price_asof)
     cutoff = sessions[-days] if len(sessions) >= days else sessions[0]
     picks = []
     for key, meta in LANES.items():
@@ -1818,38 +1835,57 @@ def buy_timing(days=5):
             if r.get("tier") in ("CANDIDATE", "VETO_DD_OVERHEAT", "VETO_REBOUND_PHASE"):
                 continue  # 발행 안 된 픽은 매수 화면에서 제외
             code = str(r.get("ticker", "")).split(".")[0].zfill(6)
-            tp = float(r.get("target_tp_pct") or (10.0 if "kosdaq_intraday" in key else 5.0))
+            tp = float(r.get("target_tp_pct") or float(r.get("contract_tp") or .05)*100)
+            horizon = int(r.get("contract_h") or r.get("hold_days") or
+                          (20 if key.startswith("nasdaq") else 3 if "intraday" in key else 5))
             swing = meta.get("kind") == "SWING"
-            h = oh[(oh["code"] == code) & (oh["date"] > pd.Timestamp(d))].sort_values("date").head(6)
+            expected = [day for day in sessions if day > pd.Timestamp(d)][:horizon]
+            h = oh[(oh["code"] == code) & (oh["date"].isin(expected))].sort_values("date")
+            data_error = None
+            if mkt not in {"KOSPI", "KOSDAQ"}:
+                data_error = "이 화면에 미국 계약가격 원천이 연결되지 않았습니다"
+            elif not expected:
+                data_error = "익일 진입 가격 대기"
+            elif price_lag:
+                data_error = f"정산가격 지연: {price_asof}까지 (관측 세션 {observed[-1]})"
+            elif len(h) != len(expected) or h[["open", "high", "close", "volume"]].isna().any().any():
+                data_error = "계약 가격 세션 누락"
+            elif swing and (float(h.iloc[0]["open"]) <= 0 or float(h.iloc[0]["volume"]) <= 0):
+                data_error = "익일 진입 미체결(거래정지)"
             if swing:
                 # 익일시가 진입 — 아직 미개장(진입 전)이면 기준가=전일종가 참조
                 ref = float(h["open"].iloc[0]) if len(h) else float(r.get("close") or 0)
-                win = h.head(5)
+                win = h.head(horizon)
             else:
                 ref = float(r.get("entry_reference_price") or r.get("close_1500") or r.get("close") or 0)
-                win = h.head(5)
+                win = h.head(horizon)
             if not ref:
                 continue
             target = ref * (1 + tp / 100)
-            touched = bool((win["high"].astype(float) >= target).any()) if len(win) else False
-            elapsed = len(win)
-            left = max(0, 5 - elapsed)
+            touched = bool(((win["high"].astype(float) >= target) & (win["volume"] > 0)).any()) if len(win) else False
+            elapsed = len(expected)
+            left = max(0, horizon - elapsed)
             # 트레일 (ant.wiki RRG 스타일): 발행(여력=tp, 잔여5) → 매 세션 종가 좌표 경로
-            trail = [{"d": str(pd.Timestamp(d).date()), "headroom": round(tp, 2), "left": 5}]
+            trail = [{"d": str(pd.Timestamp(d).date()), "headroom": round(tp, 2), "left": horizon}]
             for i in range(len(win)):
                 c_i = float(win["close"].iloc[i])
                 trail.append({"d": str(win["date"].iloc[i].date()),
-                              "headroom": round((target / c_i - 1) * 100, 2), "left": max(0, 5 - (i + 1))})
+                              "headroom": round((target / c_i - 1) * 100, 2) if c_i > 0 else None,
+                              "left": max(0, horizon - (i + 1))})
             picks.append({"code": code, "ticker": r.get("ticker"), "name": resolve_any_name(code),
                           "lane": key, "lane_label": meta["label"], "kind": meta["kind"], "badge": meta["badge"],
                           "scan_date": d, "ref": round(ref, 1), "target": round(target, 1), "tp_pct": tp,
-                          "age": elapsed, "sessions_left": left, "touched": touched,
+                          "age": elapsed, "sessions_left": left, "touched": touched, "contract_h": horizon,
+                          "contract_data_error": data_error,
                           "tier": r.get("tier"), "mkt_state": r.get("mkt_state"),
                           "prob": r.get("p"), "trail": trail,
                           "entry_note": "익일 시가 진입" if swing else "15:00 종가 기준"})
     # 현재가 일괄 (KIS)
     quotes = prices(list({p["code"] for p in picks}))
     for p in picks:
+        if p.get("contract_data_error"):
+            p["state"], p["state_label"] = "UNKNOWN", p["contract_data_error"]
+            continue
         q = quotes.get(p["code"]) or {}
         cur = q.get("price")
         p["current"] = cur
@@ -1858,7 +1894,7 @@ def buy_timing(days=5):
             pos = (float(cur) / p["ref"] - 1) * 100
             p["pos_vs_ref"] = round(pos, 2)
             p["headroom"] = round((p["target"] / float(cur) - 1) * 100, 2)
-            if p["touched"] or float(cur) >= p["target"]:
+            if p["touched"] or (p["sessions_left"] > 0 and float(cur) >= p["target"]):
                 # ohlc는 전일까지만 — 당일 장중 목표 초과도 현재가로 터치완료 처리
                 p["touched"] = True
                 p["state"], p["state_label"] = "DONE", "터치완료 — 추격 금지"
@@ -1882,7 +1918,7 @@ def buy_timing(days=5):
                 p["current"] = cur
                 p["pos_vs_ref"] = round(pos, 2)
                 p["headroom"] = round((p["target"] / cur - 1) * 100, 2)
-                if p["touched"] or cur >= p["target"]:
+                if p["touched"] or (p["sessions_left"] > 0 and cur >= p["target"]):
                     p["state"], p["state_label"] = "DONE", "터치완료 — 추격 금지"
                 elif p["sessions_left"] <= 0:
                     p["state"], p["state_label"] = "EXPIRED", "만기 — 계약 종료"
@@ -1940,14 +1976,14 @@ def buy_timing(days=5):
     # 나스닥이 이 화면에 없는 것은 누락이 아니라 **구조적 한계**다: 현재가·여력을
     # ohlc_daily.parquet(KR 6자리 코드 전용)로 계산하므로 US 심볼은 가격을 못 붙인다.
     # 조용히 빼면 사용자는 "나스닥은 추적하지 않는다"로 읽는다 — 픽·성과 화면에는 있다.
-    covered = sorted({p["lane_label"] for p in picks})
+    covered = sorted({p["lane_label"] for p in picks if not p.get("contract_data_error")})
     missing = [m["label"] for k, m in LANES.items()
                if m["label"] not in covered and m.get("dir") == "us_research"]
-    note = ("현재가·여력은 KR 가격데이터(ohlc_daily)로 계산한다 — "
+    note = ("현재가·여력은 KR 조정가격(px_delisted)로 계산한다 — "
             + ", ".join(missing) + " 은(는) 이 화면에서 가격을 붙일 수 없다. "
             "픽·성과 화면에서 본다.") if missing else None
     return {"days": days, "asof": datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "picks": picks, "coverage_note": note}
+            "picks": picks, "coverage_note": note, "price_asof": price_asof}
 
 
 # ── 국면 나침반 (2026-07-17, 운영자 요청): 실시간 지수 → 검증된 레짐 지도 투영 ──

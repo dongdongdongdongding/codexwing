@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, Overview as OV } from "../api";
 import { C, fmt } from "../theme";
-import { Card, MarketBadge, LaneBadge, Term, StatusChips } from "../components/ui";
+import { Card, MarketBadge, LaneBadge, Term, StatusChips, modelScore } from "../components/ui";
 import { LaneRunStatus } from "../components/LaneRunStatus";
 import { useApi } from "../components/useApi";
 import { LoadFail } from "../components/LoadFail";
@@ -57,7 +57,7 @@ export function Overview() {
                 {/* 확률만 크게 보이면 폐기선 아래 레인도 좋아 보인다.
                     실측 forward EV 를 나란히 둔다 — 모델 점수와 실현 성적은 다른 것이다. */}
                 <span>
-                  {p.prob != null ? `적중확률 ${p.prob}%` : "시장중립"}
+                  {modelScore(p)}
                   {(p as any).forward_ev != null && (
                     <span style={{ color: (p as any).forward_ev > 1 ? C.up : C.down, marginLeft: 6 }}>
                       · 실측 EV {(p as any).forward_ev}%

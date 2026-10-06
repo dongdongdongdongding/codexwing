@@ -8,7 +8,7 @@ export interface Pick {
   lane: string; lane_label: string; kind: string; badge: string;
   signal_class: "A" | "B"; scan_date?: string; buy_date?: string;
   prob?: number | null; alpha?: number | null; entry?: number | null; target?: number | null; target_pct?: number;
-  pred_alpha_5d?: number; smart5?: number; rsi14?: number; hold_days?: number;
+  pred_alpha_5d?: number; smart5?: number; rsi14?: number; hold_days?: number; contract_h?: number;
   // 승격 계약(§7-E) 필드: 선별 티어 / 레짐 상태
   tier?: "PRIMARY" | "CANDIDATE"; tier_threshold?: number; rationale?: string;
   mkt_state?: "RISK_OFF" | "NORMAL" | "UNKNOWN"; mkt_dd20?: number; ev_pred?: number;
@@ -85,7 +85,7 @@ const j = async <T>(u: string): Promise<T> => {
 };
 
 export interface TimingTrailPt { d: string; headroom: number; left: number; }
-export interface TimingPick { trail?: TimingTrailPt[]; today_best?: boolean; today_best_note?: string; no_best_reason?: string; code: string; ticker: string; name: string; lane: string; lane_label: string; kind: string; badge: string; scan_date: string; ref: number; target: number; tp_pct: number; age: number; sessions_left: number; touched: boolean; tier?: string | null; mkt_state?: string | null; prob?: number | null; entry_note: string; current?: number | null; change_pct?: number | null; pos_vs_ref?: number | null; headroom?: number | null; state: string; state_label: string; }
+export interface TimingPick { contract_h?: number; trail?: TimingTrailPt[]; today_best?: boolean; today_best_note?: string; no_best_reason?: string; code: string; ticker: string; name: string; lane: string; lane_label: string; kind: string; badge: string; scan_date: string; ref: number; target: number; tp_pct: number; age: number; sessions_left: number; touched: boolean; tier?: string | null; mkt_state?: string | null; prob?: number | null; entry_note: string; current?: number | null; change_pct?: number | null; pos_vs_ref?: number | null; headroom?: number | null; state: string; state_label: string; }
 export interface ScanPost { scan_id: string; time: string; source: string; markets: string[]; lanes: string[]; pick_count: number; note?: string | null; }
 export interface TickerCard { ticker: string; code: string; name: string; market: string; lane: string; prob?: number | null; score?: number | null; entry?: number | null; }
 

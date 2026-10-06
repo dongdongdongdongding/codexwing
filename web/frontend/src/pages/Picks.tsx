@@ -4,7 +4,7 @@ import { api, Pick, Lane, Price, LaneStatus } from "../api";
 import { LaneRunStatus } from "../components/LaneRunStatus";
 import { LoadFail } from "../components/LoadFail";
 import { C, fmt, pct, signColor } from "../theme";
-import { MarketBadge, LaneBadge, Term, WarnBadge, StatusChips } from "../components/ui";
+import { MarketBadge, LaneBadge, Term, WarnBadge, StatusChips, modelScore } from "../components/ui";
 import { Chart } from "../components/Chart";
 
 export function Picks() {
@@ -79,7 +79,7 @@ export function Picks() {
                   {p.sector_capitulation === "resilient" && <Chip color="#f59e0b">비진앙 단독항복</Chip>}
                   {p.tail_warn && <Chip color="#f59e0b">⚠tail</Chip>}
                   <span style={{ marginLeft: "auto", color: C.mut, fontSize: 12 }}>
-                    {(p as any).measured_win != null ? `승률 ${(p as any).measured_win}%` : p.prob != null ? `확률 ${p.prob}%` : ""} · 목표 {p.signal_class === "B" ? "α" : fmt(p.target)}
+                    {modelScore(p)} · 목표 {p.signal_class === "B" ? "α" : fmt(p.target)}
                   </span>
                 </div>
               </div>
@@ -95,7 +95,7 @@ export function Picks() {
               <Th>실시간</Th><Th>등락</Th>
               <Th><Term k="진입">진입</Term></Th>
               <Th><Term k="목표">목표</Term></Th>
-              <Th><Term k="확률">확률</Term></Th>
+              <Th>모델 점수</Th>
               <Th><Term k="알파">알파</Term></Th>
               <Th style={{ textAlign: "left" }}>신호</Th>
             </tr>
@@ -126,7 +126,7 @@ export function Picks() {
                   <Td style={{ color: signColor(pr?.change_pct) }}>{pr?.change_pct != null ? pct(pr.change_pct) : "–"}</Td>
                   <Td>{fmt(p.entry)}</Td>
                   <Td style={{ color: C.mut }}>{p.signal_class === "B" ? "α기준" : fmt(p.target)}</Td>
-                  <Td>{p.prob != null ? `${p.prob}%` : "–"}</Td>
+                  <Td>{modelScore(p)}</Td>
                   <Td style={{ color: signColor(p.alpha) }}>{p.alpha != null ? pct(p.alpha) : "–"}</Td>
                   <Td style={{ textAlign: "left" }}>
                     <div style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap" }}>
@@ -149,8 +149,8 @@ export function Picks() {
       )}
       <div style={{ color: C.mut, fontSize: 12, marginTop: 10, lineHeight: 1.7 }}>
         🗓 <b style={{ color: C.text }}>픽 = 다음 거래일 매수 대상</b> (스캔은 장마감 후 <Term k="진입">종가</Term> 기준 산출 → 그 다음 거래일 진입). 행의 매수일은 상세에서 확인.<br />
-        확률 = A 모델 적중확률 · <Term k="시장중립">B</Term>는 시장대비 초과 확률(보정). 알파 = B 예측 초과수익(A는 확률형이라 –).<br />
-        픽은 저장된 스캔과 동일(재계산 아님). 실시간 시세 15초 자동갱신(장외=종가). 순서는 개요와 동일(확률순).
+        국내 스윙 점수는 5거래일 학습 모델의 순위 점수입니다. 10거래일 +5% 터치 확률로 보정된 값이 아닙니다. 알파는 B 예측 초과수익입니다.<br />
+        픽은 저장된 발행 원장을 기준으로 표시합니다. 실시간 시세 15초 자동갱신(장외=종가). 순서는 개요와 동일합니다.
       </div>
 
       {sel && <Drawer pick={sel} live={prices[sel.code]} onClose={() => setSel(null)} />}
@@ -185,12 +185,12 @@ function Drawer({ pick, live, onClose }: { pick: Pick; live?: Price; onClose: ()
 
         <Section title="매매 계획">
           <Row k="매수 대상일" v={pick.buy_date ? `${pick.buy_date} (다음 거래일)` : "다음 거래일"} />
-          <Row k={`진입 (${pick.scan_date || ""} 종가)`} v={fmt(pick.entry)} />
+          <Row k={`참고가 (${pick.scan_date || ""} 종가)`} v={fmt(pick.entry)} />
           <Row k={`목표(+${pick.target_pct ?? 5}%)`} v={pick.signal_class === "B" ? "α기준(시장중립)" : fmt(pick.target)} />
-          <Row k="보유" v={`${pick.hold_days ?? 5}거래일 (목표 터치시 익절, 아니면 종가 청산)`} />
+          <Row k="보유" v={`${pick.contract_h ?? pick.hold_days ?? 5}거래일 (목표 터치시 익절, 아니면 종가 청산)`} />
           {pick.tier && <Row k="발행 티어" v={pick.tier === "PRIMARY" ? "주력(고확신 선별)" : "후보(관측용 — 매수 판단 참고만)"} />}
           {pick.mkt_state === "RISK_OFF" && <Row k="시장 상태" v={`약세 구간 (20일 낙폭 ${pick.mkt_dd20 ?? "-"}%) — 모멘텀 픽 주의`} />}
-          <Row k="적중확률" v={pick.prob != null ? `${pick.prob}%` : "–"} />
+          <Row k="모델 점수" v={modelScore(pick)} />
         </Section>
 
         <Section title="근거">

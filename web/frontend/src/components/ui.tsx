@@ -2,6 +2,12 @@ import { useState } from "react";
 import { C, RADIUS } from "../theme";
 import { TERMS } from "../terms";
 
+export function modelScore(p: { lane?: string; prob?: number | null }) {
+  if (p.prob == null) return "–";
+  const swing = p.lane === "kospi_swing" || p.lane === "kosdaq_swing";
+  return swing ? `모델 점수 ${p.prob}점 (확률 미보정)` : `모델값 ${p.prob}%`;
+}
+
 // ⓘ 용어 툴팁 — 어려운 한국어 개념 설명 (기획 R3)
 export function Term({ k, children }: { k: string; children?: React.ReactNode }) {
   const [open, setOpen] = useState(false);

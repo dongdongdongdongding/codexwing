@@ -1,0 +1,53 @@
+{
+  "scope": "handoff recovery checkpoint, not goal completion",
+  "code": "f349c63",
+  "tests": {
+    "result": "385 passed",
+    "warnings": 13
+  },
+  "db_repair": {
+    "archive_rows": 70,
+    "deep_rows": 62,
+    "repeat_changes": 0,
+    "quarantined_reference_outcomes": 22,
+    "unissued_archive_rows": 6,
+    "backup_dir": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/audit/issued_contract_repair"
+  },
+  "apis": {
+    "ports": [
+      8800,
+      5173
+    ],
+    "verified": [
+      "health",
+      "picks",
+      "overview",
+      "ops/status",
+      "archive",
+      "performance",
+      "contract-performance"
+    ],
+    "equal_except": [
+      "overview.generated_at"
+    ]
+  },
+  "staleness": {
+    "overdue_unsettled": 0,
+    "price_adjusted_through": "2026-10-02",
+    "upstream_marcap_through": "2026-10-02",
+    "kr_feature_through": "2026-10-06"
+  },
+  "research": {
+    "report": "docs/research/KR_TOUCH10_VALIDATION_2026-10-07.md",
+    "production_replacement_ready": false
+  },
+  "remaining": {
+    "beads": [
+      "swing-main-4lg8",
+      "swing-main-w1b8",
+      "swing-main-q6va",
+      "swing-main-dudf"
+    ],
+    "daily_batch": "running at checkpoint; no success claim"
+  }
+}
