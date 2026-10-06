@@ -119,30 +119,40 @@ def _validate_merged_bars(existing, frame, target):
             for day, issue in zip(frame.loc[bad, 'date'], issues.loc[bad])]
 
 
-def refresh_raw(universe,paths,target,*,start,batch_size,timeout,sleep,budget,audit):
+def refresh_raw(universe,paths,target,*,start,batch_size,timeout,sleep,budget,audit,
+                full_history_symbols=()):
+    """Refresh recent overlap, or explicitly named complete histories.
+
+    Full-history requests bypass current receipts and must cover every existing
+    date through the target. Use after evidence of corrections outside overlap;
+    neither ordinary nor forced refresh certifies all corporate actions.
+    """
     from multi_agent.tools import backfill_us_daily_features as bf
     paths.raw_dir.mkdir(parents=True,exist_ok=True)
     target=pd.Timestamp(target);end=(target+pd.Timedelta(days=1)).date().isoformat()
     groups=defaultdict(list);skipped=[];failed=[];revised=[];written=[];visited=[];single_retries=[]
     preserved_invalid={}
     names=dict(zip(universe.symbol.astype(str),universe.name.astype(str)))
+    forced=set(full_history_symbols)
+    if not forced.issubset(names):
+        raise ValueError('full_history_symbol_not_in_requested_universe')
     for symbol in names:
         path=bf._raw_path(paths,symbol)
         try:
             dates=pd.to_datetime(pd.read_parquet(path,columns=['date']).date) if path.exists() else pd.Series([],dtype='datetime64[ns]')
             receipt_path=paths.market_root/'.refresh/receipts'/f'{bf._safe_filename(symbol)}.json'
             receipt=json.loads(receipt_path.read_text()) if receipt_path.exists() else {}
-            if (target in set(dates) and receipt.get('required_through')==str(target.date())
+            if (symbol not in forced and target in set(dates) and receipt.get('required_through')==str(target.date())
                     and receipt.get('sha256')==digest(path)):
                 skipped.append(symbol)
                 if receipt.get('preserved_invalid_bars'):
                     preserved_invalid[symbol]=receipt['preserved_invalid_bars']
                 continue
             last=dates.max() if len(dates) else None
-            first=max(pd.Timestamp(start),last-pd.Timedelta(days=14)) if last is not None else pd.Timestamp(start)
+            first=max(pd.Timestamp(start),last-pd.Timedelta(days=14)) if last is not None and symbol not in forced else pd.Timestamp(start)
             groups[first.date().isoformat()].append(symbol)
         except Exception as exc:failed.append({'symbol':symbol,'reason':'existing_raw_unreadable:'+type(exc).__name__})
-    save_json(audit/"request_plan.json", {"required_through":str(target.date()),"end_exclusive":end,"request_groups":dict(groups),"skipped_current":skipped,"implementation_sha256":digest(Path(__file__))})
+    save_json(audit/"request_plan.json", {"required_through":str(target.date()),"end_exclusive":end,"request_groups":dict(groups),"skipped_current":skipped,"full_history_symbols":sorted(forced),"implementation_sha256":digest(Path(__file__))})
     began=time.monotonic();stopped=False
     # Recent caches first, while retaining every requested symbol in the plan.
     for first,symbols in sorted(groups.items(),reverse=True):
@@ -168,14 +178,15 @@ def refresh_raw(universe,paths,target,*,start,batch_size,timeout,sleep,budget,au
                     if target not in set(pd.to_datetime(fetched.date)):raise ValueError('provider_missing_requested_session')
                     existing=pd.read_parquet(path) if path.exists() else pd.DataFrame()
                     if not existing.empty:existing['date']=pd.to_datetime(existing.date)
-                    if _needs_full(existing,fetched):
+                    if symbol in forced or _needs_full(existing,fetched):
                         revised.append(symbol)
-                        fetched=bf._download_single(symbol,start,end,timeout)
+                        if symbol not in forced:
+                            fetched=bf._download_single(symbol,start,end,timeout)
                         if fetched.empty:raise ValueError('adjustment_refresh_empty')
                         fetched=fetched[pd.to_datetime(fetched.date)<=target].copy()
                         if target not in set(pd.to_datetime(fetched.date)):raise ValueError('adjustment_refresh_missing_target')
                         # A changed adjustment basis may not be spliced onto an old prefix.
-                        expected=set(existing.loc[existing.date<=target,'date'])
+                        expected=set(existing.loc[existing.date<=target,'date']) if not existing.empty else set()
                         if not expected.issubset(set(pd.to_datetime(fetched.date))):raise ValueError('adjustment_refresh_incomplete_history')
                     fetched['name']=names[symbol];fetched['market']=paths.market
                     if not existing.empty:

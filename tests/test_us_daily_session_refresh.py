@@ -220,3 +220,45 @@ def test_unknown_nullable_field_is_not_equal_to_a_new_value(changed):
             sr._validate_merged_bars(old,new,pd.Timestamp('2026-10-06'))
     else:
         assert sr._validate_merged_bars(old,new,pd.Timestamp('2026-10-06'))==[{'date':'2026-09-30','reason':'invalid_prices'}]
+
+
+@pytest.mark.parametrize('missing_history',[False,True])
+def test_explicit_full_history_rechecks_old_dates_despite_current_receipt(setup,tmp_path,monkeypatch,missing_history):
+    paths,universe,_=setup
+    old=raw(['2026-07-29','2026-09-30','2026-10-06'])
+    path=bf._raw_path(paths,'AAA');old.to_parquet(path,index=False)
+    receipt=paths.market_root/'.refresh/receipts/AAA.json'
+    sr.save_json(receipt,{'required_through':'2026-10-06','sha256':sr.digest(path)})
+    before_receipt=receipt.read_bytes()
+    full=old.copy()
+    if missing_history:
+        full=full.iloc[1:].copy()  # Recent overlapping prices have not changed.
+    else:
+        for field in ['open','high','low','close','raw_close','adj_close','dollar_volume']:
+            full.loc[0,field]*=9
+        full.loc[0,'volume']/=9
+    calls=[]
+    monkeypatch.setattr(bf,'_download_single',lambda *a:calls.append(a) or full.copy())
+    assert collect(setup,tmp_path/'ordinary')['skipped_current']==['AAA']
+    assert calls==[]
+    result=sr.refresh_raw(universe,paths,'2026-10-06',start='2018-01-01',batch_size=10,
+        timeout=1,sleep=0,budget=30,audit=tmp_path/'full',full_history_symbols=['AAA'])
+    assert len(calls)==1 and calls[0][1]=='2018-01-01'
+    assert result['full_adjustment_refresh']==['AAA']
+    plan=json.loads((tmp_path/'full/request_plan.json').read_text())
+    assert plan['full_history_symbols']==['AAA'] and plan['request_groups']=={'2018-01-01':['AAA']}
+    if missing_history:
+        assert result['failed']==[{'symbol':'AAA','reason':'adjustment_refresh_incomplete_history'}]
+        assert pd.read_parquet(path).equals(old) and receipt.read_bytes()==before_receipt
+    else:
+        assert not result['failed'] and result['written']==['AAA']
+        assert pd.read_parquet(path).equals(full)
+        assert pd.read_parquet(tmp_path/'full/before/AAA.parquet').equals(old)
+
+
+def test_forced_history_unknown_symbol_fails_before_network(setup,tmp_path,monkeypatch):
+    paths,universe,_=setup
+    monkeypatch.setattr(bf,'_download_batch',lambda *a:pytest.fail('must reject before network'))
+    with pytest.raises(ValueError,match='full_history_symbol_not_in_requested_universe'):
+        sr.refresh_raw(universe,paths,'2026-10-06',start='2018-01-01',batch_size=10,
+            timeout=1,sleep=0,budget=30,audit=tmp_path/'bad',full_history_symbols=['TYPO'])
