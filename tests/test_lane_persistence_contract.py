@@ -41,8 +41,10 @@ def test_persisted_deep_report_preserves_per_pick_contract(monkeypatch):
     from modules import db_manager, top_deep_report
     from multi_agent.tools.report_swing_ensemble import _route_live
     captured = []
+    archive = []
     class DB:
         def upsert_scan_result(self, payload, **kwargs):
+            archive.append(payload)
             return True
     monkeypatch.setattr(db_manager, "DBManager", DB)
     def persist(rows):
@@ -59,6 +61,14 @@ def test_persisted_deep_report_preserves_per_pick_contract(monkeypatch):
     assert ci["contract_tp"] == .07 and ci["signal_date"] == "2026-10-01"
     assert "10거래일" in ci["hold_note"] and "t5_5" in ci["model_prob_label"]
     assert "ft_5_5" not in ci["model_prob_label"]
+    assert archive[0]["hold_days"] == 10
+    assert archive[0]["target_tp_pct"] == pytest.approx(7)
+    assert archive[0]["base_trade_date"] == "2026-10-01"
+    assert archive[0]["horizon"] == "T+10D"
+    assert row["realized_expectancy_admission"] == {}
+    assert "진입=익일 시가" in ci["touch_vs_buy_ready_explanation"]
+    assert "10거래일" in ci["touch_vs_buy_ready_explanation"]
+    assert "ft_5_5" not in ci["touch_vs_buy_ready_explanation"]
 
 
 def test_empty_nasdaq_admission_still_records_run_and_resolves(tmp_path, monkeypatch):

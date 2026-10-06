@@ -200,10 +200,13 @@ def _route_live(picks: List[Dict[str, Any]], run_id: str, recommended_at: str,
     _hd = 3 if bucket == "kospi_intraday" else 5
     _scan_mode = "INTRADAY" if bucket == "kospi_intraday" else "SWING"
     for i, p in enumerate(ordered, start=1):
+        contract = model_lane_contract(p, bucket)
         src = {"ticker": p["ticker"], "market_type": p["market"], "scan_mode": _scan_mode, "decision_score": p["p"],
                "ml_prob": round(p["p"] * 100, 2), "run_id": run_id, "priority_rank": i, "decision": decision,
                "decision_bucket": bucket, "recommended_at": recommended_at, "selection_lane": lane,
-               "entry_reference_price": p.get("entry_reference_price")}
+               "entry_reference_price": p.get("entry_reference_price"),
+               "hold_days": contract["hold_days"], "target_tp_pct": contract["target_tp_pct"],
+               "base_trade_date": contract["signal_date"], "horizon": f"T+{contract['hold_days']}D"}
         payload = build_scan_result_payload(src, overrides={"market": p["market"], "recommended_at": recommended_at})
         payload["allow_incomplete_scan_result"] = True
         db.upsert_scan_result(payload, strict=True); n += 1
@@ -237,7 +240,8 @@ def _route_live(picks: List[Dict[str, Any]], run_id: str, recommended_at: str,
                "entry_reference_price": entry, **contract,
                "trade_plan": {**contract, "entry_reference_price": entry, "target_price": target,
                               "stop_price": None, "hold_days": _hd, "hold_note": _hnote},
-               "realized_expectancy_admission": {f"{_hd}d_prob": round(float(p["p"]), 4)},
+               "realized_expectancy_admission": ({} if bucket == "swing_candidate" else
+                                                   {f"{_hd}d_prob": round(float(p["p"]), 4)}),
                "prediction": {"phase25_prob": prob_pct, "expected_edge_score": round(float(p.get("score") or p["p"]), 4)},
                "price": {"last": entry, "day_change_pct": p.get("day_change")},
                "day_change_pct": p.get("day_change"),

@@ -463,8 +463,10 @@ def build_model_lane_interpretation(row: Dict[str, Any], bucket: str) -> Dict[st
         "touch_model_found": True,
         "touch_scout_candidate": False,
         "touch_vs_buy_ready_explanation": (
-            f"{profile['prob_label']} 기준 모델 매수 후보입니다. 진입=종가, 목표 +{target_tp:.0f}%, "
-            f"{profile['hold_note']}. 차트외 수급/테마 점수 게이트는 이 모델 레인에 적용하지 않습니다."
+            f"{_first(row.get('model_prob_label'), profile['prob_label'])} 기준 모델 매수 후보입니다. "
+            f"진입={profile['entry_label']}, 목표 +{target_tp:g}%, "
+            f"{_first(trade_plan.get('hold_note'), row.get('hold_note'), profile['hold_note'])}. "
+            "차트외 수급/테마 점수 게이트는 이 모델 레인에 적용하지 않습니다."
         ),
     }
 
