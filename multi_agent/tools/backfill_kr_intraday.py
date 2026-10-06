@@ -43,7 +43,7 @@ class StorageBudgetExceeded(Exception):
     pass
 
 
-def targets(panel, now, retention):
+def targets(panel, now, retention, close_time=(15, 30)):
     """Include every observed code/date pair in the retention window, even delisted codes."""
     frame = panel.copy()
     frame["date"] = pd.to_datetime(frame["date"]).dt.normalize()
@@ -51,7 +51,7 @@ def targets(panel, now, retention):
     if not frame.code.str.fullmatch(r"[0-9]{6}").all():
         raise ValueError("invalid_panel_code")
     today = pd.Timestamp(now.date())
-    latest = today if (now.hour, now.minute) >= (15, 30) else today - pd.Timedelta(days=1)
+    latest = today if (now.hour, now.minute) >= close_time else today - pd.Timedelta(days=1)
     frame = frame[(frame.date >= today-pd.Timedelta(days=retention)) & (frame.date <= latest)]
     if frame.empty:
         raise ValueError("no_observed_closed_sessions_in_retention_window")
@@ -59,7 +59,7 @@ def targets(panel, now, retention):
             for day, rows in frame.groupby("date", sort=True)}
 
 
-def legacy_writers(cache, process_text=None):
+def legacy_writers(cache, process_text=None, entrypoints=("intraday_backfill.py",)):
     if process_text is None:
         process_text = subprocess.check_output(["ps", "-axo", "pid=,command="], text=True)
     result = []
@@ -74,7 +74,7 @@ def legacy_writers(cache, process_text=None):
         # Legacy Python jobs do not honor our lock. Refuse coexistence with any
         # directly executed old entry point (including relative script paths).
         if argv and "python" in Path(argv[0]).name.lower() and any(
-                Path(arg).name == "intraday_backfill.py" for arg in argv[1:]):
+                Path(arg).name in entrypoints for arg in argv[1:]):
             result.append(int(bits[0]))
     return result
 
@@ -95,13 +95,13 @@ def request_deadline(seconds):
         signal.signal(signal.SIGALRM, previous)
 
 
-def filter_bars(frame, day):
+def filter_bars(frame, day, session_start="09:00", session_end="15:30"):
     if frame.empty:
         return frame
     if not isinstance(frame.index, pd.DatetimeIndex) or frame.index.tz is not None:
         raise ValueError("expected_naive_KST_datetime_index")
     frame = frame.loc[(frame.index.strftime("%Y%m%d") == day)]
-    frame = frame.between_time("09:00", "15:30")
+    frame = frame.between_time(session_start, session_end)
     values = frame[["Open", "High", "Low", "Close", "Volume"]].apply(pd.to_numeric, errors="coerce")
     valid = (values.notna().all(axis=1) & values.apply(lambda col: col.map(math.isfinite)).all(axis=1)
              & (values[["Open", "High", "Low", "Close"]] > 0).all(axis=1)
@@ -147,7 +147,9 @@ def persist_bars(path, old, added, before_sha, audit, code, day, min_free_bytes=
 
 
 def collect(schedule, out, client, budget=7200., pause=.03, *, clock=time.monotonic,
-            sleep=time.sleep, now=None, bounded_request=True, progress=print, min_free_bytes=10*1024**3):
+            sleep=time.sleep, now=None, bounded_request=True, progress=print, min_free_bytes=10*1024**3,
+            hours=HOURS, market_div="J", session_start="09:00", session_end="15:30",
+            universe="all_observed_panel_pairs"):
     start = clock()
     deadline = start + budget
     now = now or datetime.now(KST)
@@ -159,7 +161,8 @@ def collect(schedule, out, client, budget=7200., pause=.03, *, clock=time.monoto
               "requests": 0, "pairs_attempted": 0, "pairs_skipped": 0, "rows_received": 0, "rows_added":0,
               "request_errors": [], "storage_errors": [], "requested_all_slices": 0,
               "empty_pairs": 0, "empty_responses": 0, "retry_deferred_pairs": 0, "budget_seconds": budget,
-              "session_completeness": "NOT_ESTABLISHED", "universe": "all_observed_panel_pairs",
+              "session_completeness": "NOT_ESTABLISHED", "universe": universe,
+              "market_div": market_div, "session_start": session_start, "session_end": session_end,
               "minimum_free_bytes":min_free_bytes}
     blocked_codes = set()
     states = {}
@@ -201,7 +204,7 @@ def collect(schedule, out, client, budget=7200., pause=.03, *, clock=time.monoto
             report["pairs_attempted"] += 1
             succeeded = set(cell.get("successful_hours", []))
             parts = []
-            for hour in HOURS:
+            for hour in hours:
                 if hour in succeeded:
                     continue
                 if clock() >= deadline:
@@ -210,12 +213,15 @@ def collect(schedule, out, client, budget=7200., pause=.03, *, clock=time.monoto
                 report["requests"] += 1
                 try:
                     kwargs = dict(trade_date=day, input_hour=hour, include_past=True)
+                    if market_div != "J":
+                        kwargs["market_div"] = market_div
                     if bounded_request:
                         with request_deadline(deadline-clock()):
                             payload = client.daily_minute_bars(code, **kwargs)
                     else:
                         payload = client.daily_minute_bars(code, **kwargs)
-                    frame = filter_bars(normalize_kis_minute_bars(code, payload, trade_date=day), day)
+                    frame = filter_bars(normalize_kis_minute_bars(code, payload, trade_date=day), day,
+                                        session_start, session_end)
                     if len(frame):
                         frame["code"] = code
                         parts.append(frame)
@@ -238,8 +244,8 @@ def collect(schedule, out, client, budget=7200., pause=.03, *, clock=time.monoto
                     report["rows_received"] += len(added)
                 elif digest(path) != before_sha:
                     raise ValueError("cache_changed_concurrently")
-                observed = filter_bars(old, day) if old is not None else pd.DataFrame()
-                all_slices = len(succeeded) == len(HOURS)
+                observed = filter_bars(old, day, session_start, session_end) if old is not None else pd.DataFrame()
+                all_slices = len(succeeded) == len(hours)
                 cell = {"successful_hours": sorted(succeeded), "rows_observed": len(observed),
                         "first_bar": str(observed.index.min()) if len(observed) else None,
                         "last_bar": str(observed.index.max()) if len(observed) else None,

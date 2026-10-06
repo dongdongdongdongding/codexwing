@@ -381,10 +381,13 @@ if [[ "${AG_BENCH_DATA:-1}" == "1" ]]; then
     echo "[STEP] short_update (공매도 일별, KIS 우회)"
     run_optional "short_update" python3 "${HOME}/research_cache/short_update.py"
   fi
-  if [[ -f "${HOME}/research_cache/intraday_ext_update.py" ]]; then
-    echo "[STEP] intraday_ext_update (확장세션 08:00-20:00)"
-    run_optional "intraday_ext_update" python3 "${HOME}/research_cache/intraday_ext_update.py"
+  EXT_BACKFILL_ARGS=()
+  if [[ "${DAILY_OPS_DRY_RUN:-0}" == "1" ]]; then
+    EXT_BACKFILL_ARGS=(--plan)
   fi
+  echo "[STEP] intraday_ext_update (확장세션 08:00-20:00)"
+  run_optional "intraday_ext_update" python3 multi_agent/tools/backfill_kr_extended_intraday.py \
+    ${EXT_BACKFILL_ARGS[@]+"${EXT_BACKFILL_ARGS[@]}"}
   if [[ -f "${HOME}/research_cache/ohlc_full_backfill.py" ]]; then
     echo "[STEP] ohlc_full_incremental (8y 경로 증분)"
     run_optional "ohlc_full_incremental" python3 "${HOME}/research_cache/ohlc_full_backfill.py"
