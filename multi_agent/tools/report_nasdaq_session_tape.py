@@ -217,14 +217,16 @@ def _listed_pit(P: pd.DataFrame) -> np.ndarray:
           & t1["etf"].astype(str).str.upper().isin(["N", "FALSE", "0"])
           & ~t1["security_name"].astype(str).str.contains(T1_EXCLUDE, na=False))
     eligible = {stamp: pd.Index(group["symbol"]) for stamp, group in t1.loc[ok].groupby("snapshot_ts")}
-    from modules.us_symbol_lineage import listing_symbols, nasdaq_venue_eligible
+    from modules.us_symbol_lineage import listing_symbols, nasdaq_venue_eligible, listing_snapshot_eligible
     symbols = listing_symbols(P)
     for position in np.unique(positions[valid]):
         # Assign by input position, independent of index labels and date order.
         _ix = np.flatnonzero(valid & (positions == position))
         members = eligible.get(snapshots[position], pd.Index([]))
         restored[_ix] = symbols.take(_ix).isin(members)
-    return restored & nasdaq_venue_eligible(P)
+    selected_dates = np.full(len(P), np.datetime64('NaT'), dtype='datetime64[ns]')
+    selected_dates[valid] = snapshots.to_numpy()[positions[valid]]
+    return restored & nasdaq_venue_eligible(P) & listing_snapshot_eligible(P, selected_dates)
 
 
 def _admit(P: pd.DataFrame) -> pd.DataFrame:

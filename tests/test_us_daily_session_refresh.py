@@ -206,3 +206,17 @@ def test_run_with_preserved_quarantine_is_partial_even_with_complete_latest_cove
     assert result['status']=='partial'
     assert result['invalid_source_bars']=={'AAA':1}
     assert not (paths.market_root/'.refresh/current.json').exists()
+
+
+@pytest.mark.parametrize('changed',[False,True])
+def test_unknown_nullable_field_is_not_equal_to_a_new_value(changed):
+    old=raw(['2026-09-30']);old.loc[0,'close']=0.
+    old['source']=pd.Series([pd.NA],dtype='string')
+    new=pd.concat([old,raw(['2026-10-06'])],ignore_index=True)
+    new['source']=new.source.astype('string')
+    if changed:
+        new.loc[0,'source']='replacement'
+        with pytest.raises(ValueError,match='changed_quarantined_raw_bar'):
+            sr._validate_merged_bars(old,new,pd.Timestamp('2026-10-06'))
+    else:
+        assert sr._validate_merged_bars(old,new,pd.Timestamp('2026-10-06'))==[{'date':'2026-09-30','reason':'invalid_prices'}]

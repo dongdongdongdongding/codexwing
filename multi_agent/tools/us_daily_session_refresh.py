@@ -113,7 +113,7 @@ def _validate_merged_bars(existing, frame, target):
         raise ValueError('quarantined_raw_schema_changed')
     prior = prior.reindex(incoming.index).reindex(columns=incoming.columns)
     same = incoming.eq(prior) | (incoming.isna() & prior.isna())
-    if not same.all().all():
+    if not same.fillna(False).all().all():
         raise ValueError('changed_quarantined_raw_bar')
     return [{'date': str(pd.Timestamp(day).date()), 'reason': str(issue)}
             for day, issue in zip(frame.loc[bad, 'date'], issues.loc[bad])]

@@ -88,11 +88,11 @@ def test_two_historical_cbio_meanings_do_not_converge():
 def test_venue_history_cannot_become_nasdaq_membership_from_same_ticker(monkeypatch,symbol,start):
     when=pd.Timestamp(start)
     # A ticker may appear for another instrument in an old directory.
-    listing=pd.DataFrame({'snapshot_ts':[when-pd.Timedelta(days=7)],'symbol':[symbol],
-        'security_name':['Common Stock'],'test_issue':['N'],'etf':['N']})
+    listing=pd.DataFrame({'snapshot_ts':[when-pd.Timedelta(days=7),when+pd.Timedelta(days=1)],'symbol':[symbol]*2,
+        'security_name':['Common Stock']*2,'test_issue':['N']*2,'etf':['N']*2})
     monkeypatch.setattr(tape.pd,'read_parquet',lambda *a,**kw:listing.copy())
-    panel=pd.DataFrame({'symbol':[symbol]*2,'date':[when-pd.Timedelta(days=1),when]})
-    assert tape._listed_pit(panel).tolist()==[False,True]
+    panel=pd.DataFrame({'symbol':[symbol]*3,'date':[when-pd.Timedelta(days=1),when,when+pd.Timedelta(days=1)]})
+    assert tape._listed_pit(panel).tolist()==[False,False,True]
 
 
 def test_new_alias_still_requires_observed_snapshot_membership(monkeypatch):
@@ -104,3 +104,13 @@ def test_new_alias_still_requires_observed_snapshot_membership(monkeypatch):
     monkeypatch.setattr(tape.pd,'read_parquet',lambda *a,**kw:listing.copy())
     panel=pd.DataFrame({'symbol':['ATTT']*4,'date':['2026-09-09','2026-09-10','2026-10-06','2026-10-07']})
     assert tape._listed_pit(panel).tolist()==[True,False,False,True]
+
+
+def test_new_cbio_epoch_cannot_inherit_old_catalyst_snapshot_across_gap(monkeypatch):
+    listing=pd.DataFrame([
+        ['2023-09-28','CBIO','Catalyst Common Stock','N','N'],
+        ['2025-08-21','CBIO','Crescent Common Stock','N','N'],
+    ],columns=['snapshot_ts','symbol','security_name','test_issue','etf'])
+    monkeypatch.setattr(tape.pd,'read_parquet',lambda *a,**kw:listing.copy())
+    panel=pd.DataFrame({'symbol':['CBIO','CBIO','GYRE'],'date':['2025-06-16','2025-08-21','2023-10-01']})
+    assert tape._listed_pit(panel).tolist()==[False,True,True]

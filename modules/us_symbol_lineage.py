@@ -58,6 +58,20 @@ def nasdaq_venue_eligible(frame: pd.DataFrame) -> np.ndarray:
     return eligible
 
 
+def listing_snapshot_eligible(frame: pd.DataFrame, snapshot_dates) -> np.ndarray:
+    """A new ticker/venue epoch cannot inherit an older issuer's directory row."""
+    symbols = frame['symbol'].astype(str).to_numpy()
+    dates = pd.DatetimeIndex(pd.to_datetime(frame['date'], errors='coerce'))
+    observed = pd.DatetimeIndex(snapshot_dates)
+    eligible = np.asarray(dates.notna() & observed.notna())
+    boundaries = [(symbol, effective) for symbol, effective, _ in LISTING_ALIASES]
+    boundaries += list(NASDAQ_STARTS.items())
+    for symbol, effective in boundaries:
+        stamp = pd.Timestamp(effective)
+        eligible &= ~((symbols == symbol) & (dates >= stamp) & (observed < stamp))
+    return eligible
+
+
 def daily_bar_issues(frame: pd.DataFrame, *, require_volume: bool = True) -> pd.Series:
     """Structural checks plus a known cross-issuer dividend contamination.
 
