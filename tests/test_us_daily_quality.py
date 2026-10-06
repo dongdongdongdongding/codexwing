@@ -87,3 +87,26 @@ def test_pending_settlement_does_not_accept_inconsistent_provider_bar(tmp_path,m
     monkeypatch.setattr(yf,'download',lambda *a,**kw:source)
     tape.resolve_pending(pd.Timestamp('2023-02-01'))
     assert ledger.read_text()==original
+
+
+def test_daily_previous_close_uses_observation_before_readiness_filter(tmp_path):
+    source=bars(3)
+    source['liq20']=1e9
+    source['feature_ready']=[1.,0.,1.]
+    path=tmp_path/'panel.parquet';source.to_parquet(path,index=False)
+    context=research._read_daily_context(path)
+    assert context.iloc[-1].prev_daily_close==source.iloc[1].close
+
+
+@pytest.mark.parametrize('field',['Open','Adj Close','Volume'])
+def test_provider_extraction_preserves_partial_bar_and_unknown_values(field):
+    from modules.ohlcv_quality import bar_issues
+    payload=pd.DataFrame({'Open':[100.,100.,np.nan],'High':[101.,101.,np.nan],
+        'Low':[99.,99.,np.nan],'Close':[100.,100.,np.nan],
+        'Adj Close':[100.,100.,np.nan],'Volume':[1000.,1000.,np.nan]},
+        index=pd.bdate_range('2026-01-01',periods=3))
+    payload.loc[payload.index[0],field]=np.nan
+    raw=bf._extract_yfinance_frame(payload,'AAA')
+    assert len(raw)==2 and raw.iloc[0].date==payload.index[0]
+    assert bar_issues(raw).iloc[0]!=''
+    assert bar_issues(raw).iloc[1]==''

@@ -366,14 +366,16 @@ def _extract_yfinance_frame(payload: pd.DataFrame, symbol: str) -> pd.DataFrame:
     out = out.sort_index()
     for col in out.columns:
         out[col] = pd.to_numeric(out[col], errors="coerce")
-    out = out.dropna(subset=["open", "high", "low", "close"], how="any")
+    # Drop only all-null batch alignment padding. A partially missing source
+    # bar must survive as an invalid observation, never disappear from time.
+    out = out.dropna(subset=["open", "high", "low", "close", "volume"], how="all")
     if out.empty:
         return pd.DataFrame()
 
     raw_close = out["close"].copy()
     if "adj_close" in out.columns:
         factor = out["adj_close"] / raw_close.replace(0, np.nan)
-        factor = factor.replace([np.inf, -np.inf], np.nan).fillna(1.0)
+        factor = factor.replace([np.inf, -np.inf], np.nan)
     else:
         out["adj_close"] = out["close"]
         factor = pd.Series(1.0, index=out.index)
@@ -387,7 +389,7 @@ def _extract_yfinance_frame(payload: pd.DataFrame, symbol: str) -> pd.DataFrame:
     adjusted["close"] = out["close"] * factor
     adjusted["raw_close"] = raw_close
     adjusted["adj_close"] = out["adj_close"]
-    adjusted["volume"] = out["volume"].fillna(0.0)
+    adjusted["volume"] = out["volume"]
     adjusted["adj_factor"] = factor
     adjusted["dollar_volume"] = adjusted["close"] * adjusted["volume"]
     adjusted["source"] = "yfinance"

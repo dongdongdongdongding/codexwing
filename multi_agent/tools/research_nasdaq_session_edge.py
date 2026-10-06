@@ -131,10 +131,12 @@ def _read_daily_context(path: Path) -> pd.DataFrame:
         df[col] = pd.to_numeric(df[col], errors="coerce")
     if "name" not in df.columns:
         df["name"] = df["symbol"]
+    df = df.sort_values(["symbol", "date"], kind="mergesort")
+    # Shift on the preserved observation sequence before warm-up/quality
+    # filtering, or the first ready row can inherit a months-old close.
+    df["prev_daily_close"] = df.groupby("symbol", observed=True)["close"].shift(1)
     df = df.dropna(subset=["date", "symbol", "close", "liq20"])
     df = df[df.get("feature_ready", 1).eq(1)].copy()
-    df = df.sort_values(["symbol", "date"], kind="mergesort")
-    df["prev_daily_close"] = df.groupby("symbol", observed=True)["close"].shift(1)
     return df
 
 
