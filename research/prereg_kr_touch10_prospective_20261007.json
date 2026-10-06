@@ -1,0 +1,53 @@
+{
+  "id": "kr_touch10_prospective_20261007",
+  "registered_at": "2026-10-06T17:17:54.908661+00:00",
+  "beads": "swing-main-3fdk",
+  "hypothesis": "Existing causally issued KR swing selection under a fixed next-open TP5/H10 contract achieves >=70% realized touches, positive net and same-day excess, and 2-3 combined firing dates per five market sessions in a new prospective cohort.",
+  "prior_evidence": "kr_touch10_20261007 retrospective replay failed frequency/sample gates. It is not reused as an untouched holdout and does not authorize promotion.",
+  "signal_start": "2026-10-07",
+  "evaluation_sessions": 60,
+  "horizon_sessions": 10,
+  "tp": 0.05,
+  "cost_pct": 0.215,
+  "selection": {
+    "KOSPI": {
+      "gate_kind": "mkt_weakness",
+      "gate_q": 0.4,
+      "top_k": 3
+    },
+    "KOSDAQ": {
+      "gate_kind": "mkt_weakness",
+      "gate_q": 0.5,
+      "top_k": 1
+    }
+  },
+  "universe_liq_krw": {
+    "KOSPI": 10000000000,
+    "KOSDAQ": 3000000000
+  },
+  "producer_sha256": "bc452be9d3a4d7786f197035c2af6eaf6d73acf5cb17a4c8aacf7b1496c8c6f8",
+  "capture": "Immutable first successful capture of producer report, original picks and eligible same-day ticker universe after signal close and before 09:00 Asia/Seoul on the next calendar day. Late/missing captures are coverage failures, never historical fills. Holidays make this deadline conservative.",
+  "evaluation": "Only the first 60 observed market sessions beginning signal_start; adjudicate after all H10 windows mature. Interim numbers descriptive, no optional stopping. Both markets and combined are reported; no parameter, gate, rank, weekday or subset search.",
+  "targets": {
+    "touch_rate_min": 0.7,
+    "firing_dates_per_five_sessions": [
+      2,
+      3
+    ],
+    "min_resolved": 30,
+    "min_unique_resolved_dates": 20,
+    "net_ev_block_ci_lower_gt": 0,
+    "same_day_excess_block_ci_lower_gt": 0,
+    "random_ticker_placebo_p_max": 0.05,
+    "missing_capture_days_max": 0,
+    "data_errors_max": 0
+  },
+  "statistics": {
+    "block_sessions": 5,
+    "bootstrap_draws": 5000,
+    "seed": 20261007,
+    "controls": "Frozen same-date market/liquidity universe excluding original selected tickers; identical executable next-open TP5/H10 and costs. Random ticker relabel and circular date-shift diagnostics."
+  },
+  "kill_criteria": "At the fixed mature window, any target miss rejects this candidate for promotion; report every miss. Before then report PENDING. Do not combine prior replay with this cohort.",
+  "publication": "Shadow only, no routing or sizing. A passing report still needs matching recursion gate and reviewed producer/consumer wiring; this collector never publishes picks."
+}
