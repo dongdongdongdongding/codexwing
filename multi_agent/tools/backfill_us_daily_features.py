@@ -712,16 +712,30 @@ def write_feature_panel(
     end: str,
     output_prefix: str,
     feature_batch_size: int,
+    force_rebuild: bool = False,
 ) -> Dict[str, Any]:
     import pyarrow as pa
     import pyarrow.parquet as pq
+    import shutil
+    from multi_agent.tools import us_daily_panel_cache as cache
 
-    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    paths.market_root.mkdir(parents=True, exist_ok=True)
+    options = dict(start=start, end=end, output_prefix=output_prefix, feature_batch_size=feature_batch_size)
+    manifest = cache.inputs(universe, paths, **options)
+    reused = None if force_rebuild else cache.lookup(paths, manifest)
+    if reused is not None:
+        return reused
+    if shutil.disk_usage(paths.market_root).free < 15 * 1024**3:
+        raise OSError('panel_storage_reserve')
+
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S%f")
     feature_path = paths.market_root / f"{output_prefix}_{start.replace('-', '')}_{end.replace('-', '')}_{stamp}.parquet"
     tmp_feature_path = feature_path.with_name(f".{feature_path.name}.tmp")
     latest_path = paths.market_root / f"{output_prefix}_latest_{stamp}.parquet"
     latest_csv_path = paths.market_root / f"{output_prefix}_latest_{stamp}.csv"
     paths.market_root.mkdir(parents=True, exist_ok=True)
+    if feature_path.exists() or tmp_feature_path.exists():
+        raise FileExistsError(feature_path)
 
     writer: Optional[pq.ParquetWriter] = None
     schema: Optional[pa.Schema] = None
@@ -785,6 +799,9 @@ def write_feature_panel(
     flush()
     if writer is not None:
         writer.close()
+        if cache.inputs(universe, paths, **options) != manifest:
+            tmp_feature_path.unlink(missing_ok=True)
+            raise ValueError('feature_inputs_changed_during_build')
         tmp_feature_path.replace(feature_path)
 
     latest_df = pd.concat(latest_rows, ignore_index=True) if latest_rows else pd.DataFrame()
@@ -792,7 +809,7 @@ def write_feature_panel(
         latest_df.to_parquet(latest_path, index=False)
         latest_df.to_csv(latest_csv_path, index=False)
 
-    return {
+    info = {
         "output_feature_path": str(feature_path),
         "output_latest_path": str(latest_path) if latest_rows else None,
         "output_latest_csv_path": str(latest_csv_path) if latest_rows else None,
@@ -802,7 +819,10 @@ def write_feature_panel(
         "failed_feature_symbols": failed_features,
         "failed_feature_reasons": failed_feature_reasons,
         "invalid_source_bars": invalid_source_bars,
+        "feature_panel_reused": False,
     }
+    cache.record(paths, manifest, info)
+    return info
 
 
 def parse_args() -> argparse.Namespace:
@@ -967,9 +987,21 @@ def daily_refresh(paths: BackfillPaths, *, output_prefix: str = "daily_features"
         identity = {"path": str(panel), "mtime_ns": panel.stat().st_mtime_ns, "size": panel.stat().st_size} if panel else None
         if (not force and receipt.get("required_through") == str(target.date())
                 and receipt.get("panel_identity") == identity and receipt.get("status") == "refreshed"
-                and receipt.get("universe_sha256") == digest(paths.universe_path)):
-            return {"status": "already_current", **{k: v for k, v in receipt.items() if k != "status"}}
-        return _run_refresh(paths, required_through=str(target.date()), output_prefix=output_prefix, **kwargs)
+                and receipt.get("universe_sha256") == digest(paths.universe_path)
+                and not kwargs.get('max_symbols', 0) and not receipt.get('universe_limit', 0)):
+            from multi_agent.tools import us_daily_panel_cache as cache
+            try:
+                universe = pd.read_csv(paths.universe_path, keep_default_na=False, dtype={'symbol': str})
+                manifest = cache.inputs(universe, paths, start=kwargs.get('start', DEFAULT_START),
+                    end=(target+pd.Timedelta(days=1)).date().isoformat(), output_prefix=output_prefix,
+                    feature_batch_size=kwargs.get('feature_batch_size', 100))
+                verified = cache.lookup(paths, manifest)
+            except (OSError, ValueError, KeyError):
+                verified = None
+            if verified is not None:
+                return {**receipt, 'status': 'already_current', 'feature_panel_reused': True}
+        return _run_refresh(paths, required_through=str(target.date()), output_prefix=output_prefix,
+                            force_feature_rebuild=bool(force), **kwargs)
 
 
 def _main(args: argparse.Namespace) -> int:

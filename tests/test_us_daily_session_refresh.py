@@ -104,11 +104,14 @@ def test_nonempty_stale_batch_retries_single_once(setup,tmp_path,monkeypatch,sin
 
 
 def test_verified_panel_receipt_is_invalidated_by_changed_file(setup,monkeypatch):
-    paths,_,_=setup
-    path=paths.market_root/'daily_features_20180101_20261007_20261007_060000.parquet'
-    raw(['2026-10-06']).to_parquet(path,index=False)
+    paths,universe,_=setup
+    universe.to_csv(paths.universe_path,index=False)
+    raw(['2026-10-06']).to_parquet(bf._raw_path(paths,'AAA'),index=False)
+    info=bf.write_feature_panel(universe,paths,start='2018-01-01',end='2026-10-07',output_prefix='daily_features',feature_batch_size=100)
+    from pathlib import Path
+    path=Path(info['output_feature_path'])
     identity={'path':str(path),'mtime_ns':path.stat().st_mtime_ns,'size':path.stat().st_size}
-    sr.save_json(paths.market_root/'.refresh/current.json',{'status':'refreshed','required_through':'2026-10-06','panel_identity':identity})
+    sr.save_json(paths.market_root/'.refresh/current.json',{'status':'refreshed','required_through':'2026-10-06','panel_identity':identity,'universe_sha256':sr.digest(paths.universe_path)})
     monkeypatch.setattr(bf,'_run_refresh',lambda *a,**kw:{'status':'refreshed'})
     assert bf.daily_refresh(paths,required_through='2026-10-06')['status']=='already_current'
     path.touch()

@@ -169,7 +169,8 @@ def refresh_raw(universe,paths,target,*,start,batch_size,timeout,sleep,budget,au
 
 
 def run(paths,*,required_through,output_prefix='daily_features',start='2018-01-01',end=None,
-        batch_size=80,feature_batch_size=100,timeout=30,sleep=.1,max_symbols=0,keep_panels=3,budget=600):
+        batch_size=80,feature_batch_size=100,timeout=30,sleep=.1,max_symbols=0,keep_panels=3,budget=600,
+        force_feature_rebuild=False):
     from multi_agent.tools import backfill_us_daily_features as bf
     if not np.isfinite(budget) or budget<=0:raise ValueError('invalid_US_refresh_budget')
     audit=paths.market_root/'.refresh/audit'/f'{datetime.now().strftime("%Y%m%dT%H%M%S")}_{uuid.uuid4().hex}'
@@ -185,17 +186,20 @@ def run(paths,*,required_through,output_prefix='daily_features',start='2018-01-0
     raw=refresh_raw(universe,paths,required_through,start=start,batch_size=batch_size,timeout=timeout,
                     sleep=sleep,budget=budget,audit=audit)
     end=(pd.Timestamp(required_through)+pd.Timedelta(days=1)).date().isoformat()
-    if shutil.disk_usage(paths.market_root).free<15*1024**3:
+    try:
+        info=bf.write_feature_panel(universe,paths,start=start,end=end,output_prefix=output_prefix,
+                                    feature_batch_size=feature_batch_size,force_rebuild=force_feature_rebuild)
+    except OSError as exc:
+        if str(exc)!='panel_storage_reserve':raise
         result={'status':'partial','reason':'panel_storage_reserve','raw':raw,'audit':str(audit)}
         save_json(audit/'result.json',result);return result
-    info=bf.write_feature_panel(universe,paths,start=start,end=end,output_prefix=output_prefix,feature_batch_size=feature_batch_size)
     after=coverage(info['output_feature_path'],required_through,universe.symbol)
     complete=(after['current'] and not raw['failed'] and not raw['unvisited']
-              and not info['failed_feature_symbols'] and not info.get('invalid_source_bars'))
+              and not info['failed_feature_symbols'] and not info.get('invalid_source_bars') and not max_symbols)
     # Keep prior panels on incomplete recovery; an error must not delete evidence.
     removed=bf.prune_old_panels(paths,output_prefix=output_prefix,keep=keep_panels) if complete else []
     result={'status':'refreshed' if complete else 'partial','required_through':required_through,'audit':str(audit),
-            'universe_size':len(universe),'raw_refreshed':len(raw['written']),'raw_skipped_fresh':len(raw['skipped_current']),
+            'universe_size':len(universe),'universe_limit':max_symbols,'raw_refreshed':len(raw['written']),'raw_skipped_fresh':len(raw['skipped_current']),
             'raw_failed':len(raw['failed']),'raw_unvisited':len(raw['unvisited']),'coverage':after,'pruned_panels':removed,**info}
     panel=Path(info['output_feature_path'])
     result['panel_identity']={'path':str(panel),'mtime_ns':panel.stat().st_mtime_ns,'size':panel.stat().st_size}

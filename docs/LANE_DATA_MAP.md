@@ -64,6 +64,8 @@
 | `us_daily/NASDAQ/` | 미국 일봉 패널 120열 (`v2_quality_segments`) | `backfill_us_daily_features.py --daily-refresh` → `us_daily_session_refresh.py` | 나스닥 레인 | SPY 원천의 완료 관측 세션별 갱신·종목별 영수증/해시 검증. 최근 14일 겹침 구간 우선, 조정 기준 변화 시 전체 이력 재확인. 기존 원본 검증 백업 후 원자 교체, 요청 세션 미도달·미방문은 partial/실패. 패널은 요청 종료일 이후 행을 제외한다. 오류 OHLCV 날짜는 `source_bar_valid=0/source_issue`와 NULL 계산값으로 보존하고 지표·EMA·라벨은 정상 연속구간별로 계산한다. 미완성 지평 라벨은 NULL; 구조검증은 누락 세션·기업행동·PIT 완전성 인증이 아니다. **생존편향 심각** — 사라진 3,272 심볼 중 35개(1.1%)만 보유; 수집 최신성과 PIT 유니버스는 별개 |
 | `T1_nasdaq_listing_snapshots.parquet` | NASDAQ 과거 상장목록 스냅샷 | 기존 아카이브 수집본; 정기 갱신 미확인 | `report_nasdaq_session_tape._listed_pit` | 평가일 이전의 **전역 최신 스냅샷** 내 적격 멤버십을 사용한다. 종목별 마지막 적격 행을 이월하면 퇴출·ETF/우선주 전환을 놓친다. 2026-10-07 확인한 최신 스냅샷은 06-11이며, 사이 구간과 당일 수집 시각의 완전성은 별도 문제 |
 
+미국 일봉 피처 재사용은 `us_daily_panel_cache.py`가 관리한다. 전체 원본 SHA(없는 파일도 포함), 유니버스, 기간, 피처 코드·검증 코드·캐시 코드와 라이브러리 버전이 같고 현재 소비자 패널 및 세 산출물 해시가 검증될 때만 재사용한다. 패널 옆 `.provenance.json`과 `.refresh/feature_panels/`에 근거를 보존한다. 재사용은 원천 수집 `partial`을 성공으로 바꾸지 않는다. `--force-refresh`는 재생성을 강제하고, 제한된 `--max-symbols` 실행은 전체 최신 상태를 인증하지 않는다.
+
 ### 학습 데이터 ≠ 픽 데이터
 - **픽**: `px_long` 의 **오늘 행**으로 스코어링
 - **학습**: `px_long` 과거 2년 × `p2_label` 의 `t5_5` (엠바고 17일)
