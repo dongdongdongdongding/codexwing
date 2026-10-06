@@ -477,3 +477,16 @@ def test_moved_producer_still_runs_after_px_long_refresh():
     """옮긴 생산자는 px_long 을 읽는다 — 그 갱신보다는 뒤여야 한다."""
     pos = _step_positions()
     assert pos["report_kr_swing_candidate"] > pos["px_long_refresh"]
+
+
+@pytest.mark.parametrize('dry,expected', [('0', 'backfill_kr_intraday.py'), ('1', 'backfill_kr_intraday.py --plan')])
+def test_intraday_uses_repo_runner_and_dry_run_is_read_only(tmp_path, dry, expected):
+    block = guard_block('intraday_backfill', 'AG_INTRADAY_BACKFILL')
+    harness = 'set -uo pipefail\nrun_optional() { printf "%s\\n" "$*"; }\n' + block
+    result = subprocess.run([SYSTEM_BASH, '-c', harness], capture_output=True, text=True,
+                            env={**os.environ, 'AG_INTRADAY_BACKFILL': '1', 'DAILY_OPS_DRY_RUN': dry})
+    assert result.returncode == 0, result.stderr
+    assert expected in result.stdout
+    assert 'research_cache/intraday_backfill.py' not in result.stdout
+    if dry == '0':
+        assert '--plan' not in result.stdout

@@ -358,12 +358,17 @@ if [[ "${AG_KR_SWING_CANDIDATE_ENABLE:-1}" == "1" ]]; then
   run_optional "observe_kr_touch10_prospective" \
     python3 multi_agent/tools/observe_kr_touch10_prospective.py
 fi
-if [[ "${AG_INTRADAY_BACKFILL:-1}" == "1" && -f "${HOME}/research_cache/intraday_backfill.py" ]]; then
-  # 분봉 minute bars: incremental KIS backfill of today's full session (post-close). Only fetches
-  # days not already cached, so the daily run just adds today. Disable with AG_INTRADAY_BACKFILL=0.
+if [[ "${AG_INTRADAY_BACKFILL:-1}" == "1" ]]; then
+  # Latest observed session across the entire universe first. Request-level budget,
+  # resumable slice checkpoints and atomic, backed-up writes; partial bars != full day.
+  INTRADAY_BACKFILL_ARGS=()
+  if [[ "${DAILY_OPS_DRY_RUN:-0}" == "1" ]]; then
+    INTRADAY_BACKFILL_ARGS=(--plan)
+  fi
   echo "[STEP] intraday_backfill (분봉)"
   run_optional "intraday_backfill" \
-    python3 "${HOME}/research_cache/intraday_backfill.py"
+    python3 multi_agent/tools/backfill_kr_intraday.py \
+      ${INTRADAY_BACKFILL_ARGS[@]+"${INTRADAY_BACKFILL_ARGS[@]}"}
 fi
 
 # 벤치 데이터 수집 (2026-07-07, swing-main-h3cu 후속): 미래 엣지 재료 축적 — 표본이 익으면
