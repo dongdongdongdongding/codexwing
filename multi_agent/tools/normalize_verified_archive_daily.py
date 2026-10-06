@@ -39,7 +39,7 @@ def cas_sql(before, patch):
     predicates = " AND ".join(f't."{key}" IS NOT DISTINCT FROM b."{key}"' for key in sorted(before))
     return (f"WITH b AS (SELECT * FROM {record(before)}), p AS (SELECT * FROM {record(patch)}) "
             f"UPDATE public.market_scan_results t SET {assignments}, performance_updated_at = now() "
-            f"FROM b, p WHERE t.id = b.id AND {predicates} RETURNING t.*")
+            f"FROM b, p WHERE t.id = b.id AND {predicates} RETURNING to_jsonb(t) AS row")
 
 
 def management_cas(before, patch):
@@ -55,7 +55,9 @@ def management_cas(before, patch):
     result = response.json()
     if not isinstance(result, list):
         raise RuntimeError("unexpected CAS response")
-    return result
+    # Management API serializes NUMERIC columns as strings, unlike PostgREST.
+    # A JSONB row envelope retains their JSON number types for verification.
+    return [item["row"] for item in result]
 
 
 def original_matches(row, outcomes):

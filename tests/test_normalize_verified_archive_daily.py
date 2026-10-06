@@ -15,6 +15,7 @@ def test_sql_transport_keeps_large_snapshot_in_body_and_compares_full_typed_row(
     assert 't."feature_snapshot" IS NOT DISTINCT FROM b."feature_snapshot"' in sql
     assert 't."performance_updated_at" IS NOT DISTINCT FROM b."performance_updated_at"' in sql
     assert 't.id = b.id' in sql
+    assert 'RETURNING to_jsonb(t) AS row' in sql
     with pytest.raises(ValueError):
         cas_sql(before, {"entry_reference_price": 43850})
     with pytest.raises(ValueError):
