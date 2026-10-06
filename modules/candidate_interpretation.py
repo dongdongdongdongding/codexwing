@@ -406,7 +406,7 @@ def build_model_lane_interpretation(row: Dict[str, Any], bucket: str) -> Dict[st
     if target is None and entry is not None:
         target = round(entry * 1.05, 2)
     target_tp = _to_float(_first(trade_plan.get("target_tp_pct"), row.get("target_tp_pct"))) or 5.0
-    hd = profile["horizon_days"]
+    hd = _to_int(_first(row.get("contract_h"), trade_plan.get("hold_days"), profile["horizon_days"]))
     prob = _to_float(_first(admission.get(f"{hd}d_prob"), admission.get("3d_prob"), admission.get("5d_prob"),
                             row.get("model_hit_prob"), row.get("buy_score")))
     prob01 = prob if (prob is not None and prob <= 1.0) else (prob / 100.0 if prob is not None else None)
@@ -440,8 +440,11 @@ def build_model_lane_interpretation(row: Dict[str, Any], bucket: str) -> Dict[st
         "stop_sl_pct": None,
         "stop_display_source": "model_lane_no_tight_stop",
         "hold_days": hold_days,
-        "hold_note": profile["hold_note"],
-        "model_prob_label": profile["prob_label"],
+        "hold_note": _first(trade_plan.get("hold_note"), row.get("hold_note"), profile["hold_note"]),
+        "model_prob_label": _first(row.get("model_prob_label"), profile["prob_label"]),
+        "contract_h": _to_int(_first(row.get("contract_h"), hold_days)),
+        "contract_tp": _to_float(_first(row.get("contract_tp"), target_tp / 100.0)),
+        "signal_date": _first(row.get("signal_date"), row.get("score_date")),
         "model_hit_prob_pct": prob_pct,
         "realized_expectancy_3d_prob": prob01 if hd == 3 else None,
         "realized_expectancy_5d_prob": prob01 if hd == 5 else None,

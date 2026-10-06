@@ -193,6 +193,7 @@ def _route_live(picks: List[Dict[str, Any]], run_id: str, recommended_at: str,
     from modules.db_manager import DBManager
     from modules.candidate_interpretation import build_candidate_interpretation
     from modules.top_deep_report import upsert_reports_to_supabase
+    from modules.model_lane_contract import model_lane_contract
     db = DBManager(); n = 0
     ordered = sorted(picks, key=lambda x: -x["p"])
     # horizon + scan_mode differ per lane (swing ensemble = 5d/SWING, kospi intraday = 3d/INTRADAY)
@@ -215,22 +216,26 @@ def _route_live(picks: List[Dict[str, Any]], run_id: str, recommended_at: str,
     deep_rows = []
     for i, p in enumerate(ordered, start=1):
         entry = p.get("entry_reference_price")
-        target = round(float(entry) * 1.05, 1) if entry else None
+        contract = model_lane_contract(p, bucket)
+        _hd = contract["hold_days"]
+        _hnote = contract["hold_note"]
+        _plabel = contract["model_prob_label"]
+        target = round(float(entry) * (1 + contract["contract_tp"]), 2) if entry else None
         prob_pct = round(float(p["p"]) * 100, 1)
         guard_bits = []
         if p.get("close_vwap") is not None:
             guard_bits.append(f"VWAP {'위' if float(p['close_vwap']) >= 0 else '아래'}({float(p['close_vwap']):+.1f}%)")
         if p.get("liq억") is not None:
             guard_bits.append(f"유동성 {p['liq억']}억")
-        thesis = (f"{_plabel} {prob_pct:.0f}% (모델 상위픽). 진입=종가 {entry}, 목표 +5% {target}, {_hnote}."
+        thesis = (f"{_plabel} {prob_pct:.0f} (모델 상위픽). 기준가 {entry}, 목표 +{contract['target_tp_pct']:g}% {target}, {_hnote}."
                   + (" · " + " · ".join(guard_bits) if guard_bits else ""))
         row = {"report_id": f"{run_id}-{p['ticker']}", "report_version": 1,
                "ticker": p["ticker"], "stock_name": p.get("stock_name") or p["ticker"], "market": p["market"], "run_id": run_id,
                "scan_mode": _scan_mode, "rank": i, "decision": decision, "decision_bucket": bucket,
                "signal_label": decision, "analysis_section": "Top5", "analysis_section_rank": i,
                "buy_score": p["p"], "generated_at": recommended_at,
-               "entry_reference_price": entry,
-               "trade_plan": {"entry_reference_price": entry, "target_price": target, "target_tp_pct": 5.0,
+               "entry_reference_price": entry, **contract,
+               "trade_plan": {**contract, "entry_reference_price": entry, "target_price": target,
                               "stop_price": None, "hold_days": _hd, "hold_note": _hnote},
                "realized_expectancy_admission": {f"{_hd}d_prob": round(float(p["p"]), 4)},
                "prediction": {"phase25_prob": prob_pct, "expected_edge_score": round(float(p.get("score") or p["p"]), 4)},

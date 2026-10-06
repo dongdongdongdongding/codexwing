@@ -242,10 +242,15 @@ def main() -> None:
     te = P[(P["date"] == latest) & P["tradable"]].dropna(subset=FEAT).copy()
     te["xq"] = te["univ_frac250"].rank(pct=True, method="average")
     te = te[te["xq"] >= ADMIT_Q]
-    m = lgb.LGBMClassifier(n_estimators=400, learning_rate=0.05, num_leaves=31, min_child_samples=60,
-                           subsample=0.8, colsample_bytree=0.7, reg_lambda=3, random_state=0, verbose=-1)
-    m.fit(tr[FEAT].clip(-1e6, 1e6), tr["y"])
-    te["p"] = m.predict_proba(te[FEAT].clip(-1e6, 1e6))[:, 1]
+    if te.empty:
+        # A legitimate empty admission pool is not a LightGBM inference error.
+        # Still resolve old picks and persist this zero-candidate run below.
+        te["p"] = pd.Series(index=te.index, dtype=float)
+    else:
+        m = lgb.LGBMClassifier(n_estimators=400, learning_rate=0.05, num_leaves=31, min_child_samples=60,
+                               subsample=0.8, colsample_bytree=0.7, reg_lambda=3, random_state=0, verbose=-1)
+        m.fit(tr[FEAT].clip(-1e6, 1e6), tr["y"])
+        te["p"] = m.predict_proba(te[FEAT].clip(-1e6, 1e6))[:, 1]
     top = te.nlargest(1, "p")
     now = datetime.now(timezone.utc)
     picks = [{"date": str(latest.date()), "symbol": str(r["symbol"]), "p": round(float(r["p"]), 4),
@@ -263,6 +268,7 @@ def main() -> None:
                                      "logged_at": now.isoformat()}) + "\n")
     summary = resolve_pending(pd.Timestamp(now.date()))
     report = {"generated_at": now.isoformat(), "as_of": str(latest.date()),
+              "status": "no_candidates" if te.empty else "ok",
               "capital_status": "observation_only_shadow",
               "expectation": "backtest: rank-1 win 79.3%, EV 1.68 net (placebo-separated +9.4pp/5sig); "
                              "honest true edge ~+0.5-1.0/trade — no capital before forward n>=30",

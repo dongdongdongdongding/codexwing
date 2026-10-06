@@ -32,6 +32,8 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import math
+from functools import lru_cache
 import sys
 from pathlib import Path
 from typing import Any, Dict, List
@@ -44,11 +46,29 @@ from multi_agent.tools.report_research_recursion_gate import (  # noqa: E402
 )
 
 STALE_DAYS_DEFAULT = 10
+SETTLEMENT_GRACE_SESSIONS = 3
 OUT_JSON = PROJECT_ROOT / "runtime_state" / "reports" / "validation" / "unresolved_staleness_latest.json"
 
 
 def _today() -> dt.date:
     return dt.datetime.now(dt.timezone.utc).date()
+
+
+@lru_cache(maxsize=8)
+def observed_sessions(market, today):
+    """Use traded price dates, never the lane's own (possibly sparse) firing dates."""
+    import pandas as pd
+    cache = Path.home() / "research_cache"
+    if market == "US":
+        from multi_agent.tools.report_nasdaq_session_tape import _latest_panel
+        path = Path(_latest_panel())
+    else:
+        path = cache / "px_long.parquet"
+    frame = pd.read_parquet(path, columns=["date"],
+                            filters=[("date", ">=", pd.Timestamp(today) - pd.Timedelta(days=365))])
+    # Today's partially collected bars must not make a contract mature early.
+    dates = pd.to_datetime(frame["date"], errors="coerce").dropna().dt.strftime("%Y-%m-%d")
+    return sorted(set(d for d in dates if d < today)), str(path)
 
 
 def scan_lane(name: str, cfg: Dict[str, Any], today: dt.date, stale_days: int) -> Dict[str, Any]:
@@ -62,8 +82,14 @@ def scan_lane(name: str, cfg: Dict[str, Any], today: dt.date, stale_days: int) -
     rows = _rows(cfg["ledger"])
     unresolved: List[Dict[str, Any]] = []
     undated = 0
+    calendar, source, calendar_error = None, None, None
+    if cfg.get("market"):
+        try:
+            calendar, source = observed_sessions(cfg["market"], today.isoformat())
+        except Exception as exc:
+            calendar_error = f"{type(exc).__name__}: {exc}"
     for row in rows:
-        if isinstance(row.get(field), (int, float)):
+        if isinstance(row.get(field), (int, float)) and math.isfinite(row[field]):
             continue
         iso = _row_date(row, dfield)
         if not iso:
@@ -74,8 +100,17 @@ def scan_lane(name: str, cfg: Dict[str, Any], today: dt.date, stale_days: int) -
         except ValueError:
             undated += 1
             continue
-        unresolved.append({"date": iso, "age_days": age, "ticker": row.get("ticker")})
-    stale = [u for u in unresolved if u["age_days"] > stale_days]
+        horizon = int(row.get("contract_h") or row.get("hold_days") or 5)
+        elapsed = sum(iso < day for day in calendar) if calendar is not None else None
+        # Historical no-market fixtures keep their old calendar-day contract.
+        # With a declared horizon, the 10-day legacy alarm cannot predate maturity.
+        fallback_days = max(stale_days, math.ceil(horizon * 7 / 5) + 3)
+        overdue = (elapsed > horizon + SETTLEMENT_GRACE_SESSIONS if elapsed is not None
+                   else age > fallback_days)
+        unresolved.append({"date": iso, "age_days": age, "ticker": row.get("ticker") or row.get("symbol"),
+                           "contract_h": horizon, "elapsed_sessions": elapsed,
+                           "overdue": overdue, "maturity_known": elapsed is not None})
+    stale = [u for u in unresolved if u["age_days"] > stale_days and u["overdue"]]
     stale.sort(key=lambda u: -u["age_days"])
     return {
         "lane": name, "ledger": str(cfg["ledger"]), "field": field,
@@ -83,6 +118,8 @@ def scan_lane(name: str, cfg: Dict[str, Any], today: dt.date, stale_days: int) -
         "stale": len(stale), "stale_days": stale_days,
         "max_age_days": max((u["age_days"] for u in unresolved), default=0),
         "worst": stale[:5],
+        "calendar_source": source, "calendar_error": calendar_error,
+        "settlement_grace_sessions": SETTLEMENT_GRACE_SESSIONS,
     }
 
 

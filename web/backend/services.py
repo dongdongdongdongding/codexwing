@@ -58,7 +58,9 @@ _LEDGER_EXTRA_KEYS = ("tier", "tier_threshold", "mkt_state", "mkt_dd20", "hold_d
                       # 이 필드들이 안 오면 화면이 **계약과 다른 목표가**를 보여준다 — 실제로 그랬다:
                       # KOSDAQ 픽의 목표가가 +5.00% 로 나왔는데 계약은 +7% 였다.
                       # 그 화면대로 팔면 **측정된 계약과 다른 매매**가 된다(거래당 +0.684 는 +7% 기준이다).
-                      "contract_tp", "contract_h", "rank", "contract_top_k", "in_contract")
+                      "contract_tp", "contract_h", "rank", "contract_top_k", "in_contract",
+                      "hold_note", "model_prob_label", "signal_date", "entry_label",
+                      "stream_excluded", "stream_exclusion_reason", "buy_ready")
 
 
 @lru_cache(maxsize=1)
@@ -674,6 +676,7 @@ _KR_CACHE = {"ts": 0.0, "rows": []}
 def _kr_scan_picks():
     """KR 모델 레인 픽 — scan_deep_reports의 레인별 최신 run. 웹·일일·디스코드 스캔 모두 반영.
     120초 캐시 + 워커 타임아웃(웹 안 멈춤)."""
+    from modules.model_lane_contract import pick_signal_date
     if time.time() - _KR_CACHE["ts"] < 120 and _KR_CACHE["rows"]:
         return _KR_CACHE["rows"]
     out = {"rows": []}
@@ -716,7 +719,8 @@ def _kr_scan_picks():
                 # KR은 stock_name이 티커인 경우가 많아 code로 resolve(한글명) — name=None이면 _pick_row가 처리
                 picks.append(_pick_row(code, mk, lane, entry=ci.get("entry_reference_price"),
                                        prob=pred.get("phase25_prob"), name=None,
-                                       scan_date=str(r.get("generated_at"))[:10], source="A"))
+                                       scan_date=pick_signal_date(ci, r.get("run_id"), r.get("generated_at")), source="A",
+                                       extra={key: ci.get(key) for key in _LEDGER_EXTRA_KEYS}))
             out["rows"] = picks
         except Exception:
             pass
@@ -764,7 +768,14 @@ def a_picks(lane=None):
     scan = {}
     for r in _kr_scan_picks():
         scan.setdefault(r["lane"], []).append(r)
-    by_lane.update(scan)  # 스캔이 있는 레인은 최신 스캔으로 교체
+    # Pick dates, not storage timestamps, decide freshness. On the same day the
+    # immutable issuance ledger wins over a later DB rerun with changed prices.
+    for key, db_rows in scan.items():
+        recorded = by_lane.get(key, [])
+        recorded_date = max((str(r.get("scan_date") or "") for r in recorded), default="")
+        db_date = max((str(r.get("scan_date") or "") for r in db_rows), default="")
+        if not recorded or db_date > recorded_date:
+            by_lane[key] = db_rows
     rows = [r for rs in by_lane.values() for r in rs]
     _attach_day_rank(rows)
     if lane:

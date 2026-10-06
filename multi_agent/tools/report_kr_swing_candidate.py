@@ -649,6 +649,33 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
             "worst": round(float(np.min(rets)), 2)}
 
 
+def record_daily_picks(scored, logged_at):
+    """Freeze the day's published picks: reruns must route what the ledger records."""
+    prior = [json.loads(line) for line in LEDGER.read_text(encoding="utf-8").splitlines()
+             if line.strip()] if LEDGER.exists() else []
+    day = str(scored["as_of"])
+    frozen = [r for r in prior if r.get("date") == day]
+    seen = {(r.get("date"), r.get("ticker")) for r in prior}
+    counts = {m: sum(r.get("market") == m for r in frozen) for m in TOP_K}
+    added = []
+    for pick in scored["picks"]:
+        market = pick.get("market")
+        key = (pick["date"], pick["ticker"])
+        if key in seen or counts.get(market, 0) >= TOP_K.get(market, 1):
+            continue
+        row = {**pick, "model_label": LABEL, "ft_touch5": None, "policy_ret": None, "logged_at": logged_at}
+        added.append(row)
+        frozen.append(row)
+        seen.add(key)
+        counts[market] = counts.get(market, 0) + 1
+    LEDGER.parent.mkdir(parents=True, exist_ok=True)
+    if added:
+        with LEDGER.open("a", encoding="utf-8") as stream:
+            for row in added:
+                stream.write(json.dumps(row, ensure_ascii=False) + "\n")
+    return frozen
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="KR swing CANDIDATE producer (observation-only).")
     ap.add_argument("--top-k", type=int, default=None,
@@ -656,32 +683,7 @@ def main() -> None:
     args = ap.parse_args()
     now = datetime.now(timezone.utc)
     scored = score_today(args.top_k)
-    # append only new (date, ticker) rows
-    existing = set()
-    # 🔴 `(date,ticker)` 만으로는 계약 깊이가 안 지켜진다. 랭커는 실행마다 다른 종목을
-    # 낼 수 있고(같은 레시피·시드로도 원장 top3 재현율 42.7%/54.4%), 그러면 재실행이
-    # **같은 날에 픽을 더 얹는다.** 실측: 정산 212건 중 33건(15.6%)이 계약 깊이를
-    # 넘었고 9개 일자는 실효 깊이가 5~6 이었다. EV 를 −0.128 끌었다.
-    # 계약은 「(날짜, 시장)당 TOP_K 건」이므로 원장이 그 한도를 직접 지킨다.
-    filled: Dict[Tuple[Any, Any], int] = {}
-    if LEDGER.exists():
-        for l in LEDGER.read_text(encoding="utf-8").splitlines():
-            if l.strip():
-                r = json.loads(l)
-                existing.add((r.get("date"), r.get("ticker")))
-                k = (r.get("date"), r.get("market"))
-                filled[k] = filled.get(k, 0) + 1
-    LEDGER.parent.mkdir(parents=True, exist_ok=True)
-    with LEDGER.open("a", encoding="utf-8") as fh:
-        for p in scored["picks"]:
-            slot = (p["date"], p.get("market"))
-            quota = TOP_K.get(p.get("market"), 1)
-            if filled.get(slot, 0) >= quota:
-                continue          # 이 날·이 시장은 이미 계약만큼 찼다
-            if (p["date"], p["ticker"]) not in existing:
-                filled[slot] = filled.get(slot, 0) + 1
-                fh.write(json.dumps({**p, "ft_touch5": None, "policy_ret": None,
-                                     "logged_at": now.isoformat()}, ensure_ascii=False) + "\n")
+    scored["picks"] = record_daily_picks(scored, now.isoformat())
     # P3 교체 스위치 (기본 OFF): AG_SWING_CANDIDATE_ROUTE=1이면 후보픽을 라이브 라우팅 —
     # 스윙 앙상블(fwd 45%/-0.5, DEGRADE 궤도) 교체 결정 시 env 플립 하나로 전환.
     # 근거: 8y walk-forward +0.65 CI>0 (§7-A) vs 앙상블 실측 미달 (§13/재귀게이트).
@@ -690,7 +692,7 @@ def main() -> None:
     if os.getenv("AG_SWING_CANDIDATE_ROUTE", "1").strip() in ("1", "true", "True") and scored["picks"]:
         try:
             from report_swing_ensemble import _route_live
-            rp = [{"ticker": p["ticker"], "market": p["market"], "p": p["p"] if p["p"] <= 1.5 else p["p"] / 100.0,
+            rp = [{**p, "p": p["p"] if p["p"] <= 1.5 else p["p"] / 100.0,
                    "entry_reference_price": p["close"]} for p in scored["picks"]]
             routed = _route_live(rp, "SWING-CAND-" + scored["as_of"].replace("-", ""), now.isoformat(),
                                  bucket="swing_candidate", decision="SWING_CANDIDATE_BUY", lane="SWING_CANDIDATE")

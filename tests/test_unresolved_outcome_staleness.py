@@ -21,6 +21,23 @@ st = importlib.import_module("multi_agent.tools.report_unresolved_outcome_stalen
 TODAY = dt.date(2026, 8, 16)
 
 
+def test_twenty_session_contract_is_not_late_after_ten_calendar_days(tmp_path, monkeypatch):
+    row = {"date": "2026-07-20", "symbol": "TEST", "contract_h": 20, "policy_ret": None}
+    calendar = ["2026-07-21", "2026-07-22", "2026-07-23"]
+    monkeypatch.setattr(st, "observed_sessions", lambda *a: (calendar, "fixture"))
+    result = st.scan_lane("nasdaq", {**cfg(ledger(tmp_path, [row])), "market": "US"}, TODAY, 10)
+    assert result["unresolved"] == 1 and result["stale"] == 0
+
+
+def test_mature_unresolved_contract_and_nan_still_raise_alarm(tmp_path, monkeypatch):
+    import pandas as pd
+    calendar = [str(d.date()) for d in pd.bdate_range("2026-07-01", "2026-08-14")]
+    monkeypatch.setattr(st, "observed_sessions", lambda *a: (calendar, "fixture"))
+    row = {"date": "2026-07-01", "ticker": "A", "contract_h": 10, "policy_ret": float("nan")}
+    result = st.scan_lane("swing", {**cfg(ledger(tmp_path, [row])), "market": "KR"}, TODAY, 10)
+    assert result["stale"] == 1 and result["worst"][0]["contract_h"] == 10
+
+
 def ledger(tmp_path, rows, name="l.jsonl"):
     p = tmp_path / name
     p.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
