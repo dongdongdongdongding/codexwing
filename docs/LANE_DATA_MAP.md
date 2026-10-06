@@ -129,6 +129,17 @@
 산출물은 `runtime_state/reports/experimental/kr_touch10_prospective/`와
 `runtime_state/reports/validation/kr_touch10_prospective_latest.json`이다.
 
+별도 `--study cadence`는 `prereg_kr_touch10_cadence_20261007.json`의 최초 120시장세션을 관측한다.
+현재일 포함 최근 5관측세션의 **합산 발행일 최대 3**을 시간순으로 적용한다. 양시장이 같은날 발행해도 1회이며,
+종목 순위·시장 게이트는 그대로다. 원래 픽은 `source_picks`로 보존한다. 이전 캡처가 없으면 기권으로 취급하지 않고
+해당 캡처를 거부한다. 이 상한이 최소 2회나 70% 성공률을 보장하지 않으며, 미달하면 후보가 실패한다.
+저빈도 코스닥 표본을 확보할 기회를 주기 위해 관측창을 사전에 120세션으로 고정했고 n30/고유일20 기준은 유지했다.
+이는 발행 빈도/계약 변형의 검증이며 신규 알파를 확보했다는 주장이 아니다.
+원 60세션 후보와 두 후보 가족을 선언해 종목 플라시보 p에 Bonferroni 2배 보정을 기록한다.
+원 후보의 최초 판정은 보존하되 어떤 후보든 승격 검토는 가족 보정까지 통과해야 한다. 95% 구간은 개별 진단 구간이다.
+같은 수집기가 별도 디렉터리 `experimental/kr_touch10_cadence_prospective/`와
+`validation/kr_touch10_cadence_prospective_latest.json`에 기록하며 두 경로 모두 발행·사이징은 하지 않는다.
+
 ---
 
 ## 5. 이 문서를 갱신해야 하는 때

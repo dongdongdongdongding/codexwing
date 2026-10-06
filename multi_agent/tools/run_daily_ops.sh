@@ -357,6 +357,9 @@ if [[ "${AG_KR_SWING_CANDIDATE_ENABLE:-1}" == "1" ]]; then
   echo "[STEP] observe_kr_touch10_prospective (shadow only)"
   run_optional "observe_kr_touch10_prospective" \
     python3 multi_agent/tools/observe_kr_touch10_prospective.py
+  echo "[STEP] observe_kr_touch10_cadence (shadow only)"
+  run_optional "observe_kr_touch10_cadence" \
+    python3 multi_agent/tools/observe_kr_touch10_prospective.py --study cadence
 fi
 if [[ "${AG_INTRADAY_BACKFILL:-1}" == "1" ]]; then
   # Latest observed session across the entire universe first. Request-level budget,

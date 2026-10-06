@@ -26,6 +26,11 @@ from modules.market_sessions import price_sessions
 from research.validate_kr_touch10 import block_ci, metrics
 
 KST = ZoneInfo("Asia/Seoul")
+STUDIES = {
+    "original": ("prereg_kr_touch10_prospective_20261007.json", "kr_touch10_prospective"),
+    "cadence": ("prereg_kr_touch10_cadence_20261007.json", "kr_touch10_cadence_prospective"),
+}
+FAMILY_IDS = {"kr_touch10_prospective_20261007", "kr_touch10_cadence_prospective_20261007"}
 
 
 def capture(report, ledger, panel, spec, now):
@@ -87,7 +92,46 @@ def capture(report, ledger, panel, spec, now):
             "contract":{"horizon_sessions":spec["horizon_sessions"],"tp":spec["tp"],"entry":"next_open"}}
 
 
+def apply_cadence(snapshot, prior, sessions, spec):
+    """Causal date quota from previously frozen captures; outcomes never enter."""
+    policy = spec.get("cadence")
+    if not policy:
+        return snapshot
+    if policy["kind"] != "first_eligible_dates_in_rolling_sessions":
+        raise ValueError("unknown_cadence_policy")
+    day = snapshot["date"]
+    calendar = sorted({d for d in sessions if spec["signal_start"] <= d <= day})
+    if not calendar or calendar[-1] != day:
+        raise ValueError("cadence_date_not_observed_session")
+    preceding = calendar[-policy["window_sessions"]:-1]
+    earlier = {s["date"]:s for s in prior if s["date"] < day}
+    if len(earlier) != len([s for s in prior if s["date"] < day]):
+        raise ValueError("duplicate_prior_cadence_date")
+    if any(d not in earlier for d in preceding):
+        raise ValueError("missing_prior_cadence_capture")
+    used = sum(bool(earlier[d]["picks"]) for d in preceding)
+    source = snapshot["picks"]
+    allow = used < policy["max_firing_dates"]
+    return {**snapshot, "source_picks":source, "picks":source if allow else [],
+            "cadence_decision":{"preceding_sessions":preceding,"preceding_firing_dates":used,
+                                "allowed":allow,"reason":"within_cap" if allow else "rolling_session_cap"}}
+
+
+def validate_cadence(snapshots, sessions, spec):
+    if not spec.get("cadence"):
+        return
+    prior = []
+    for snap in sorted(snapshots,key=lambda s:s["date"]):
+        if "source_picks" not in snap:
+            raise ValueError("missing_original_cadence_picks")
+        rebuilt = apply_cadence({**snap,"picks":snap["source_picks"]},prior,sessions,spec)
+        if rebuilt["picks"] != snap["picks"] or rebuilt["cadence_decision"] != snap.get("cadence_decision"):
+            raise ValueError("cadence_snapshot_inconsistent")
+        prior.append(snap)
+
+
 def evaluate(snapshots, prices, sessions, spec):
+    validate_cadence(snapshots,sessions,spec)
     calendar = [d for d in sessions if d >= spec["signal_start"]][:spec["evaluation_sessions"]]
     asof = str(prices.date.max().date()) if len(prices) else None
     price_sessions_available = [d for d in sessions if asof and d <= asof]
@@ -137,6 +181,9 @@ def evaluate(snapshots, prices, sessions, spec):
                             "same_day_excess_pp":float(np.mean([r["excess"] for r in paired])) if paired else None,
                             "random_ticker_p_ge":float((1+(placebo >= sum(r["net"] for r in done)).sum())/(1+len(placebo)))
                             if control_complete and done else None}
+        raw_p = controls[market]["random_ticker_p_ge"]
+        family_size = 2 if spec.get("id") in FAMILY_IDS else spec.get("multiple_testing",{}).get("family_size",1)
+        controls[market]["family_adjusted_random_ticker_p_ge"] = min(1.,raw_p*family_size) if raw_p is not None else None
         if market != "combined":
             days = [d for d in calendar if (market,d) in pools]
             indicator = np.array([any(r["date"] == d for r in rows) for d in days])
@@ -167,16 +214,27 @@ def evaluate(snapshots, prices, sessions, spec):
                     failures.append(f"{market}:{field}_below_target")
             for key,ci in [("net",summary["net_ev_block_ci95"]),("excess",controls[market]["excess_block_ci95"])]:
                 if ci is None or ci[0] <= 0: failures.append(f"{market}:{key}_ci_not_positive")
-            p = controls[market]["random_ticker_p_ge"]
+            p = controls[market]["family_adjusted_random_ticker_p_ge" if spec.get("multiple_testing") else "random_ticker_p_ge"]
             if p is None or p > targets["random_ticker_placebo_p_max"]: failures.append(f"{market}:ticker_placebo_failed")
             if any(summary["status_counts"].get(k,0) for k in ["data_error","pending"]):
                 failures.append(f"{market}:unresolved_or_invalid_outcomes")
         if control_counts["data_error"] or control_counts["pending"]:
             failures.append("unresolved_or_invalid_controls")
+    weekly = {str(pd.Timestamp(d).to_period("W-SUN")):0 for d in calendar}
+    for day in firing:
+        weekly[str(pd.Timestamp(day).to_period("W-SUN"))] += 1
+    family_failed = [market for market,value in controls.items()
+                     if value["family_adjusted_random_ticker_p_ge"] is None or
+                     value["family_adjusted_random_ticker_p_ge"] > targets["random_ticker_placebo_p_max"]]
     return {"decision":("REJECT" if failures else "VALIDATION_PASSED_PENDING_GATE_REVIEW") if mature else "PENDING_FIXED_WINDOW",
             "publication_allowed":False,"calendar_sessions":len(calendar),"target_sessions":spec["evaluation_sessions"],
             "price_asof":asof,"missing_capture_dates":missing,"firing_dates_per_five_sessions":frequency,
             "results":summaries,"controls":controls,"control_status_counts":dict(control_counts),
+            "multiple_testing_family_size":family_size,
+            "family_review_decision":("REJECT" if family_failed else "PASSED") if mature else "PENDING_FIXED_WINDOW",
+            "family_review_failed_markets":family_failed if mature else [],
+            "cadence":spec.get("cadence"),
+            "calendar_week_firing_dates":weekly,
             "failures":failures,"records":records}
 
 
@@ -184,11 +242,13 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--root",type=Path,default=ROOT)
     ap.add_argument("--cache",type=Path,default=Path.home()/"research_cache")
+    ap.add_argument("--study",choices=STUDIES,default="original")
     args = ap.parse_args()
-    raw_spec = (args.root/"research/prereg_kr_touch10_prospective_20261007.json").read_bytes()
+    spec_file, study_name = STUDIES[args.study]
+    raw_spec = (args.root/"research"/spec_file).read_bytes()
     spec = json.loads(raw_spec)
     spec_sha = hashlib.sha256(raw_spec).hexdigest()
-    directory = args.root/"runtime_state/reports/experimental/kr_touch10_prospective"
+    directory = args.root/"runtime_state/reports/experimental"/study_name
     directory.mkdir(parents=True,exist_ok=True)
     now = datetime.now(timezone.utc)
     today = now.astimezone(KST)
@@ -201,6 +261,10 @@ def main():
         sessions = sorted(str(d.date()) for d in pd.to_datetime(dates) if str(d.date()) < before.isoformat())
     with (directory/".lock").open("a") as lock:
         fcntl.flock(lock,fcntl.LOCK_EX)
+        snapshots = [json.loads(p.read_text()) for p in sorted(directory.glob("20??-??-??.json"))]
+        if any(s.get("prereg_sha256") != spec_sha for s in snapshots):
+            raise RuntimeError("preregistration changed after capture")
+        validate_cadence(snapshots,sessions,spec)
         latest = json.loads((args.root/"runtime_state/reports/experimental/kr_swing_candidate_latest.json").read_text())
         day = str(latest.get("as_of") or "")
         window = [d for d in sessions if d >= spec["signal_start"]][:spec["evaluation_sessions"]]
@@ -217,6 +281,7 @@ def main():
                                          filters=[("date","==",pd.Timestamp(day))])
                 ledger = [json.loads(l) for l in (args.root/"runtime_state/reports/experimental/kr_swing_candidate_ledger.jsonl").read_text().splitlines() if l]
                 snap = capture(latest,ledger,panel,spec,now)
+                snap = apply_cadence(snap,snapshots,sessions,spec)
                 if panel_path.stat().st_mtime_ns != stamp:
                     raise ValueError("price_panel_changed_during_capture")
                 payload = json.dumps({**snap,"prereg_sha256":spec_sha},sort_keys=True,ensure_ascii=False,allow_nan=False)
@@ -241,7 +306,7 @@ def main():
             prices = pd.DataFrame(columns=["code","date"])
         result = evaluate(snapshots,prices,sessions,spec)
         result.update(generated_at=now.isoformat(),prereg_sha256=spec_sha,capture_error=capture_error)
-        out = args.root/"runtime_state/reports/validation/kr_touch10_prospective_latest.json"
+        out = args.root/"runtime_state/reports/validation"/f"{study_name}_latest.json"
         out.parent.mkdir(parents=True,exist_ok=True)
         tmp = out.with_suffix(".tmp")
         tmp.write_text(json.dumps(result,ensure_ascii=False,indent=2,allow_nan=False))

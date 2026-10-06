@@ -110,3 +110,57 @@ def test_missing_peer_price_prevents_clean_alpha_claim():
     out = evaluate(snaps,prices[prices.code != "333333"],days,s)
     assert out["decision"] == "REJECT"
     assert out["control_status_counts"]["data_error"] > 0
+
+
+def cadence_spec():
+    path=Path(__file__).resolve().parents[1]/'research/prereg_kr_touch10_cadence_20261007.json'
+    return json.loads(path.read_text())
+
+
+def test_rolling_cadence_caps_three_dates_without_looking_at_outcomes():
+    from multi_agent.tools.observe_kr_touch10_prospective import apply_cadence,validate_cadence
+    s=cadence_spec()
+    days=pd.bdate_range('2026-10-07',periods=15).strftime('%Y-%m-%d').tolist()
+    frozen=[]
+    for day in days:
+        source=[{'date':day,'market':m,'ticker':t,'p':.1} for m,t in [('KOSPI','111111.KS'),('KOSDAQ','222222.KQ')]]
+        snap=apply_cadence({'date':day,'picks':source},frozen,days,s)
+        assert snap['source_picks']==source
+        frozen.append(snap)
+    fired=[bool(snap['picks']) for snap in frozen]
+    assert fired==[True,True,True,False,False]*3
+    assert all(sum(fired[i:i+5])<=3 for i in range(len(fired)-4))
+    assert sum(fired)*5/len(fired)==3
+    validate_cadence(frozen,days,s)
+    bad=deepcopy(frozen);bad[3]['picks']=bad[3]['source_picks']
+    with pytest.raises(ValueError,match='inconsistent'):validate_cadence(bad,days,s)
+
+
+def test_cadence_missing_history_is_not_abstention_and_empty_day_uses_no_quota():
+    from multi_agent.tools.observe_kr_touch10_prospective import apply_cadence
+    s=cadence_spec();days=['2026-10-07','2026-10-08','2026-10-12']
+    with pytest.raises(ValueError,match='missing_prior'):
+        apply_cadence({'date':days[-1],'picks':[{'ticker':'111111.KS'}]},[],days,s)
+    prior=[]
+    for d in days[:2]:prior.append(apply_cadence({'date':d,'picks':[]},prior,days,s))
+    last=apply_cadence({'date':days[-1],'picks':[{'ticker':'111111.KS'}]},prior,days,s)
+    assert last['cadence_decision']['preceding_firing_dates']==0
+    assert len(last['picks'])==1
+
+
+def test_cadence_below_two_dates_fails_instead_of_forcing_picks():
+    from multi_agent.tools.observe_kr_touch10_prospective import apply_cadence
+    s,days,snaps,prices=synthetic()
+    s.update(cadence=cadence_spec()['cadence'],multiple_testing=cadence_spec()['multiple_testing'])
+    frozen=[]
+    for snap in snaps:
+        # One eligible date across ten sessions; no synthetic filler picks.
+        if snap['date']!=days[0]:snap['picks']=[]
+        frozen.append(apply_cadence(snap,frozen,days,s))
+    out=evaluate(frozen,prices,days,s)
+    assert out['firing_dates_per_five_sessions']==.5
+    assert 'frequency_outside_target' in out['failures']
+    assert out['publication_allowed'] is False
+    assert 0 in out['calendar_week_firing_dates'].values()
+    for control in out['controls'].values():
+        assert control['family_adjusted_random_ticker_p_ge']==min(1.,2*control['random_ticker_p_ge'])
