@@ -403,8 +403,24 @@ class DBManager:
 
     def _merge_non_empty_payload(self, existing_payload, payload):
         merged_payload = dict(existing_payload or {})
+        existing_snapshot = merged_payload.get("feature_snapshot")
+        normalized = isinstance(existing_snapshot, dict) and bool(existing_snapshot.get("daily_outcome_basis"))
+        # Audited normalization owns this entire label bundle, including NULL
+        # immature labels. Generic scanner/outcome sync cannot change its basis.
+        protected = {f"return_{h}d_pct" for h in (1, 2, 3, 5, 7, 14, 30)} | {
+            "base_trade_date", "entry_reference_price", "scan_entry_reference_price",
+            "latest_return_pct", "performance_updated_at", "max_high_return_5d_pct",
+            "hit_5pct_within_5d", "hit_5pct_within_5d_at", "swing_target_label_version",
+        }
         planner_payload = self._has_planner_telemetry(payload or {})
         for key, value in (payload or {}).items():
+            if normalized and key in protected:
+                continue
+            if normalized and key == "feature_snapshot":
+                if isinstance(value, dict):
+                    merged_payload[key] = {**existing_snapshot, **value,
+                        "daily_outcome_basis": existing_snapshot["daily_outcome_basis"]}
+                continue
             if (
                 key == "priority_rank"
                 and value is None
@@ -439,6 +455,9 @@ class DBManager:
                 origin=merged_payload.get("feature_origin") or (payload or {}).get("feature_origin") or "scanner_full",
             )
         )
+        if normalized:
+            for key in ("validation_excluded", "validation_excluded_reason"):
+                merged_payload[key] = existing_payload.get(key)
         return merged_payload
 
     def _recompute_feature_quality_payload(self, data, origin="scanner_full"):

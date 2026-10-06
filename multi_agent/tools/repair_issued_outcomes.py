@@ -22,7 +22,7 @@ from multi_agent.tools.update_outcome_return_metrics import _compute_row_returns
 QUARANTINE = "issued_reference_repaired_outcomes_need_recalculation"
 
 
-def recompute(row, original, prices, sessions):
+def recompute(row, original, prices, sessions, *, price_source="px_delisted.parquet"):
     """Require every observed market session; never compress missing ticker bars."""
     day = pd.Timestamp(row["base_trade_date"])
     prices = prices.sort_values("date").copy()
@@ -57,7 +57,7 @@ def recompute(row, original, prices, sessions):
         patch.update(validation_excluded=True,
                      validation_excluded_reason=original.get("validation_excluded_reason")
                      if original.get("validation_excluded") else "issued_outcomes_recomputed_not_validated")
-    basis = {"kind": "adjusted_signal_close_to_close", "source": "px_delisted.parquet",
+    basis = {"kind": "adjusted_signal_close_to_close", "source": price_source,
              "signal_date": str(day.date()), "asof": str(prices.date.max().date()),
              "adjusted_base_close": float(prices.adj_close.iloc[0]),
              "issued_reference_price": row.get("entry_reference_price"),
