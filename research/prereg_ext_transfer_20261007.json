@@ -1,0 +1,1547 @@
+{
+  "id": "ext_transfer_20261007",
+  "registered_at": "2026-10-06T19:55:39.429245+00:00",
+  "beads": "swing-main-5k4t",
+  "hypothesis": "Within the frozen extended-session cohort, positive 15:30-to-19:59 price discovery unexplained by same-day regular return, observed turnover and market continues after the NEXT regular-session OPEN. The observable gap into that open is not strategy profit.",
+  "nearest_kills": [
+    "RESEARCH_LOG §18 T1 overnight/intraday reversion: no reversal hypothesis here",
+    "§30 W4 overnight proxies absorbed by open: entry strictly after gap",
+    "RESEARCH_PLAN_INFO_EDGE_2026-08 §3-C NXT20 reference: require positive residual excess, not a change of reference point alone"
+  ],
+  "research_type": "one fixed retrospective mechanism/rule test conditional on existing203cohort; NOT independent prospective or PIT-universe qualification",
+  "inputs": {
+    "extended_manifest": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/validation/intraday_ext_recovery_20261007.json",
+    "extended_manifest_sha256": "1ccd31c0e951a72e1122ca34bfd81ab563c1ed0cd6d5682e73f9be2573e064d6",
+    "frozen_states": [
+      {
+        "code": "000100",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/000100/4e4e8d4a17234aa9905289ef64da53ce.json",
+          "sha256": "0043253b09d040fe996c2493d9244a634cc5ef510d0fb6199f8a77d82a344d0d"
+        }
+      },
+      {
+        "code": "000150",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/000150/5f5f140f5bdc4c69be49763ff9fb73bf.json",
+          "sha256": "facc83d2cc76733f1655c5b91b84b22f09e92aac35014d072de3b2bff35dfa65"
+        }
+      },
+      {
+        "code": "000250",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/000250/51bd701fdd704b7aa999c344249f5be5.json",
+          "sha256": "f30e3078c1ac80ed63d25f37f7282d25da865924d1421546151cecd0a4e297b1"
+        }
+      },
+      {
+        "code": "000270",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/000270/ac2a818c8cf0461eb79d62d5e4f0f3bd.json",
+          "sha256": "6a7cbe1112841556da903e2a2034ae863afd722f1c99fa8092a7e8cda44cef66"
+        }
+      },
+      {
+        "code": "000660",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/000660/4a9a711e62054192a4170ff0b6efc654.json",
+          "sha256": "a6060168a232c17781bcf80e92c52c34a163bcfb875b28d152762f6895f3e903"
+        }
+      },
+      {
+        "code": "000720",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/000720/fa88be28484249b5957d678636b35f63.json",
+          "sha256": "cb105cf4b43bc4c2fa2a4257a57b77f6a12fdaa96e7dfc75696ac80a13d866af"
+        }
+      },
+      {
+        "code": "000810",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/000810/0d142ec1ab3a41eab53580a46e99c7ce.json",
+          "sha256": "86ed9007e31b6c19727c8be562dddd39ae323d902aab9ee34d3b77616e0ba929"
+        }
+      },
+      {
+        "code": "000880",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/000880/7cac283e150849fdbd1de19bf2b25283.json",
+          "sha256": "6085e26503b6e5518d7ca3bc322946ca5317598aaf694d1404e4b77b0307ab11"
+        }
+      },
+      {
+        "code": "000990",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/000990/438413ab78594a9e9378e4f663ed788c.json",
+          "sha256": "32229994840e97a67b3f13e047a26924fdabd9d28f7489c5a0a9c6de7f2d93c2"
+        }
+      },
+      {
+        "code": "001040",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/001040/e992daef4a214a51bcb53f2cf9ac6d3a.json",
+          "sha256": "e283c5c65a5c8b515e1a419dc9b2c393a6fd539d5b5645082c459f31a1f9b35e"
+        }
+      },
+      {
+        "code": "001430",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/001430/8ded51ba518847568a2699ed23521e15.json",
+          "sha256": "f219cde80c31e08035d7d3710cfaffab0e1c64d4a5c224f38d341b0d4a6e34f9"
+        }
+      },
+      {
+        "code": "001450",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/001450/2e7b7b464dce4046ab90cbd50fd4569a.json",
+          "sha256": "ee253583c3469af1917a8867b8fc96e0bc6a848a2177c534cbecf19f2180bc5e"
+        }
+      },
+      {
+        "code": "001820",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/001820/7098d45a1a434fdb90197eced15c6268.json",
+          "sha256": "22b95e05dfebb2c0ab1d099921f36921dc2c2b3200a435e267591a7aaafa722e"
+        }
+      },
+      {
+        "code": "002380",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/002380/40302dd668de447fae2044efad3938b1.json",
+          "sha256": "baac4f1c7ccf9a4b56ab79f12a75d175fbab5dae71920011dbc832b0b4fb0e9c"
+        }
+      },
+      {
+        "code": "003230",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/003230/65a0dd475d6b4cdc8dd3feafbbef84fa.json",
+          "sha256": "66be9e382ab621904a6965a63dca99d050c1df1a53a649af0d61a71e48ddafe5"
+        }
+      },
+      {
+        "code": "003490",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/003490/9ea9001383e14173988da8b1c60c0ab2.json",
+          "sha256": "b3c5da928833e485bf3abe67d622e095062da859392c4daa0ff4f7c402b22237"
+        }
+      },
+      {
+        "code": "003550",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/003550/11e708ff44514191822a162a42db9639.json",
+          "sha256": "2ec67a55e7f39e45882e435ab4fd588a8f246ee57b23b4215fbb58d87bea5b50"
+        }
+      },
+      {
+        "code": "003670",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/003670/11b464bc75fb4444a3a62197a905634c.json",
+          "sha256": "d8b4cd135eb6f56f4adad8a573129d524a530fcb8e67485aea5b6c7571b9db3b"
+        }
+      },
+      {
+        "code": "004020",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/004020/87d7f58c30c34c0aa534a4f9696f47c9.json",
+          "sha256": "f599e8aac2761641d3c9d864561b789df47fa1059b14e9145bec71155608c700"
+        }
+      },
+      {
+        "code": "004170",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/004170/c8bdde20a90c4f228e17f2efaee1bd18.json",
+          "sha256": "0a465d75a23e83c7497d24ab5654ddc4c223b29ad5dacfb62ac354b00b247f7e"
+        }
+      },
+      {
+        "code": "005290",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/005290/2853253eaf8c4be39da06421883c64eb.json",
+          "sha256": "1c31939dc4eb8e9553c48b5a11ba43602a4eafdb28e638cf93fc2f3d126cde47"
+        }
+      },
+      {
+        "code": "005380",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/005380/a94026554e144632aa9a452ef03e98a0.json",
+          "sha256": "15263a613411eb6f136edf05faea3bac7230ca62263fcaa1be1bce258db23b21"
+        }
+      },
+      {
+        "code": "005490",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/005490/9a967071d5ef4333baa47c85e8e203d4.json",
+          "sha256": "60ce1cf5d516b267765d96b7360c4461a7bf927a587afeb7d4342c11d4422bfb"
+        }
+      },
+      {
+        "code": "005690",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/005690/f03440e0fb6f413bad2ec958747920cc.json",
+          "sha256": "d50c266ef7ceb1ae8f1532ed74f650ccb3168816c2f39d96f7fb1b1d4c61e5e4"
+        }
+      },
+      {
+        "code": "005830",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/005830/55c273d4a87a4565bc035b60b7de18b6.json",
+          "sha256": "9b46d4e5d99a25075cf7b99ce9c2fb405fcde9692ebee4ec57c225f63ca3873c"
+        }
+      },
+      {
+        "code": "005850",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/005850/17a9cb713f064895b08bf11def6f8cb7.json",
+          "sha256": "312b62be9174d72690b1845cbb7df85b0a80c1f712d3ef5e3c71e0b9eed533e5"
+        }
+      },
+      {
+        "code": "005930",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/005930/51d86dd260204304a3b68bcf506f9eb3.json",
+          "sha256": "312d6004a37fbb91c646c180f2186c68a4afb857ebcd3f289a39f4c5bc0feb45"
+        }
+      },
+      {
+        "code": "005940",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/005940/043fe17924ff42f0a0eb97fac20ebf45.json",
+          "sha256": "88877ba86522e1a2a815e28ae907b5d7d2deefbd615ef85e782fd29b5702c57b"
+        }
+      },
+      {
+        "code": "006110",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/006110/912d83d5336f4278af7787276216e968.json",
+          "sha256": "9cbde5f0bf972315273d4aea865193d3449c1b7fb3d07efe5053540659e13315"
+        }
+      },
+      {
+        "code": "006260",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/006260/6538197a29c44db8b55cc851bf913fba.json",
+          "sha256": "1c4b09cc82efebe234fc08e5fd9d0710be41e2338122c5a919d4b264694e1896"
+        }
+      },
+      {
+        "code": "006360",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/006360/da1c926e7f3a4cbc8f6cd90f92093be8.json",
+          "sha256": "9afdd7800b6fe2a60576f8d8335be88c3eebfd6ed141bdde435f9bbcdb73e1ad"
+        }
+      },
+      {
+        "code": "006400",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/006400/91ce25ee62a9451cbaf6ac4bab187be9.json",
+          "sha256": "aa686a7d42dee160109b9b9b85e7d9424d23d9895253777b729db1da5f72a45f"
+        }
+      },
+      {
+        "code": "006800",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/006800/60a427ed781d41fbadaa63019e81fe4c.json",
+          "sha256": "f04f0805ee67de575d21f8b507f326e32f14b723d76d08821fec6660c8d3875f"
+        }
+      },
+      {
+        "code": "007660",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/007660/62bc2c9621514239b94df9dee5630ac6.json",
+          "sha256": "aa4bba0f14d244e4d92d3d8ad88102568d8094128d1656ac993a90958d11b71c"
+        }
+      },
+      {
+        "code": "007810",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/007810/06df039c91f543a3ad6a0437ae55f0d2.json",
+          "sha256": "c6bb19a11974d78a07760abab4cd79ee55a9db65cba11029d5d99bb3c1befb20"
+        }
+      },
+      {
+        "code": "008770",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/008770/4d7148b03ad0439ba1261ab73c5970dc.json",
+          "sha256": "6bf17f629a037af430ca5f58b4c727c4079de0009323d4441f500e469790fab6"
+        }
+      },
+      {
+        "code": "009150",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/009150/fcc47b2c0b024468885548bbb459de2c.json",
+          "sha256": "6a624a06a5485532384f83a4c977f74be0b90f6da784fa720a13312b3138d696"
+        }
+      },
+      {
+        "code": "009420",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/009420/9a803e8d8d54431a80422e8e3beda0ed.json",
+          "sha256": "bfcdfe29e52bf4070e2264bea85069a6ef1116ee5da3bab05edb4022427b757b"
+        }
+      },
+      {
+        "code": "009540",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/009540/ce2249e55209443f889f81e60059e5d1.json",
+          "sha256": "49b6a869eb5f25db71278d955a552817468c94f451f550ed4552472ba79df819"
+        }
+      },
+      {
+        "code": "009830",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/009830/38a603c0cb404948a4a5840fe3f5b683.json",
+          "sha256": "0f3085d351210cf9c5ceb1fab5ec6244c66acb6870016114cd7ee28e81dff961"
+        }
+      },
+      {
+        "code": "010060",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/010060/d975293c9bef4974b237ba2ca04b31c6.json",
+          "sha256": "883d57e941a3ea8e7c97543353c55c523c001455d1097a80cdf8837159814042"
+        }
+      },
+      {
+        "code": "010120",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/010120/35f8005968f543b1a581b74c92faf891.json",
+          "sha256": "9012b674cb647532829e8528cd9bd8684a79be17a03118c10c54fe3a091febbb"
+        }
+      },
+      {
+        "code": "010130",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/010130/1ef9f87bfa0946ea9423fcc9a2710dbf.json",
+          "sha256": "7cf13d41a047af01c061f4ceca5eb1d28b4eebb75b9a7c02a0a3a2ece541c5ef"
+        }
+      },
+      {
+        "code": "010140",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/010140/b1224cfd838d408cb40f1442ddb273d7.json",
+          "sha256": "306960dda2ab3da8317228d386068487fffaff2e5d739d76d6814635286388c6"
+        }
+      },
+      {
+        "code": "010950",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/010950/17da47f522c64351820ab00d3e2b755a.json",
+          "sha256": "c29e886708e5d93e443619cdfb97029473c432bfd643f09b64772dcc300bdc39"
+        }
+      },
+      {
+        "code": "011070",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/011070/b42143b82ae04ea4a1174b282071249c.json",
+          "sha256": "75736ea24c7792d30de13da478a703cf8d8d5d0ee77f8f2757d77c8d8d05c5ec"
+        }
+      },
+      {
+        "code": "011170",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/011170/4ddbafc37a664e05ba347fdc5a079136.json",
+          "sha256": "5238f427899c4e45e39c4d61160b5b7139cfd5be25bb83bb6254d9fbe160fbe0"
+        }
+      },
+      {
+        "code": "011200",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/011200/8671aff29e2d42cbaf564e29da092ae3.json",
+          "sha256": "912d1e4e0690f6fb7fe88a26d9050d1714b91ac4fb7d2374d63d1dc1820f0572"
+        }
+      },
+      {
+        "code": "011210",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/011210/c56de6c27c204003b8dc63a3fd212b4c.json",
+          "sha256": "33571ffb124e80b1ea3e3af138639206c2c008d641788bb0b66a5310d54736d8"
+        }
+      },
+      {
+        "code": "011790",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/011790/ce2e59fc585e4a97bdd0490d6dff975c.json",
+          "sha256": "8a409e84b32f4ff7e5e9339f0aa1e73c0b7efc78d5a1c2d154bc7e72ef8cf570"
+        }
+      },
+      {
+        "code": "012330",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/012330/5dd006ae29f741c3a10d5314e439593c.json",
+          "sha256": "d35378f692ae4e1e3afe0a4385f0033547587a1e5042ced3344f9981fe3f1154"
+        }
+      },
+      {
+        "code": "012450",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/012450/a2801904768047f98d63c0d6b8a3b6c1.json",
+          "sha256": "a43d3af8de4abf9a9a27983918a094f80bddd121ed3f70588bd16edea9d7da8d"
+        }
+      },
+      {
+        "code": "014680",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/014680/93db4b0b79ba40198104b995a6e10833.json",
+          "sha256": "bc4b9dacc95591373edf758229cce97113ad93b2e2c749c8699da125a2fede79"
+        }
+      },
+      {
+        "code": "015760",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/015760/4af66e9af2104352a1ac8859b15613fd.json",
+          "sha256": "17857a6196b1eab023e2fa7048fe36942a95066d10821de1929644d464451071"
+        }
+      },
+      {
+        "code": "016360",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/016360/4d55dfff0764402fbd1c48bbe817c54e.json",
+          "sha256": "f0183cda5eac6b4e7ab67811707f60cb110ac7c098e0a239df3cbffb597c89b1"
+        }
+      },
+      {
+        "code": "017670",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/017670/482f09a810514c53b9b802dd968f2cd4.json",
+          "sha256": "e55126417f414ebb16ebbca53d69ed26251cba17a5723b1fbc187040adca3902"
+        }
+      },
+      {
+        "code": "017800",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/017800/9ad4fc254e7a4bcda11266043da8f9d2.json",
+          "sha256": "e487067e14047ab230f454b0a49721012cbb697a2da833c02c0caa96c20ca95d"
+        }
+      },
+      {
+        "code": "017960",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/017960/aecf756efca2412b9dcccdec742285ba.json",
+          "sha256": "4c291da6f5459c78eef1b486ad57d91502ca31d84da0246ee29f8c031171a4ac"
+        }
+      },
+      {
+        "code": "018260",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/018260/c758cbbe2b944b81be6bdbdd89e55b9e.json",
+          "sha256": "6cfa6652bc207aec5108d0acec9708a8548b5fbde40232504ff3ffa83a5eeba3"
+        }
+      },
+      {
+        "code": "020150",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/020150/e96e5b676cf246c7b1c7cc42dd5707aa.json",
+          "sha256": "74d5250ee9a3d6d1696fa37441cff4b9e8375e6145a0a8cdc370082ea361863c"
+        }
+      },
+      {
+        "code": "021240",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/021240/82619587f93444d0ac90a88a0a7fd1f7.json",
+          "sha256": "4cadc741535bf14c8642c87bc9422466fc9e845a60c0a0832565dc29844f5b0c"
+        }
+      },
+      {
+        "code": "022100",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/022100/fa3bb27fc1884ff8bb913c6cc2fa09bd.json",
+          "sha256": "918a36cfc3a098eb3d38dc4b294bed36a95e1d85f162b41096d8c2f27ea23658"
+        }
+      },
+      {
+        "code": "023530",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/023530/a433691d0b224bc1b93d482c656696b7.json",
+          "sha256": "4a43e19393a19fe5e90c39594cbb7565242f4854ca9c02e5da470ae28670c327"
+        }
+      },
+      {
+        "code": "024110",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/024110/c156e685dec1419ebc2dbb421d909b9d.json",
+          "sha256": "a70d535986556b0c1b046ee03f305a35853ba547bf877e4e684c225515fc055a"
+        }
+      },
+      {
+        "code": "028050",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/028050/d1dc187fa61d4d74bd7e056792d3ebcc.json",
+          "sha256": "742af0d28cbab3bee421e3d66fa244cbc120012b32d50adbf4ee81966843cdfc"
+        }
+      },
+      {
+        "code": "028260",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/028260/43aaf5364fc84826b8fb7a2dbc826d33.json",
+          "sha256": "41967b9a813a0aa0a6d2aab4231c8a6a681803ef38777da7db6cb864fa64670d"
+        }
+      },
+      {
+        "code": "028300",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/028300/35eb77d6481d4455a26f975303d23faa.json",
+          "sha256": "8fe63079ef1efa3d62c313698e7d8d41c3af4f48311df633d466d835219d6d08"
+        }
+      },
+      {
+        "code": "030200",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/030200/754c1edbf007476a8939d28da3d64ea7.json",
+          "sha256": "078bcd65aae1d716bce64bcb5e7e06b2bac69e19557f0ee35ff52188a79e67c7"
+        }
+      },
+      {
+        "code": "031980",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/031980/e85adab239c145ea8c1f545f6304f5b3.json",
+          "sha256": "dd0d006887af15f567c8069bbdfcc2864ef60d3c3db4602f8bcf1cb1173be18e"
+        }
+      },
+      {
+        "code": "032500",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/032500/9204de81aca442cd83fecbe5ca414460.json",
+          "sha256": "5cb48423b292f0eee82855e0cae4696430e0bed6de845a97a34ffec889a23670"
+        }
+      },
+      {
+        "code": "032640",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/032640/a588128d587f451e96ec6f1b40bed03f.json",
+          "sha256": "13d65b2d585f1510190ba48154cf1e328ae239e304398908653705055515b678"
+        }
+      },
+      {
+        "code": "032830",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/032830/d3fd94664ed842ff86dae27a49e5ad8b.json",
+          "sha256": "5b5077a314590dd9960c097a4c6560b676cb3872db29e3e461d19e41b2ecf82f"
+        }
+      },
+      {
+        "code": "033780",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/033780/feba24cf1fa848c6af0bbb67be020186.json",
+          "sha256": "a67387509629f9526628f80b0caa4f874fca2396965ea93f3d316c842b53a115"
+        }
+      },
+      {
+        "code": "034020",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/034020/9afbc693ad4f496ca5ecadc8b7bbad56.json",
+          "sha256": "6e1d06e926e98f541172e7923287b3c259994a31e4241d531a236dd8a11b2221"
+        }
+      },
+      {
+        "code": "034730",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/034730/e1ae426ce87e460fa15927bd4b8e8783.json",
+          "sha256": "1384ff5ca26153057c53a8082cb75b609e91d77bd129fe897dbd0fa0a8d266cf"
+        }
+      },
+      {
+        "code": "035420",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/035420/c321ebedd8314487b2c19afee305a7d8.json",
+          "sha256": "d63a7410ba78469e72d01fb20d2c5231e7c1e19bb730bfaab4a26b9ea8074037"
+        }
+      },
+      {
+        "code": "035720",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/035720/e66d278555b144d0b12108203dd29e6e.json",
+          "sha256": "9baa02135f503f38ce7a30d39b345919a0a5d68217737d52aed061a5153c4c6a"
+        }
+      },
+      {
+        "code": "036570",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/036570/949a54e5a29c4a67a50c52ff3441d414.json",
+          "sha256": "e78dc0dd559b0cf540da9b2f43c6fa42b646374a74aef32a7d93d5d4c50125b3"
+        }
+      },
+      {
+        "code": "039030",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/039030/23a54082785e44ec948299e955407a30.json",
+          "sha256": "e617c49dc69fa91f8cf29ba45532cdcf8d208dcd305eaefed9f2da612cad5433"
+        }
+      },
+      {
+        "code": "039490",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/039490/99edb8fd9fc2403ab7b3b67d3e748b0c.json",
+          "sha256": "c24ba0676aaf63bbe2d2e3d9be7ec0c417bbe8f6c8f17001deb93f0ddd930c8d"
+        }
+      },
+      {
+        "code": "042660",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/042660/2b529f09582f4b979e9ef7ea52d5427e.json",
+          "sha256": "3f0f315b7383ed29f5c05fc1f7ccf693dc8ee0cf504d0e98ffa72e8bbe07b755"
+        }
+      },
+      {
+        "code": "042700",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/042700/e464191a866d4467b9da8f76020ce170.json",
+          "sha256": "ba474ebc5c496da2a5aa9a5c69d1c9ab049c79c602b3f3fcaabfd061bb5ce21a"
+        }
+      },
+      {
+        "code": "044490",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/044490/472cdac6bcbb4d00bc48999eb880c871.json",
+          "sha256": "4898d18a66f9d9749dc154b396ee8d8068980f38471e46c34ca7b6e1bdb26665"
+        }
+      },
+      {
+        "code": "046890",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/046890/b551f7f07f024e09958d6ab9a6959ecc.json",
+          "sha256": "1e1ad186883af7a3ef894764813ccdaf570e3994908be0bd68eb285484820e8a"
+        }
+      },
+      {
+        "code": "047050",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/047050/75dcc828ac674d818cd5a63b4376fa0d.json",
+          "sha256": "88a1fbac6d21dcbd6c1079c49b997d9d93a448e0fff0a812682c1cbfd3c98d13"
+        }
+      },
+      {
+        "code": "047810",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/047810/8b968efeeb2047dfb77170c0a2c753aa.json",
+          "sha256": "a7a0a5fc0583a2ebd364dcb33432a0e4c17853877878f9c82dd2316f1d3a3f0f"
+        }
+      },
+      {
+        "code": "051900",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/051900/9f8d430271ea43ffb51049d3b5347e34.json",
+          "sha256": "191a7c52af8d84e76a5e9a41f616211622e25c0862e33aef7b075e29c431f9ce"
+        }
+      },
+      {
+        "code": "051910",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/051910/5325185791bc4ce886fb16989ce22bd3.json",
+          "sha256": "2a31baf286925e3edfdecacfeb062db37fc99f99852bf52f60b133ffa37a0852"
+        }
+      },
+      {
+        "code": "052690",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/052690/5835f20a58d2443cb84b38fe2a4972d9.json",
+          "sha256": "b3868c8d9895ae1cb773889dcc9f22257610adec02c77519d9cc5f9fef4e9a9d"
+        }
+      },
+      {
+        "code": "055550",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/055550/8fb4c9bd814d4793ada8264f80a5346c.json",
+          "sha256": "0feef762253aa44b3239204c9df1f5c650aba8d5973bb140a2f98e34b75021df"
+        }
+      },
+      {
+        "code": "058470",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/058470/b2706b2b271a4c6487ab79ecce4158b4.json",
+          "sha256": "391c9b2df207141ff20200fc083ef2ce2aeee419fca44850cf1999ab21d020c5"
+        }
+      },
+      {
+        "code": "058610",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/058610/129225b6c26f4d79a3d530e5741f7315.json",
+          "sha256": "1fd7801dbdc965d05992eec826933863fc143248fda84c6547b065198d19bba2"
+        }
+      },
+      {
+        "code": "062040",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/062040/ee5451cc4fc04f7d9bce093bd1209282.json",
+          "sha256": "d96cbd8cd84b03156b10ba119fd73f6b72aee5eef9cb88376b195f364b6c46a2"
+        }
+      },
+      {
+        "code": "064350",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/064350/0d5e4327006c4df6bd53851809616918.json",
+          "sha256": "333b29accd02967236576b16ffbada9c5a2983c6733463df69126c1550d6d73e"
+        }
+      },
+      {
+        "code": "064400",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/064400/a830e53be7374e27a13c3f42d1617a21.json",
+          "sha256": "cadb034945b1dd9a5ddc734d00bb1874fcc288cebb0e7ed2aadeeb8c227d4909"
+        }
+      },
+      {
+        "code": "064760",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/064760/5dc8e48337b043e5a88675eb44a367d2.json",
+          "sha256": "01269a4307ad1a6714953a5e4ad6f21b75dd63b7d1a6bc494f17e48e09c22038"
+        }
+      },
+      {
+        "code": "066570",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/066570/ce11703d89134bfba93fd47dbbfd7654.json",
+          "sha256": "996b7350b8f5ede7d53656e62840440be6fc08a6b4d1c7fd33d306fa080bdf2d"
+        }
+      },
+      {
+        "code": "066970",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/066970/6a00d4ea267b4de1b14216ce443feeb5.json",
+          "sha256": "beec41d23770b68dbe477281f0ead8591ce3391e70a71a464e9d346dd62ad380"
+        }
+      },
+      {
+        "code": "068270",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/068270/e820ddcdefdd4f069e2ecb615d1c694e.json",
+          "sha256": "edfa19b0a28c9eaebeccce513e6b98f52ac8cc70b5dfa84da262a1d2cfeac3b3"
+        }
+      },
+      {
+        "code": "071050",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/071050/c0281a0bc2724833ba1bb0097c22058a.json",
+          "sha256": "6c7257b9255ec82465b54d1dbfde9b44cb99ed5454003da20a3cf7ed0722369f"
+        }
+      },
+      {
+        "code": "071970",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/071970/8a94f607118547e3bfff6a0baeb20a39.json",
+          "sha256": "b50de3f5aa9f1927545add749e3020d10d75e4a2c9c9464d1bd5b352e566de52"
+        }
+      },
+      {
+        "code": "077970",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/077970/4e0912ff47814fc499edc62650dcc40e.json",
+          "sha256": "8078c1b35b992d670985531a5b703be50dbe1ea3442d26f617d824479788b1ce"
+        }
+      },
+      {
+        "code": "078600",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/078600/8af8e6a95c3c44ae95557dc5e7ca1c31.json",
+          "sha256": "64f32b40d1f00b9c07a9055d6005d6357ef91c03adfaf24d80e0237dd85246a8"
+        }
+      },
+      {
+        "code": "078930",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/078930/41cbeb2ef4794344b97c0f1479b64577.json",
+          "sha256": "6678e89d19074db4df90483fdaa3003fc8a8eb3e0c230b9aab151ca04d55cd5b"
+        }
+      },
+      {
+        "code": "079550",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/079550/8ea0ccb4a43d4595bd78700fa69664fa.json",
+          "sha256": "881f61929bdfb6c61e726ba33169aa440bdd101bcb3f04101245ad5dfe5844b5"
+        }
+      },
+      {
+        "code": "082740",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/082740/3d11ad02c0014f3fb3e2c32841b6912d.json",
+          "sha256": "c89b9da332dd4d15c39a9112c1a9d17a7aca5551e921330fd6e2447fbe4d5b45"
+        }
+      },
+      {
+        "code": "082920",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/082920/b91c9f6953444cf8b2ab2e15788f1b22.json",
+          "sha256": "1d84aab23a4de638b46cf8b94b14d105a4e1122ed8976fb1846a790259e71072"
+        }
+      },
+      {
+        "code": "083450",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/083450/bca31f86857446049015b2b82c4c425e.json",
+          "sha256": "0b51e553eea47bbc4f02cc9ff001a528cf82a6f96a92061c61408db9771cf9ba"
+        }
+      },
+      {
+        "code": "083650",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/083650/e06f6f483dd64217850b02be462284fb.json",
+          "sha256": "f9af629cc56962a546c808c14098ed1c7ab75a5498d6f26330fe6a172661cfe2"
+        }
+      },
+      {
+        "code": "084370",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/084370/9daeb355b2f744d5931a1103d982b971.json",
+          "sha256": "09022825b9d2e92585d1694404987fe9ccf03e90f4a0d073fd32ddcdbb2fcc40"
+        }
+      },
+      {
+        "code": "086280",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/086280/7940d508260748afb74bed10424f2f7b.json",
+          "sha256": "3b8f3d4cf40c2ca8a84b4dcfe1da8ec8c7522d8cc6d766cb9abd484d87212fc2"
+        }
+      },
+      {
+        "code": "086520",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/086520/0bc41dd81cc4427da350f92b261937be.json",
+          "sha256": "f9c59382be09df772f4fce641f6bcc42719c592a6e805224db2bcbee88f8b19c"
+        }
+      },
+      {
+        "code": "086790",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/086790/20a68333c0194aa184196b9af6c63dd0.json",
+          "sha256": "a8754b81291c6d862f35a5956c1bd145ed631bcecb9ea6d79cc05bfb086106ff"
+        }
+      },
+      {
+        "code": "087010",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/087010/8cf24e536fb045fea2dd05dbfcf70aee.json",
+          "sha256": "3449152c504f52078b3a343680b379950428d25cb02fea7797a1724a622173b8"
+        }
+      },
+      {
+        "code": "089970",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/089970/f5667b1f369b47fc8f52ada967396049.json",
+          "sha256": "43662a8be29a6658a2482a96e26b8ba9a84c1879200d7c2fd1689c83dad513f9"
+        }
+      },
+      {
+        "code": "090430",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/090430/35a982f444ef42548c1ad97954e12e37.json",
+          "sha256": "7b1d16f1c7daf954cb3bc4449253b2a9e9751b5d219cd6a716aa68e8dfb102d5"
+        }
+      },
+      {
+        "code": "090460",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/090460/fa7a621f99f942e188a3f0ede6884faf.json",
+          "sha256": "94ecc772b040de5295ec4a6be4a74fa6589aed85f00c932aadce612e262e23c1"
+        }
+      },
+      {
+        "code": "093370",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/093370/e290bf33db9a4308844cbbfd0a31b461.json",
+          "sha256": "3eab5c2b24e924f0b51a509d0b8eef279d3ce10296612a10f101e2077515766e"
+        }
+      },
+      {
+        "code": "095340",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/095340/19db776f384e4c15a86299c04d0c5e27.json",
+          "sha256": "77f5e6db696eebe93d2908ac3146dbb414a5ac17bb279d583b35846d981e3c8b"
+        }
+      },
+      {
+        "code": "095610",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/095610/73c27c368de541879957e1d228584209.json",
+          "sha256": "cc61c002dbda8b117c9ea358d6374da6a3b99c38b07f0f31da641e5e6367815b"
+        }
+      },
+      {
+        "code": "096770",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/096770/79b3b34974684e8a851823dd3712468b.json",
+          "sha256": "ff8c875b1d3a8ddfc12c82ef7ffc5d9d5a189906a51d5054a45f74a2a0af8e0a"
+        }
+      },
+      {
+        "code": "099320",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/099320/46614191a0694438bb996b545c8e9ff4.json",
+          "sha256": "5ef7d22291c1775de774eaa39cf1f18c626f4f37f5cb0b7b3f4132871c401e9b"
+        }
+      },
+      {
+        "code": "100090",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/100090/c648009e057144e6a9a3efc0756633b4.json",
+          "sha256": "04637f56cf7d726d455f3f2370cc55516b0f5f7da36fd0f2ef274dc507413b27"
+        }
+      },
+      {
+        "code": "100840",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/100840/ab2bd46796414dbb9c4b5584a66107a3.json",
+          "sha256": "e6661a1d7b3a47e4eb418934490affe3c8b06aceec2749130becddbe29233ef4"
+        }
+      },
+      {
+        "code": "101490",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/101490/6a3c0070d94a4129becf50ce407510c9.json",
+          "sha256": "2afd274b808786279bab1247c9eb592adac5aafe9c52fea94eac9c06a263e700"
+        }
+      },
+      {
+        "code": "103140",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/103140/04f8b723c6684e2ab8fbc8357089a063.json",
+          "sha256": "d098033cb31ab8aa2890c95c362a14837d72f7b46c7faf749130ef59584c3b75"
+        }
+      },
+      {
+        "code": "103590",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/103590/016bf35b3ff74d68ba911b2486ae6d22.json",
+          "sha256": "16bee4ba6ebc7cd94067c084e91786e74b0e627803938a421600ea2d97c70f7e"
+        }
+      },
+      {
+        "code": "105560",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/105560/b41fda560f584ed691ad88a393d224ce.json",
+          "sha256": "da4391037e03b1d2e89b41abb81579c28c2ba5d8ca1531fffdc5b73175372dc2"
+        }
+      },
+      {
+        "code": "108490",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/108490/fc5d1c8530ea4af1b37e022206822be4.json",
+          "sha256": "ea1e35610dc4025c38b19b85352247c6f714915154218e3693b86421a425b7da"
+        }
+      },
+      {
+        "code": "112610",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/112610/b7960f7599bb4d0d8030a78f192a1647.json",
+          "sha256": "9344d097749074ba4a349579422ddef9e9a11a4269d7fc8bd51385b4b6bb4acc"
+        }
+      },
+      {
+        "code": "120110",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/120110/6d5f4bd1cad44614b234dbbb328106ac.json",
+          "sha256": "3cf999be0c100419183cd77e1b728380ab09a450a64dbe338a7a2eb9562087e5"
+        }
+      },
+      {
+        "code": "126340",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/126340/d9ab9613181b4fb79c3e7cff378861c9.json",
+          "sha256": "e4de3a0e863e4b26b9d64e5e806b18bf32ea438fc1618004034afcfd4f4387e6"
+        }
+      },
+      {
+        "code": "128940",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/128940/f7f06463687f484eb7f9668db14478a1.json",
+          "sha256": "8d043b6288c9deee6fc3093eaf6da1bc63fdae2d3f24e0e13765aaa6724388be"
+        }
+      },
+      {
+        "code": "131970",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/131970/2e966e93d15b4da191772b9d370c85d2.json",
+          "sha256": "3d7d331aeae9bac7296d5328d9b19ceeba352be486baefa9e0e5fe5e96db8e6c"
+        }
+      },
+      {
+        "code": "138040",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/138040/77da7431a5bf406cbff57cfd0e1d8d29.json",
+          "sha256": "231026f77b0941942ac3aa8303ab80abc26662b69c20bac87ad3d5a4bada1878"
+        }
+      },
+      {
+        "code": "138930",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/138930/923e52baa8c049f3b21367aa08012948.json",
+          "sha256": "b8401f454c0d58423ef9d981ad760a47aa0758484a130af8c4e119fdd657fb54"
+        }
+      },
+      {
+        "code": "139480",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/139480/5eb539d0a6b9423abba026da7f362044.json",
+          "sha256": "1158d530c3cbc348d1f4c43c50a1b29239594ac42ffe24d0a4e2d6dcec1a2b28"
+        }
+      },
+      {
+        "code": "140410",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/140410/5a18dc74ceb741dd9b5b654427325e1c.json",
+          "sha256": "870627715427928f4d111b1904b65c3a3531351df7bf3703f1527828cbb42133"
+        }
+      },
+      {
+        "code": "141080",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/141080/5d743159f61e40039656c0d9ee3def56.json",
+          "sha256": "699c5bdd9997234e579d581493cb0e3c33c5e300334f0cb3d1647247293d87f0"
+        }
+      },
+      {
+        "code": "161390",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/161390/35ae5e4bf13543eaa73c1b84f429c409.json",
+          "sha256": "8cfe7d6ce6c9fd543c6f4303492f625cb80897cc0003c5c77257c87867a87742"
+        }
+      },
+      {
+        "code": "161580",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/161580/cde3f69519ca417a8b51b1c29b386ac0.json",
+          "sha256": "d0ad7146a2a9f1c46e395fb9cb24a91acfa1f255343259c7ae6bf245e6cac1f9"
+        }
+      },
+      {
+        "code": "161890",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/161890/be25dae20e5543bd8e8c821b45bea45f.json",
+          "sha256": "e45e539760f4b3ea920624b478eb9e3ad2286e6fc487b6228950edf6a61c1553"
+        }
+      },
+      {
+        "code": "171090",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/171090/b315d50ba51c4173ba1c3c743f42dc4c.json",
+          "sha256": "ed04c0348a540e77a78a1170fb9ab3047fe2250b84ddb00a6856eb5926982895"
+        }
+      },
+      {
+        "code": "183300",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/183300/6f911433f96144328fd66aad194e2feb.json",
+          "sha256": "ebb06196d67de22c3416fa287660d477527b38382b75f37c80b61786bb064f5b"
+        }
+      },
+      {
+        "code": "189300",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/189300/a46829bedf794149928c7cc7c925c859.json",
+          "sha256": "5814a6b7e5a1b6cf755ea5368d37e26a7396ef169c080ddc7f10f8dca2c55cee"
+        }
+      },
+      {
+        "code": "192820",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/192820/c5d33b23caf34fea815f73589b466182.json",
+          "sha256": "6361c5a8b3dad3b21ee37c52d39d487cca6156d0134fcf855508f0fb558442ab"
+        }
+      },
+      {
+        "code": "195870",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/195870/4213ade0d69c4372b4856e23c1bd48c1.json",
+          "sha256": "eb74988b2aee22a6bbeb71b44da79ffd38a2baa35b965d28c2cd572990b2a471"
+        }
+      },
+      {
+        "code": "196170",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/196170/6e48bdede3b246248da8fe1f0af8df2e.json",
+          "sha256": "0993c94040e0702b390afae380a88c93d2a96934a22925a57f04a616d5f15740"
+        }
+      },
+      {
+        "code": "204320",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/204320/c9d008a0be9e421898a5772185a25dc2.json",
+          "sha256": "f50e5bd554bb0170c76814a67e7e309a87bc65273a4e78372278f84463c0ecbd"
+        }
+      },
+      {
+        "code": "207940",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/207940/6760df08d88940fc946e720c63035769.json",
+          "sha256": "99ea9fe57f6f0eed2f8002a9217f3a3d735119a8a0e05e4dbce985073a212880"
+        }
+      },
+      {
+        "code": "214450",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/214450/02c250501b444e21b863629ed645c188.json",
+          "sha256": "59367a5295b57ddc3936a9e7d75c0e2901514011b1ff602f886038e46018b341"
+        }
+      },
+      {
+        "code": "218410",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/218410/e6a05e66dc6d438ea0fb4a9edfa4060d.json",
+          "sha256": "780783ce2a35222c87ce524f5149c2062daa8e23b3a12c24b6f006d9e4ed0f7a"
+        }
+      },
+      {
+        "code": "222800",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/222800/d8bcb6fa0dd147079030df962cb8eda2.json",
+          "sha256": "627969996eda15cd585deda6a71b090e4aa4faed3f3efaace410ae9ed6ff6c4f"
+        }
+      },
+      {
+        "code": "226950",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/226950/0b2453c87a67495ea16b9a7cafa2be13.json",
+          "sha256": "f9f510b1bdfdd99160c5bd2f61e24bcfe131f2eac3a5a5edd0c8d341ab6179b4"
+        }
+      },
+      {
+        "code": "237690",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/237690/c1d057177ac740078bd4b5fadbbd284b.json",
+          "sha256": "6b0112e6d2354f27ff75de0007e41d51d2482e9654cfcc65cbaef3141a4cf2fa"
+        }
+      },
+      {
+        "code": "240810",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/240810/2b800b25c9304da080f67ec893006795.json",
+          "sha256": "ba7886ffca036a499c28bbef4131ce9abd3447101094d8c2ecd24850afc4355e"
+        }
+      },
+      {
+        "code": "241560",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/241560/65d94214ab454c5d8b72a199e13253e5.json",
+          "sha256": "853cac280314c9d4dd141cdc8bc9ef65bb29111401f52487d771eec8f4884c58"
+        }
+      },
+      {
+        "code": "247540",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/247540/15ad5ff541214e8b8b4454f3ed98cdec.json",
+          "sha256": "c6f34da4ea725344c60d268987f3e2e41b012911b634cf3d84d20d016150eb90"
+        }
+      },
+      {
+        "code": "257720",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/257720/e1a9c4f720d5443da15623c434b52ff1.json",
+          "sha256": "f5435efe100ef94f2b73070c3c73204e9be33e856e686aba44dce71617006435"
+        }
+      },
+      {
+        "code": "259960",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/259960/c44856a9ef5f4c1c87c4c9299d9d8d59.json",
+          "sha256": "2bfcbfafcce1201f513f13b13c75d7432b0cb1a706540e6fc3631e47e786cac2"
+        }
+      },
+      {
+        "code": "263750",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/263750/5959c9710e3642ae80b725a0f10adb35.json",
+          "sha256": "da225da8bf55535211855a783fd735f87c64b1c620210fc0102fbf05ee5bdb7e"
+        }
+      },
+      {
+        "code": "267250",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/267250/10934bf1715e40608e20c5c11498fbff.json",
+          "sha256": "8614429aed02fda0c36048948a69e3f39ac46ff5068f0703448ceef1371c233d"
+        }
+      },
+      {
+        "code": "267260",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/267260/421a7ea0dee74562ba1ebde721bed6f9.json",
+          "sha256": "23d2bed1566fdf3e88b60385cbef15003be14c9263b02bf0042d240dcfa9a6f2"
+        }
+      },
+      {
+        "code": "267270",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/267270/195efebadad44ba5ba59d5047c9702da.json",
+          "sha256": "100c845a156295eff4f623a366657b90c7568bcd87418decf5e78d9f7f8f68e8"
+        }
+      },
+      {
+        "code": "272210",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/272210/e9cff4be782c4c99bc347ee2fb0daa8e.json",
+          "sha256": "ff6b187e52343ac0b823298905c07b2db6a2372a20c610e6c48002e441580e2c"
+        }
+      },
+      {
+        "code": "277810",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/277810/acfe0e6ccfc04a458e739bcd4b11f6ce.json",
+          "sha256": "7f7c271d6cf2646865c2a858c927f85cc844ac5632308ba9b26e4720f066e44a"
+        }
+      },
+      {
+        "code": "278470",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/278470/fa7cf9af38804c65a24ddebcb9f8e601.json",
+          "sha256": "fb5602e73a53a6bb4676f26419807572cc4aecaaf8b610163c68d4557bd7099b"
+        }
+      },
+      {
+        "code": "290650",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/290650/1a097df12ea546e1bf3025197f961069.json",
+          "sha256": "1c0c44644d7ffdd8a4768d3f753dc53aeb955adb2a1955ed9701c04f88e18cef"
+        }
+      },
+      {
+        "code": "295310",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/295310/a8192d87b73f45bf836226c258c182fb.json",
+          "sha256": "4c57d308b1420d9e2d460a145dd26413a2d790c649c2c96522577a0347c17853"
+        }
+      },
+      {
+        "code": "298040",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/298040/25deec0145df4cf0ae6f034b9b6dd595.json",
+          "sha256": "74a24ada1e937c1a36afc28d09022a2fc482d283fba157929e1f948293224041"
+        }
+      },
+      {
+        "code": "298380",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/298380/286a089c496e4a648040f238fc873b52.json",
+          "sha256": "10c5af0b70f50abe77bbda82589daa388e3620e80efe6447917b3cff49261fa4"
+        }
+      },
+      {
+        "code": "307950",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/307950/755c4f0b63d94bf8bdefb5e0954f0863.json",
+          "sha256": "e6b441d3796ab4635d0c41115ec61edfd558110b357633898ec22305a6715a68"
+        }
+      },
+      {
+        "code": "310210",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/310210/b63cfa9f9cf14d24a348d6d04bfd8b8e.json",
+          "sha256": "132217b3caffe547d2a09b0a636190eb71ae3eb56131e5afb1482c58d4b538d5"
+        }
+      },
+      {
+        "code": "316140",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/316140/ff0bc065e1b043358c25158bc7860a08.json",
+          "sha256": "1f3b6f0bdd28729b252fc9c1135bf3ce00361a1a91b5783a21f6733ad49c30e6"
+        }
+      },
+      {
+        "code": "319400",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/319400/16ecff6ec6a942788296366e32c3e0a8.json",
+          "sha256": "8ac17a980c3b805c96388e410dfe941a84532b3e3abd9753ef80fa923d17d7b9"
+        }
+      },
+      {
+        "code": "319660",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/319660/1ea0d3e0b6074be39fc8e4504efb2eb2.json",
+          "sha256": "261c90505b6adb71c0c23c08b5d225fb0950a75c129fe8643443f0c3ec5ade17"
+        }
+      },
+      {
+        "code": "323280",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/323280/7e701b9a7ee64483a8a5b1e3639092c1.json",
+          "sha256": "a1e19430c8581a073ab4f6de8eb08aa808dfaad470bbbfa80287222c7247a98f"
+        }
+      },
+      {
+        "code": "323410",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/323410/68aac20ea0474791bc2c2f1031f0fa51.json",
+          "sha256": "0ed8535663d6428ecd4273472addce9598efe3ac6b2e402f35a7e1225790d6b4"
+        }
+      },
+      {
+        "code": "326030",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/326030/38652382a65343b79eb202c84f368e1f.json",
+          "sha256": "7b15004c65ad22e2119740321f339bae406f9e7ed71c015c98714302077395a7"
+        }
+      },
+      {
+        "code": "329180",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/329180/ec4f403a213443b1a22a5e1a2ba85a4d.json",
+          "sha256": "25ddad0b886fa38568170de4cd3e702f9b5600c23b0f4a56fecdb3c39b07646e"
+        }
+      },
+      {
+        "code": "336260",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/336260/b24c14d165c8400994806dd5a0f5a050.json",
+          "sha256": "75e0007709a3d4d35de2107ab06cc7090be80485f2c1de96872b8fe3fd330190"
+        }
+      },
+      {
+        "code": "347700",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/347700/d882d87d4d8e402a97d6667dd7766466.json",
+          "sha256": "f972ee00a5aa1634656d2a8844c810fe6880d021d342d040970c9b8622b4961d"
+        }
+      },
+      {
+        "code": "347850",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/347850/6eb5c038ddf2480d99b96ae201af5cc7.json",
+          "sha256": "9a9e0af14d4fdb6d5ebef05ecb61e787644065d65ed2b8cfd83ecd9c394431a7"
+        }
+      },
+      {
+        "code": "348370",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/348370/13b84a7d00de4ee49663f2dbf55d8422.json",
+          "sha256": "c216ec382f0218b1febb88ad27f4adda3a7bf7a1e9bbc353e6ce5505b41d4ef1"
+        }
+      },
+      {
+        "code": "352820",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/352820/3714e193b083487dbf16fbf33bc8d1a4.json",
+          "sha256": "a8a5f8ebec91d2c7f32da94aa3c987ffc120cba78c2cd39a203c4dfe0e4913eb"
+        }
+      },
+      {
+        "code": "356680",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/356680/0a9dd1bfc5774d9e8da48920b6d99830.json",
+          "sha256": "b0f6734ec2b0bce29cfd991df1252a22a2f633190237a01afc04bb38922da472"
+        }
+      },
+      {
+        "code": "356860",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/356860/4cdb76596446454990fbdd395a806c51.json",
+          "sha256": "9a9b7884c7d118d970202a0ecc9cd85572c4b338d3ad33a2aa3fe1a183ba886b"
+        }
+      },
+      {
+        "code": "357780",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/357780/d02350444e0042dca7be1fd777785ff1.json",
+          "sha256": "e20bde01c5224386649e87fcdc2e7a3d4b1bb60f0e3a5c6f1f584ac1d9df13ae"
+        }
+      },
+      {
+        "code": "373220",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/373220/bb127a5434b74bf69d1b6b9692bb75d3.json",
+          "sha256": "ac25b44e92ffb3335c3509f9eb167bf3c4c8f78e683cc602cc661f176ab6b954"
+        }
+      },
+      {
+        "code": "375500",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/375500/af1c3b65b1f043719dcb9f2e27d8261a.json",
+          "sha256": "356409e7900b39cdbb64aad6673ec7d08141e88c0caa0ff3fca80db90d9e685f"
+        }
+      },
+      {
+        "code": "376900",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/376900/fcb418b90f5d4dffa586b0ffbc047181.json",
+          "sha256": "e16320f53f1c5a6cd8af893706d7db5886605b620079e89d311518723594fe99"
+        }
+      },
+      {
+        "code": "377300",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/377300/3e6a98336b924026a3481ab7517688f0.json",
+          "sha256": "82da78bd69fecd06c94c300bd84fe09a173d61d7f63440a37136091266f6c3f9"
+        }
+      },
+      {
+        "code": "397030",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/397030/188dced2a0184d1f80797ac53d248a98.json",
+          "sha256": "c87e609613eee350e952c0843c0844e86ed7ff1dcb3d799dda5e329956d31a61"
+        }
+      },
+      {
+        "code": "402340",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/402340/4eddd1f94d444eaeb492fadb7e223775.json",
+          "sha256": "fd02fa7f4c49a352f5cdeb555f3f1ef66f2b66cdeeb4141d2bf681c346cadf1e"
+        }
+      },
+      {
+        "code": "443060",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/443060/5ad2a26fc81b47dfb00fe221e6b30e1f.json",
+          "sha256": "b5b0f4e00595c11c89a834a94860af6b1d4125de2cdd7b82f35d931cc43df954"
+        }
+      },
+      {
+        "code": "448900",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/448900/5986e3802fab4426b551c8753c2b24dc.json",
+          "sha256": "7518790980a4e0601a1de214ff7fa59ba64eb931692cb36e6b5acd75fe1b5344"
+        }
+      },
+      {
+        "code": "454910",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/454910/cc9788dd40a545a1978ceba7c9ac9873.json",
+          "sha256": "de7552756a858d43fd9605866d39793a7397b96d831eb106e2b099dafe4703e5"
+        }
+      },
+      {
+        "code": "457190",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/457190/5eefda5c2cf74330b6c61c51cedf4cb7.json",
+          "sha256": "d58160a03145258a2016e2603ef070a1dcfd390f3463847e9d208d3d8fbce95b"
+        }
+      },
+      {
+        "code": "466100",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/466100/763a447ab2224890b9e58a64ceec0f6f.json",
+          "sha256": "ad63ae1803083022a5335d2f35eddc22cc8817bea68c7cd1f503a073aeb2efd6"
+        }
+      },
+      {
+        "code": "475150",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/475150/34db7617cc62462a90c615c1a895bfdd.json",
+          "sha256": "e1ced192504a0fc24368e3aebf8c69f5c6307063519a7afa83524fd75416b7e9"
+        }
+      },
+      {
+        "code": "475830",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/475830/2787b38c4d814315a2f41313d9b8984a.json",
+          "sha256": "2a9a2d00bb766de236d47edaaa38ba6f47f01d9bfef15277af96044e8beece67"
+        }
+      },
+      {
+        "code": "483650",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/483650/1d4823b7d3ca4b938df0f9c72168099d.json",
+          "sha256": "8061a16d759989f8b2e6bfaac882a6b724f63054d4ccedb346ef64e657439d09"
+        }
+      },
+      {
+        "code": "489790",
+        "journal_state": {
+          "path": "/Users/dongdong/research_cache/intraday_ext/.backfill/journal/489790/01689b2a13b6485a81245c286cd79390.json",
+          "sha256": "87eefacf4ce21ea7599dc1916799cb648e1c8767cd6a63dfa4d60b9005836c14"
+        }
+      }
+    ],
+    "calendar_market": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/audit/ext_transfer_20261007/observed_calendar_market.parquet",
+    "calendar_market_sha256": "a29b11967779226d658439dded8aa30783d9ecaa5d75620f953ebfac2adef149"
+  },
+  "window": {
+    "start": "2026-02-27",
+    "end": "2026-10-06",
+    "stability_halves": "first floor(N/2) observed calendar sessions versus remaining sessions; no refit or threshold selection"
+  },
+  "eligibility": {
+    "anchors": [
+      "09:00",
+      "15:30",
+      "19:59"
+    ],
+    "all_anchor_volume_gt": 0,
+    "minimum_positive_afterhours_rows": 2,
+    "minimum_same_market_codes": 21,
+    "minimum_date_codes": 30,
+    "market": [
+      "KOSPI",
+      "KOSDAQ"
+    ],
+    "coverage_policy": "Every frozen file/day is counted. Missing anchors or metadata are explicit ineligible signal data; no future labels used. This anchor rule does not certify the full session. Intraday approximate turnover is sum(Close*Volume) for09:00..15:30; requirepositive. No reconstructed J bars in UN signals."
+  },
+  "signal": {
+    "regular": "log(UN15:30Close/UN09:00Open)",
+    "after": "log(UN19:59Close/UN15:30Close)",
+    "score": "within-date OLS residual of after on intercept, regular, log(observed_regular_turnover), KOSDAQ dummy; numpy least squares, no future outcomes",
+    "selection": "highest positive residual, tie ascending code, max1 combined pick/date; no alternative parameter search",
+    "cadence": "accept only if fewer than3 previously accepted firing dates in prior4 observed market sessions; absent signal days count as sessions, missing data remain explicit",
+    "baseline": "largest regular return among identical eligible day pool, same accepted dates; diagnostic only",
+    "noise": "three seeds20261007,20261008,20261009 permute after within market/date, recompute residual and pick max on the SAME accepted dates; diagnostic only, not champion model increment proof"
+  },
+  "prices": {
+    "provider": "KIS",
+    "market_div": "J",
+    "adjusted": true,
+    "start": "2026-02-27",
+    "end": "2026-10-06",
+    "chunk_calendar_days": 60,
+    "missing": "no future-outcome dropping/reranking; selected/controls missing bars are explicit errors; no price-source substitution",
+    "intraday_to_daily": "UN ratios only signal, J adjusted OHLC only execution/outcomes"
+  },
+  "contract": {
+    "entry": "next observed market-session open",
+    "horizon_sessions": 10,
+    "tp": 0.05,
+    "cost_pct": 0.215,
+    "stress_cost_pct": [
+      0.5,
+      1.0
+    ],
+    "settlement": "modules.kr_contract_settlement.settle; zero-volume entry unfilled; exact full horizon; early gap target fill max(open,target) after entryday"
+  },
+  "controls": {
+    "selection": "20 nearest other eligible codes SAME market/date using squared distance in regular and log(turnover), each divided by same-market population standard deviation (zero variance scale1); ascending code ties; chosen BEFORE labels",
+    "comparison": "candidate net minus equal-weight20control net on SAME date; only fully resolved pair comparable; report every unavailable control and selection, never replace",
+    "ticker_placebo": "5000 equal-count random matched-control picks/date for each of3seeds; candidate net statistic; max one-sided p across seeds",
+    "date_placebo": "circular shift firing indicator over mature market dates with complete eligible control benchmark; timing diagnostic only, no timing alpha claim"
+  },
+  "statistics": {
+    "block_sessions": 5,
+    "sensitivity_block_sessions": 10,
+    "draws": 5000,
+    "seed": 20261007,
+    "ci": 0.95,
+    "weight": "equal trade; resample observed-calendar blocks including zero-fire dates",
+    "multiple_comparisons": "one prespecified candidate; baseline/noise/halves descriptive; no selecting an alternate after outcomes"
+  },
+  "decision": {
+    "touch_rate_min": 0.7,
+    "firing_per_five_sessions_min": 2,
+    "firing_per_five_sessions_max": 3,
+    "resolved_min": 30,
+    "unique_resolved_dates_min": 20,
+    "net_ci_lower_gt": 0,
+    "matched_excess_ci_lower_gt": 0,
+    "matched_mean_excess_gt": 0,
+    "random_ticker_p_max": 0.05,
+    "mechanism_reject_if": [
+      "matched_mean_excess<=0",
+      "net_ci_lower<=0",
+      "matched_excess_ci_lower<=0",
+      "random_ticker_p>0.05"
+    ],
+    "user_target_fail_if": [
+      "touch_rate<0.70",
+      "firing_per_five_sessions outside[2,3]"
+    ],
+    "inconclusive_if": [
+      "resolved<30 or unique_resolved_dates<20",
+      "any selected or prespecified control data error",
+      "no complete matched pairs"
+    ],
+    "publication_allowed": false,
+    "mandatory_remaining": [
+      "PIT universe provenance or independently frozen prospective universe",
+      "untouched prospective evidence",
+      "same-period same-universe champion comparison both own and equal contracts",
+      "current epoch OD1 and recursion CONFIRM",
+      "all8production consumers verified before replacement"
+    ]
+  },
+  "prohibitions": [
+    "no output-driven direction flip",
+    "no outcome-selected thresholds/cohort/windows",
+    "no calling high historical touch rate calibrated per-pick probability",
+    "no deployment from this retrospective diagnostic"
+  ]
+}
