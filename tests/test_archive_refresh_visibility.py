@@ -54,7 +54,8 @@ def test_model_archive_uses_signal_date_when_persisted_after_midnight(tmp_path,m
     path = tmp_path/"runtime_state/reports/archive/scan_archive_learning_dataset_all.csv"
     path.parent.mkdir(parents=True)
     path.write_text("ticker,run_id,recommended_at,decision_bucket,return_5d_pct\n"
-                    "033340.KQ,SWING-CAND-20260902,2026-09-02T22:40:00+00:00,unknown,-18.72\n")
+                    "033340.KQ,SWING-CAND-20260902,2026-09-02T22:40:00+00:00,unknown,-18.72\n"
+                    "033340.KQ,SWING-CAND-20260903,2026-09-03T08:40:00+00:00,unknown,1.0\n")
     out = S.archive(date_from="2026-09-02",date_to="2026-09-02")
     assert out["count"] == 1
     assert out["rows"][0]["date"] == "2026-09-02"

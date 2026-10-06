@@ -1580,7 +1580,7 @@ def archive(date_from=None, date_to=None, market=None, ticker=None, limit=200, o
         if date_from:
             d = d[d["_d"] >= pd.Timestamp(date_from)]
         if date_to:
-            d = d[d["_d"] <= pd.Timestamp(date_to) + pd.Timedelta(days=1)]
+            d = d[d["_d"] < pd.Timestamp(date_to) + pd.Timedelta(days=1)]
     if market and "market" in d.columns:
         d = d[d["market"].astype(str).str.upper() == market.upper()]
     if ticker and "ticker" in d.columns:
