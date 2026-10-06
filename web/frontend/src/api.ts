@@ -84,7 +84,7 @@ const j = async <T>(u: string): Promise<T> => {
   return r.json();
 };
 
-export interface TimingTrailPt { d: string; headroom: number; left: number; }
+export interface TimingTrailPt { d: string; headroom: number | null; left: number; }
 export interface TimingPick { contract_h?: number; trail?: TimingTrailPt[]; today_best?: boolean; today_best_note?: string; no_best_reason?: string; code: string; ticker: string; name: string; lane: string; lane_label: string; kind: string; badge: string; scan_date: string; ref: number; target: number; tp_pct: number; age: number; sessions_left: number; touched: boolean; tier?: string | null; mkt_state?: string | null; prob?: number | null; entry_note: string; current?: number | null; change_pct?: number | null; pos_vs_ref?: number | null; headroom?: number | null; state: string; state_label: string; }
 export interface ScanPost { scan_id: string; time: string; source: string; markets: string[]; lanes: string[]; pick_count: number; note?: string | null; }
 export interface TickerCard { ticker: string; code: string; name: string; market: string; lane: string; prob?: number | null; score?: number | null; entry?: number | null; }
@@ -136,7 +136,7 @@ export const api = {
   prices: (codes: string[]) => j<Record<string, Price>>(`/api/prices?codes=${codes.join(",")}`),
   chart: (code: string, tf: "day" | "minute") => j<ChartData>(`/api/chart?code=${code}&tf=${tf}`),
   compass: () => j<{ asof: string; night?: { symbol: string; change_pct: number; note: string } | null; markets: Array<{ market: string; phase: string; judge: string; judge_label: string; basis: string; dd20: number; ret5: number; live: boolean; lane_note: string }>; sector_rotation?: { asof: string; note: string; leadership_20d: Array<{ industry: string; ret20: number | null; ret60: number; sec_q: number; n: number }>; epicenter_60d: Array<{ industry: string; ret20: number | null; ret60: number; sec_q: number; n: number }> } | null }>(`/api/compass`),
-  buyTiming: (days = 5) => j<{ days: number; asof: string; picks: TimingPick[] }>(`/api/buy-timing?days=${days}`),
+  buyTiming: (days = 20) => j<{ days: number; asof: string; picks: TimingPick[] }>(`/api/buy-timing?days=${days}`),
   detail: (code: string) => j<PickDetail>(`/api/picks/${code}`),
   freshness: () => j<Freshness>(`/api/health/freshness`),
 };

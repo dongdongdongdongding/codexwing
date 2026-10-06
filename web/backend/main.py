@@ -123,7 +123,7 @@ def compass():
 
 
 @app.get("/api/buy-timing")
-def buy_timing(days: int = Query(5, ge=1, le=5)):
+def buy_timing(days: int = Query(20, ge=1, le=20)):
     return S.buy_timing(days)
 
 

@@ -25,8 +25,9 @@ function BubbleMap({ picks, sel, onSel, isMobile }: { picks: TimingPick[]; sel: 
   const xs = picks.map((p) => p.headroom ?? 0);
   const xMin = Math.min(-6, ...xs) - 1, xMax = Math.max(8, ...xs) + 1;
   const X = (v: number) => PAD.l + ((v - xMin) / (xMax - xMin)) * (W - PAD.l - PAD.r);
-  const Y = (v: number) => PAD.t + ((5.5 - v) / 6) * (H - PAD.t - PAD.b);
-  const x0 = X(0), yMid = Y(2.5);
+  const yMax = Math.max(5, ...picks.map((p) => p.contract_h ?? p.sessions_left));
+  const Y = (v: number) => PAD.t + ((yMax + 0.5 - v) / (yMax + 1)) * (H - PAD.t - PAD.b);
+  const x0 = X(0), yMid = Y(yMax / 2);
   // 같은 잔여세션(정수) 버블 겹침 방지: 인덱스 기반 미세 오프셋
   const seen: Record<string, number> = {};
   const jit = (p: TimingPick) => {
@@ -55,16 +56,16 @@ function BubbleMap({ picks, sel, onSel, isMobile }: { picks: TimingPick[]; sel: 
         {/* 축 라벨 */}
         <text x={(PAD.l + W - PAD.r) / 2} y={H - 6} textAnchor="middle" fill={C.mut} fontSize="11">← 여력 소진 · 목표까지 남은 수익률(%) · 여력 큼 →</text>
         <text x={12} y={(PAD.t + H - PAD.b) / 2} fill={C.mut} fontSize="11" transform={`rotate(-90 12 ${(PAD.t + H - PAD.b) / 2})`} textAnchor="middle">잔여 세션</text>
-        {[0, 5].map((v) => <text key={v} x={PAD.l - 8} y={Y(v) + 4} textAnchor="end" fill={C.mut} fontSize="10">{v}</text>)}
+        {[0, yMax].map((v) => <text key={v} x={PAD.l - 8} y={Y(v) + 4} textAnchor="end" fill={C.mut} fontSize="10">{v}</text>)}
         {/* 트레일 (호버/선택 시): 발행→현재의 (여력,잔여) 경로 — 현재로 갈수록 진해짐 (ant.wiki RRG 방식) */}
         {picks.map((p, i) => {
           const key = p.code + p.scan_date;
           const active = hov === key || (sel && sel.code === p.code && sel.scan_date === p.scan_date);
           const tr = p.trail || [];
           if (!active || tr.length < 1) return null;
-          const pts = tr.map((t) => [X(Math.max(xMin, Math.min(xMax, t.headroom))), Y(Math.max(0, Math.min(5, t.left)))] as [number, number]);
+          const pts = tr.filter((t) => t.headroom != null).map((t) => [X(Math.max(xMin, Math.min(xMax, t.headroom!))), Y(Math.max(0, Math.min(yMax, t.left)))] as [number, number]);
           const hx = p.headroom ?? tr[tr.length - 1]?.headroom ?? 0;
-          pts.push([X(Math.max(xMin, Math.min(xMax, hx))), Y(Math.max(0, Math.min(5, p.sessions_left)))]);
+          pts.push([X(Math.max(xMin, Math.min(xMax, hx))), Y(Math.max(0, Math.min(yMax, p.sessions_left)))]);
           const col = SM[p.state]?.color || "#94a3b8";
           return (
             <g key={"trail" + key + i} pointerEvents="none">
@@ -85,7 +86,7 @@ function BubbleMap({ picks, sel, onSel, isMobile }: { picks: TimingPick[]; sel: 
           const dead = p.state === "DONE" || p.state === "EXPIRED";
           const r = Math.max(9, Math.min(22, ((p.prob ?? 0.6) as number) * (p.prob && p.prob > 1.5 ? 0.22 : 22)));
           const cx = X(Math.max(xMin, Math.min(xMax, hx)));
-          const cy = Y(Math.max(0, Math.min(5, p.sessions_left + jit(p))));
+          const cy = Y(Math.max(0, Math.min(yMax, p.sessions_left + jit(p))));
           const on = sel && sel.code === p.code && sel.scan_date === p.scan_date;
           return (
             <g key={p.code + p.scan_date + i} onClick={() => onSel(p)}
@@ -114,7 +115,7 @@ export function Timing() {
 
   useEffect(() => {
     // 실패해도 로딩만 끄면 화면은 「계산 중…」이 사라진 빈 페이지가 된다 — 이유를 남긴다.
-    const load = () => api.buyTiming(5)
+    const load = () => api.buyTiming(20)
       .then((d) => { setPicks(d.picks); setAsof(d.asof); setCov((d as any).coverage_note ?? null); setErr(""); setLoading(false); })
       .catch((e: any) => { setErr(e?.message || String(e) || "불러오지 못했다"); setLoading(false); });
     load();
@@ -134,7 +135,7 @@ export function Timing() {
 
   if (err) return <LoadFail err={err} what="매수 타이밍" />;
   if (loading) return <div style={{ color: C.mut, padding: 40, textAlign: "center" }}>계약 대비 시세 계산 중…</div>;
-  if (!picks.length) return <div style={{ color: C.mut, padding: 40, textAlign: "center" }}>최근 5거래일 발행 픽이 없습니다.</div>;
+  if (!picks.length) return <div style={{ color: C.mut, padding: 40, textAlign: "center" }}>최근 20거래일 발행 픽이 없습니다.</div>;
 
   return (
     <div>
