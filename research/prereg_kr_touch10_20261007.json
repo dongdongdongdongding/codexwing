@@ -1,0 +1,67 @@
+{
+  "id": "kr_touch10_20261007",
+  "registered_at": "2026-10-06T16:18:35.367765+00:00",
+  "beads": "swing-main-q6va",
+  "purpose": "Fixed extension of KOSDAQ H5 to H10 with existing causal daily-fit selection; KOSPI H10 unchanged. Evaluate current published cohort before any new parameter search.",
+  "hypothesis": "Longer KOSDAQ hold raises 5% touch rate without erasing positive same-day selection excess; combined existing signals produce 2-3 firing dates per 5 market sessions.",
+  "scope": {
+    "markets": [
+      "KOSPI",
+      "KOSDAQ"
+    ],
+    "signal_start": "2026-08-24",
+    "signal_end": "2026-10-02",
+    "universe_liq_krw": {
+      "KOSPI": 10000000000,
+      "KOSDAQ": 3000000000
+    },
+    "selection": "As originally stamped in live ledger, top_k KOSPI=3 KOSDAQ=1; no retrospective rerank or raw-p probability claim",
+    "research_type": "Retrospective contract replay of forward-recorded signals, not a new untouched holdout",
+    "future_confirmation_start": "2026-10-07"
+  },
+  "contract": {
+    "entry": "next actual market-session open; zero-volume entry unfilled",
+    "horizon_sessions": 10,
+    "tp": 0.05,
+    "cost_pct": 0.215,
+    "cost_stress_pct": [
+      0.5,
+      1.0
+    ],
+    "prices": "px_delisted adjusted OHLC, exact session alignment",
+    "missing_data": "explicit unfilled/pending/error; never silently drop or fill",
+    "baseline_horizon": {
+      "KOSPI": 10,
+      "KOSDAQ": 5
+    }
+  },
+  "targets": {
+    "touch_rate_min": 0.7,
+    "firing_dates_per_five_sessions_min": 2,
+    "firing_dates_per_five_sessions_max": 3,
+    "min_resolved": 30,
+    "min_unique_resolved_dates": 20,
+    "net_ev_block_ci_lower_gt": 0,
+    "same_day_excess_block_ci_lower_gt": 0,
+    "recursion_gate_min": "CONFIRM"
+  },
+  "statistics": {
+    "block_sessions": 5,
+    "bootstrap_draws": 5000,
+    "seed": 20261007,
+    "controls": "same-date same-market same-liquidity eligible panel; exclude selected tickers; identical next-open H10 contract",
+    "placebo": "random ticker relabel, equal pick count per date, circular shift date test",
+    "selection_comparison": "same-day paired H5 vs H10; no independent-period mean comparisons"
+  },
+  "kill_criteria": {
+    "data_error_count_gt": 0,
+    "same_day_excess_le": 0,
+    "net_ev_ci_contains_zero": true,
+    "touch_rate_lt": 0.7,
+    "frequency_outside": [
+      2,
+      3
+    ]
+  },
+  "promotion": "All targets plus independent current-epoch gate and forward prospective evidence; replay alone cannot authorize promotion. No new strategy is guaranteed."
+}
