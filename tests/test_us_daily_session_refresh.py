@@ -87,6 +87,22 @@ def test_nonempty_but_stale_response_is_failure_without_mutation(setup,tmp_path,
     assert pd.read_parquet(bf._raw_path(paths,'AAA')).equals(old)
 
 
+@pytest.mark.parametrize('single_has_target',[True,False])
+def test_nonempty_stale_batch_retries_single_once(setup,tmp_path,monkeypatch,single_has_target):
+    paths,_,old=setup
+    calls=[]
+    fresh=raw(['2026-09-30','2026-10-01','2026-10-02','2026-10-05','2026-10-06'])
+    monkeypatch.setattr(bf,'_extract_yfinance_frame',lambda *a:old.copy())
+    monkeypatch.setattr(bf,'_download_single',lambda *a:calls.append(a) or (fresh if single_has_target else old).copy())
+    result=collect(setup,tmp_path)
+    assert len(calls)==1
+    assert result['single_retries'][0]['has_target'] is single_has_target
+    assert result['single_retries'][0]['batch_latest']=='2026-10-02 00:00:00'
+    assert result['written']==(['AAA'] if single_has_target else [])
+    assert bool(result['failed']) is not single_has_target
+    assert pd.read_parquet(bf._raw_path(paths,'AAA')).equals(fresh if single_has_target else old)
+
+
 def test_verified_panel_receipt_is_invalidated_by_changed_file(setup,monkeypatch):
     paths,_,_=setup
     path=paths.market_root/'daily_features_20180101_20261007_20261007_060000.parquet'

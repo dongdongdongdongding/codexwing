@@ -93,7 +93,7 @@ def refresh_raw(universe,paths,target,*,start,batch_size,timeout,sleep,budget,au
     from multi_agent.tools import backfill_us_daily_features as bf
     paths.raw_dir.mkdir(parents=True,exist_ok=True)
     target=pd.Timestamp(target);end=(target+pd.Timedelta(days=1)).date().isoformat()
-    groups=defaultdict(list);skipped=[];failed=[];revised=[];written=[];visited=[]
+    groups=defaultdict(list);skipped=[];failed=[];revised=[];written=[];visited=[];single_retries=[]
     names=dict(zip(universe.symbol.astype(str),universe.name.astype(str)))
     for symbol in names:
         path=bf._raw_path(paths,symbol)
@@ -120,7 +120,15 @@ def refresh_raw(universe,paths,target,*,start,batch_size,timeout,sleep,budget,au
                 visited.append(symbol);path=bf._raw_path(paths,symbol)
                 try:
                     fetched=bf._extract_yfinance_frame(payload,symbol)
-                    if fetched.empty:fetched=bf._download_single(symbol,first,end,timeout)
+                    # A batch can return older rows while the single-symbol
+                    # endpoint already has the requested close (observed for
+                    # ADBE/ASTS). Make one bounded retry, then fail explicitly.
+                    if fetched.empty or target not in set(pd.to_datetime(fetched.date)):
+                        retry={'symbol':symbol,'batch_latest':str(fetched.date.max()) if not fetched.empty else None}
+                        single_retries.append(retry)
+                        fetched=bf._download_single(symbol,first,end,timeout)
+                        retry['single_latest']=str(fetched.date.max()) if not fetched.empty else None
+                        retry['has_target']=bool(not fetched.empty and target in set(pd.to_datetime(fetched.date)))
                     if fetched.empty:raise ValueError('empty_provider_response')
                     fetched=fetched[pd.to_datetime(fetched.date)<=target].copy()
                     if target not in set(pd.to_datetime(fetched.date)):raise ValueError('provider_missing_requested_session')
@@ -154,7 +162,7 @@ def refresh_raw(universe,paths,target,*,start,batch_size,timeout,sleep,budget,au
         if stopped:break
     planned={s for values in groups.values() for s in values}
     result={'target':str(target.date()),'written':written,'skipped_current':skipped,'failed':failed,
-            'unvisited':sorted(planned-set(visited)),'full_adjustment_refresh':revised,
+            'unvisited':sorted(planned-set(visited)),'full_adjustment_refresh':revised,'single_retries':single_retries,
             'budget_seconds':budget,'elapsed_seconds':time.monotonic()-began,
             'budget_scope':'checked between batches; active network calls complete before stopping'}
     save_json(audit/'raw_result.json',result);return result
