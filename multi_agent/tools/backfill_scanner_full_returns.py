@@ -243,7 +243,8 @@ def _fetch_scanner_rows_missing_returns(
     select_cols = (
         "id,ticker,run_id,created_at,recommended_at,feature_origin,market_type,feature_snapshot,"
         "return_1d_pct,return_2d_pct,return_3d_pct,return_5d_pct,return_7d_pct,"
-        "return_14d_pct,return_30d_pct,latest_return_pct,base_trade_date,entry_reference_price"
+        "return_14d_pct,return_30d_pct,latest_return_pct,base_trade_date,entry_reference_price,"
+        "performance_updated_at,validation_excluded_reason"
     )
     missing_cols = [f"return_{h}d_pct" for h in HORIZONS_FROM_HISTORY]
     rows_by_id: Dict[Any, Dict[str, Any]] = {}
@@ -384,6 +385,7 @@ def run_backfill(
     history_failed = 0
     by_origin: Dict[str, int] = defaultdict(int)
     sample_updates: List[Dict[str, Any]] = []
+    plan = []
 
     for row in scanner_rows:
         ticker = str(row.get("ticker") or "").strip()
@@ -449,12 +451,19 @@ def run_backfill(
                     "after": {col: payload[col] for col in payload if col != "performance_updated_at"},
                 }
             )
+        plan.append({"before":row,
+                     "patch":{k:v for k,v in payload.items() if k != "performance_updated_at"},
+                     "source":source,"source_values":outcome})
+
+    audit_result = None
+    if plan:
+        from multi_agent.tools.repair_issued_outcomes import audit_and_apply
+        audit_result = audit_and_apply(plan,PROJECT_ROOT/"runtime_state/audit/scanner_full_return_backfill",
+                                      {"tool":"backfill_scanner_full_returns","market_filter":market_filter,
+                                       "shared_dir":str(shared_dir),"limit_runs":limit_runs},
+                                      db.client,apply=not dry_run)
         if not dry_run:
-            try:
-                db.client.table("market_scan_results").update(payload).eq("id", row.get("id")).execute()
-                updated += 1
-            except Exception as exc:
-                print(f"[WARN] update failed id={row.get('id')} ticker={ticker}: {exc}")
+            updated = audit_result["changes"]
 
     matched_total = matched_index + matched_history
     fill_rate_after_estimate = (
@@ -483,6 +492,7 @@ def run_backfill(
         "fill_rate_after_pct_estimate": round(fill_rate_after_estimate, 2),
         "allow_history_fallback": bool(allow_history_fallback),
         "sample_updates": sample_updates,
+        "audit": audit_result,
         "completed_at": datetime.now(timezone.utc).isoformat(),
     }
     return summary

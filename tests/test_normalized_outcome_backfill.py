@@ -1,3 +1,4 @@
+from pathlib import Path
 from multi_agent.tools.backfill_scanner_full_returns import _build_update_payload
 
 
@@ -42,6 +43,7 @@ def test_backfill_reports_conflicting_bases_without_counting_them_as_filled(tmp_
     from modules import db_manager
     from multi_agent.tools import backfill_scanner_full_returns as m
     monkeypatch.setattr(db_manager, 'DBManager', lambda: SimpleNamespace(client=object()))
+    monkeypatch.setattr(m, 'PROJECT_ROOT', tmp_path)
     rows = [{'id':i,'run_id':f'RUN-{i}','ticker':str(i),'recommended_at':'2026-09-17T00:00:00Z',
              'entry_reference_price':53800.,'return_1d_pct':1.} for i in [1,2]]
     monkeypatch.setattr(m, '_fetch_scanner_rows_missing_returns', lambda *a,**kw:rows)
@@ -53,6 +55,10 @@ def test_backfill_reports_conflicting_bases_without_counting_them_as_filled(tmp_
     assert report['eligible_updates']==1
     assert report['fill_rate_after_pct_estimate']==50.
     assert report['updated']==0
+    import json
+    backup=json.loads(Path(report['audit']['backup']).read_text())
+    assert backup['plan'][0]['before']['run_id']=='RUN-2'
+    assert 'performance_updated_at' not in backup['plan'][0]['patch']
 
 
 def test_archive_fetch_uses_bounded_keyset_and_retains_any_missing_horizon():
