@@ -563,6 +563,9 @@ if [[ "${AG_KOSPI_INTRADAY_ENABLE:-1}" == "1" ]]; then
   echo "[SKIP] report_kospi_intraday_swing — 은퇴 (stream_exclusion.RETIRED_LANES)"
 fi
 
+# Settlement is independent of signal production: retired lanes still owe outcomes.
+run_optional "settle_pending_kr_contracts" python3 multi_agent/tools/settle_pending_kr_contracts.py --apply
+
 # 코스닥 15:00 번들 일일 재학습 (P1-H2, swing-main-67zc): 정적 번들은 부패(승률 65.5%/EV CI 0포함,
 # 미래월 p_cal 0.75+ 희소 → 0픽 사태). 재학습시 승률 71.2%/EV 2.85 CI>0/주3픽 (p_cal>=0.70).
 # 이전 번들 .bak 보존. 비활성: AG_KOSDAQ_BUNDLE_RETRAIN_ENABLE=0.

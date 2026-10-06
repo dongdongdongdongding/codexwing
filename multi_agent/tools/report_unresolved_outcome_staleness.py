@@ -82,6 +82,7 @@ def scan_lane(name: str, cfg: Dict[str, Any], today: dt.date, stale_days: int) -
     rows = _rows(cfg["ledger"])
     unresolved: List[Dict[str, Any]] = []
     undated = 0
+    unfilled = 0
     calendar, source, calendar_error = None, None, None
     if cfg.get("market"):
         try:
@@ -89,6 +90,9 @@ def scan_lane(name: str, cfg: Dict[str, Any], today: dt.date, stale_days: int) -
         except Exception as exc:
             calendar_error = f"{type(exc).__name__}: {exc}"
     for row in rows:
+        if row.get("settlement_status") == "unfilled_entry":
+            unfilled += 1
+            continue
         if isinstance(row.get(field), (int, float)) and math.isfinite(row[field]):
             continue
         iso = _row_date(row, dfield)
@@ -114,7 +118,7 @@ def scan_lane(name: str, cfg: Dict[str, Any], today: dt.date, stale_days: int) -
     stale.sort(key=lambda u: -u["age_days"])
     return {
         "lane": name, "ledger": str(cfg["ledger"]), "field": field,
-        "rows": len(rows), "unresolved": len(unresolved), "undated": undated,
+        "rows": len(rows), "unresolved": len(unresolved), "undated": undated, "unfilled": unfilled,
         "stale": len(stale), "stale_days": stale_days,
         "max_age_days": max((u["age_days"] for u in unresolved), default=0),
         "worst": stale[:5],

@@ -59,6 +59,12 @@ def test_stale_unresolved_rows_are_counted(tmp_path):
     assert r["worst"][0]["date"] == "2026-07-15"
 
 
+def test_unfilled_entry_is_separate_from_missing_outcome(tmp_path):
+    r = st.scan_lane("l", cfg(ledger(tmp_path, [{"policy_ret": None, "date": "2026-07-01",
+                                                "settlement_status": "unfilled_entry"}])), TODAY, 10)
+    assert r["unfilled"] == 1 and r["unresolved"] == r["stale"] == 0
+
+
 def test_fresh_unresolved_rows_are_not_flagged(tmp_path):
     """지평이 아직 안 익은 행까지 경보하면 매일 울려서 아무도 안 본다."""
     rows = [{"policy_ret": None, "date": "2026-08-14"}] * 5

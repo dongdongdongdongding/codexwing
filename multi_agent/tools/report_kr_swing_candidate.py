@@ -565,7 +565,7 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
     rows = [json.loads(l) for l in LEDGER.read_text(encoding="utf-8").splitlines() if l.strip()]
     changed = False
     for row in rows:
-        if row.get("policy_ret") is not None:
+        if row.get("policy_ret") is not None or row.get("settlement_status") == "unfilled_entry":
             continue
         d = pd.to_datetime(row.get("date"), errors="coerce")
         # 🔴 **발행 당시 계약으로 채점한다.** 픽은 자기가 발행된 계약을 `contract_h` 로 들고 다닌다.
