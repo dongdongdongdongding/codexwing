@@ -120,9 +120,9 @@ def refresh_raw(universe,paths,target,*,start,batch_size,timeout,sleep,budget,au
                 visited.append(symbol);path=bf._raw_path(paths,symbol)
                 try:
                     fetched=bf._extract_yfinance_frame(payload,symbol)
-                    # A batch can return older rows while the single-symbol
-                    # endpoint already has the requested close (observed for
-                    # ADBE/ASTS). Make one bounded retry, then fail explicitly.
+                    # Check the single-symbol endpoint once when the batch
+                    # lacks the requested close, then fail explicitly if it
+                    # still cannot supply that session.
                     if fetched.empty or target not in set(pd.to_datetime(fetched.date)):
                         retry={'symbol':symbol,'batch_latest':str(fetched.date.max()) if not fetched.empty else None}
                         single_retries.append(retry)
