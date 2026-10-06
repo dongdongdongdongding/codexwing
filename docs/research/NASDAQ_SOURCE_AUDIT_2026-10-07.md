@@ -280,3 +280,54 @@ GMEX의 종가 기준 `touch5_10d` 라벨 11개와 `touch5_20d` 라벨 15개가 
 `swing-main-8pca`는 전체 재생성 뒤 여유 공간 15,837,224,960바이트가 다음 패널 생성의 15GiB 하한에 못 미치는 것을 확인했다. 이전 054040/055131 패널은 SHA `bc1603917da905d8306d88ee96f36ed72026db3e091fd98db23b0ed5d60457d4`, 060152/061755 패널은 SHA `1047e9fb840225af00cbb6f256ea81dfc560d603234dcf6240563fab4178362f`로 각각 완전히 같았다.
 
 writer lock 아래에서 두 동일 내용 쌍을 원자적인 hardlink 교체로 통합했다. **8개 기존 경로와 파일 바이트, 감사 참조는 모두 유지**했고 인오드·링크 수·해시·최신 패널 선택·원장을 검증했다. 서로 다른 버전은 합치지 않았다. 경로별 mtime은 각 그룹에서 선택한 기존 복사본의 시각을 공유하게 됐으며 원래 값은 감사 기록에 남겼다. 중복 파일 7,594,703,583바이트(약 7.07GiB)를 해소했고 실제 여유 공간은 23,438,278,656바이트(약 21.8GiB)로 늘었다. `panel_storage_inventory.json`, `duplicate_panel_hashes.json`, `deduplication.json` 및 재현 스크립트가 같은 감사 폴더에 있다. 이번 작업은 저장공간 복구이며 전체 데이터 정상화나 신규 레인 자격 판정은 아니다.
+
+
+## 고정 전체 이력 대조와 원문 독립 재현
+
+`swing-main-e5be`의 `d92ce80`은 최근 14일 겹침 밖의 가격 기준 오류를 찾는 읽기 전용 도구 `audit_us_daily_history.py`를 추가했다. 기존 수집 유니버스 **3,973심볼 전체를 사전 고정**하고 원본 hardlink·SHA, 상장 목록, 패널, 원장, 파서 코드와 의존성 버전을 기록했다. 현재 이름 적격 3,434개라는 표시는 진단용이며 성과에 따른 선택이 아니다. 2018년부터 목표 2026-10-06까지 Yahoo chart 원문·요청·시각·차이·실패를 보존한다. 배치 사이 예산, 429 중단, 디스크 하한, 중복 날짜/심볼/시간대 검사, 기존 결과 해시 검증을 포함한다. `REQUESTS_COMPLETE`는 요청 종료를 뜻하며 원천 정상 인증이 아니다.
+
+첫 600초 실행 2,716건과 재개 1,257건으로 **3,973건 모두 종료**했다. 3,928건 비교, 45건 오류, 미방문 0이다. 오류는 HTTP 404 41개와 HTTP 200이지만 timestamp가 빈 응답 4개(AFNXU·AMRO·NIAAU·THRMV)다. 4개는 파서가 문자열 접근 오류로 실패했고 원문 대조에서 빈 응답임을 별도로 확인했다. 오류 45개는 현재 이름 필터 부적격이나 이를 상장폐지 판정으로 쓰지 않는다.
+
+기존 날짜 누락이 91심볼(현재 이름 적격 11개), 구조/계보상 무효 관측이 29심볼에서 발견됐다. 목표 날짜가 있는 공급자 계열은 3,509개지만 이력 완전성과 목표 봉 적격을 뜻하지 않는다. 종전 최신 봉이 없거나 무효였던 17개에서 새 정상 목표 봉을 관측했으나 **17개 모두 기존 과거 날짜가 빠져 있어** 자동 교체하지 않았다. 이 중 현재 이름 적격 ITOC는 516일, SUGP는 671일이 누락됐다.
+
+최근 겹침 밖의 허용오차 초과 차이는 46심볼이었다. raw 종가 상대차 0.1% 초과라는 설명용 기준으로 21심볼을 분리했다. 이 기준은 전략 선택이나 자동 복구 승인 기준이 아니다. 나머지 25개 중 20개는 raw 종가/거래량이 같고 조정 필드의 약 1.015e-6~1.628e-6 상대차였다. FSEA·NSTS·SUGP·WALD·WKEY는 OHLC 일부와 거래량도 다르며 이력 누락이 있다. 작은 차이를 무조건 반올림 오류로 단정하거나 정상값으로 덮지 않았다. 후속 `swing-main-d3f5`와 기업행동 이력 `swing-main-foju`가 남은 범위를 추적한다.
+
+별도 검증기는 생산 파서를 호출하지 않고 보존 JSON에서 가격·거래량·조정 산식을 재현했다. **5,575,418관측 × 9개 수치 필드가 정확히 일치**했고 모든 원문·산출물 해시와 감사 시점의 기존 raw/목록/패널/원장 보존을 확인했다. 네트워크를 예외로 막은 실제 재개 검사도 기존 3,973건 재사용·네트워크 호출 0으로 통과했다. 공급자 원문의 재현성 검사이며 독립 거래소 가격 인증은 아니다. 관련 검사 91개를 통과했다. 근거는 운영 `runtime_state/audit/us_full_history_baseline_20261007/`의 계획·원문·per-symbol 결과, `classification.json`, `independent_verification.json`, `reuse_verification.json`, `remaining_difference_detail.json`에 있다.
+
+## 공식 병합 근거와 일치한 19종목 전체 이력 복구
+
+`swing-main-73k5`는 위 21종목 중 기존 날짜를 모두 포함하고 구조 오류가 없으며 목표 봉과 공식 병합 근거가 일치하는 **19종목을 저장 전에 고정**했다. ITOC와 NFE는 각각 516일·1일 누락으로 제외했다. NFE에는 기존 무효 조정 988행도 남아 있다. 아래 공식 원문은 HTTP 응답·수집시각·SHA와 함께 보존했고 Yahoo의 최신 병합 효력일/배수와 대조했다.
+
+| 심볼 | 효력일 | 구주:신주 | 공식 근거 |
+|---|---|---|---|
+| AIXI | 2026-09-08 | 7:1 | [NASDAQ ECA2026-643](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-643) |
+| ALP | 2026-09-09 | 50:1 | [NASDAQ ECA2026-646](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-646) |
+| BRTX | 2026-09-08 | 20:1 | [NASDAQ ECA2026-636](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-636) |
+| BTLN | 2026-09-28 | 8:1 | [NASDAQ ECA2026-676](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-676) |
+| CPOP | 2026-09-14 | 15:1 | [NASDAQ ECA2026-658](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-658) |
+| DLXY | 2026-09-28 | 5:1 | [NASDAQ ECA2026-679](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-679) |
+| GTBP | 2026-09-08 | 25:1 | [NASDAQ ECA2026-644](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-644) |
+| HUBC | 2026-09-14 | 25:1 | [NASDAQ ECA2026-657](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-657) |
+| IMMP | 2026-09-28 | 20:1 | [NASDAQ ECA2026-681](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-681) |
+| IZM | 2026-09-15 | 5:1 | [NASDAQ ECA2026-660](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-660) |
+| LRHC | 2026-09-08 | 6:1 | [NASDAQ ECA2026-641](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-641) |
+| NRSN | 2026-09-14 | 20:1 | [NASDAQ ECA2026-656](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-656) |
+| NXXT | 2026-09-14 | 10:1 | [NASDAQ ECA2026-655](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-655) |
+| SFWL | 2026-09-08 | 15:1 | [NASDAQ ECA2026-639](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-639) |
+| TNMG | 2026-09-08 | 8:1 | [NASDAQ ECA2026-640](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-640) |
+| UCAR | 2026-09-09 | 20:1 | [NASDAQ ECA2026-647](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-647) |
+| VWAV | 2026-09-22 | 20:1 | [NASDAQ ECA2026-667](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-667) |
+| WCT | 2026-09-08 | 5:1 | [NASDAQ ECA2026-642](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-642) |
+| WHLR | 2026-09-22 | 9:1 | [NASDAQ ECA2026-666](https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-666) |
+
+대부분의 큰 차이는 2026-07-29·08-04·08-07·08-11의 오래된 주식 단위였고 일부는 09-14에도 있었다. VWAV·WHLR은 09-14만 해당한다. IZM의 09-14 종가비 약 1.00228은 5배 병합 차이가 아니므로 다른 변경으로 구분했다. CPOP 공시의 액면가 표기에 발행사와 차이가 있어 액면가는 이 판단에 쓰지 않고 양쪽이 확인한 15:1 비율을 사용했다.
+
+실제 전체 재조회는 **19개 방문·19개 저장·실패 0·미방문 0**, 2.86초였다. 임의 배수를 적용하지 않고 전체 공급자 관측을 백업·검증 후 저장했다. 기존 날짜는 모두 유지했고 CPOP·HUBC·NRSN·NXXT에 2026-09-14 관측이 하나씩 추가돼 해당 원본은 합계 23,837→23,841행이 됐다. 지정한 과거 차이 날짜의 가격·거래량·조정 필드는 앞서 보존한 전체 chart 관측과 허용오차 내 일치했다. 최신 거래량의 공급자 수정까지 모든 재조회 값이 이전 캡처와 정확히 같다고 주장하지 않는다.
+
+전체 패널은 **5,605,385행·3,950심볼**, ready 5,113,396행으로 다시 생성했다. 현행 모델이 실제 사용하는 49피처와 성숙한 `fwd_high_ret_20d`를 모두 갖춘 19종목 학습 행은 17,731→17,735이고 제거된 행은 없다. 공통 학습행 중 피처가 바뀐 것은 477행, `fwd_high_ret_20d >= 15` 타깃이 바뀐 것은 274개다. 종가 기준 `touch5_10d` 110개·`touch5_20d` 152개 변화는 데이터 영향이며 다음 시가 진입 전략의 성공률이 아니다. 모델을 재적합하거나 과거 픽을 다시 발행하지 않았다.
+
+새 패널은 `daily_features_20180101_20261007_20261007_083029271390.parquet`, SHA `bc067654e66bc7ce9f8d6022d1eb689f14c39cc935df334a99e73033db0dadc3`다. 계획·공식 근거·저장 전 원본·영수증·전체 비교·피처/라벨 영향·API 응답은 운영 `runtime_state/audit/us_split_cohort_repair_20261007/`에 보존했다.
+
+전체 비교는 수정 19심볼 외 **5,581,544행의 모든 값이 정확히 동일**함을 확인했다. 격리 4,968행/80심볼도 그대로다. 최신 행 3,491·기본 적격 359·최종 후보 321은 전후 같고 후보 심볼·편입이력·순위 CSV도 바이트가 동일했다. 이전 패널·비대상 raw·목록·유니버스·원장의 SHA를 보존했다. 성공 19종목의 실제 증분 재실행은 네트워크 0·쓰기 0으로 영수증을 재사용했다. health/picks/contract-performance는 모두 HTTP 200, 발행 원장 SHA는 `cf6fbc6bc771f3ec192104088a303fed5edc83b0c6faf7773352750287851003`로 동일했다. 새 패널을 실제 소비자가 선택함도 확인했다.
+
+고정 전체 조회와 19종목 복구는 각각 완료했지만 전체 수집 결과는 계속 `partial`이다. 누락/격리 해결, 서비스 전체 배치 성공 확인, 독립 성과 검증은 별개다. **H10TP5 ≥70%와 주 2~3회 조건을 함께 통과한 신규 레인은 아직 없으므로 교체하지 않았다.**
