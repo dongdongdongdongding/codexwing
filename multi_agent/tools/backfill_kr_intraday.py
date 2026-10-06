@@ -39,6 +39,10 @@ class BudgetExpired(Exception):
     pass
 
 
+class StorageBudgetExceeded(Exception):
+    pass
+
+
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest() if path.exists() else None
 
@@ -130,10 +134,18 @@ def filter_bars(frame, day):
     return frame.loc[~frame.index.duplicated(keep="first")].sort_index()
 
 
-def persist_bars(path, old, added, before_sha, audit, code, day):
+def persist_bars(path, old, added, before_sha, audit, code, day, min_free_bytes=10*1024**3):
     """Never overwrite a damaged/unreadable cache or a concurrently changed file."""
     combined = pd.concat([old, added]) if old is not None else added
     combined = combined.loc[~combined.index.duplicated(keep="first")].sort_index()
+    if old is not None and combined.equals(old):
+        if digest(path) != before_sha:
+            raise ValueError("cache_changed_concurrently")
+        return old  # Validating existing slices is not a cache mutation.
+    estimate = 3*max(path.stat().st_size if path.exists() else 0,
+                     int(combined.memory_usage(index=True,deep=True).sum()))
+    if shutil.disk_usage(path.parent).free < min_free_bytes + estimate:
+        raise StorageBudgetExceeded("insufficient_space_for_verified_backup_and_replace")
     audit.mkdir(parents=True, exist_ok=True)
     backup = audit / f"{code}-{day}.before.parquet"
     if before_sha is not None:
@@ -159,7 +171,7 @@ def persist_bars(path, old, added, before_sha, audit, code, day):
 
 
 def collect(schedule, out, client, budget=7200., pause=.03, *, clock=time.monotonic,
-            sleep=time.sleep, now=None, bounded_request=True, progress=print):
+            sleep=time.sleep, now=None, bounded_request=True, progress=print, min_free_bytes=10*1024**3):
     start = clock()
     deadline = start + budget
     now = now or datetime.now(KST)
@@ -168,14 +180,18 @@ def collect(schedule, out, client, budget=7200., pause=.03, *, clock=time.monoto
     audit = state_dir / "audit" / run_id
     report = {"version": VERSION, "status": "RUNNING", "run_id": run_id,
               "latest_observed_session": max(schedule), "target_pairs": sum(map(len, schedule.values())),
-              "requests": 0, "pairs_attempted": 0, "pairs_skipped": 0, "rows_received": 0,
+              "requests": 0, "pairs_attempted": 0, "pairs_skipped": 0, "rows_received": 0, "rows_added":0,
               "request_errors": [], "storage_errors": [], "requested_all_slices": 0,
               "empty_pairs": 0, "empty_responses": 0, "retry_deferred_pairs": 0, "budget_seconds": budget,
-              "session_completeness": "NOT_ESTABLISHED", "universe": "all_observed_panel_pairs"}
+              "session_completeness": "NOT_ESTABLISHED", "universe": "all_observed_panel_pairs",
+              "minimum_free_bytes":min_free_bytes}
     blocked_codes = set()
     states = {}
     for day in sorted(schedule, reverse=True):
         for code in schedule[day]:
+            if shutil.disk_usage(out).free < min_free_bytes:
+                report["status"] = "STORAGE_BUDGET_EXHAUSTED"
+                break
             if clock() >= deadline:
                 report["status"] = "BUDGET_EXHAUSTED"
                 break
@@ -200,7 +216,7 @@ def collect(schedule, out, client, budget=7200., pause=.03, *, clock=time.monoto
                 before_sha = digest(path)
                 old = pd.read_parquet(path) if path.exists() else None
                 if old is not None and (not isinstance(old.index, pd.DatetimeIndex) or
-                                         old.index.tz is not None or old.index.hasnans):
+                                         old.index.tz is not None or old.index.hasnans or old.index.has_duplicates):
                     raise ValueError("invalid_existing_cache_index")
             except Exception as exc:
                 blocked_codes.add(code)
@@ -240,7 +256,9 @@ def collect(schedule, out, client, budget=7200., pause=.03, *, clock=time.monoto
             try:
                 if parts:
                     added = pd.concat(parts)
-                    old = persist_bars(path, old, added, before_sha, audit, code, day)
+                    before_rows = len(old) if old is not None else 0
+                    old = persist_bars(path, old, added, before_sha, audit, code, day, min_free_bytes)
+                    report["rows_added"] += len(old)-before_rows
                     report["rows_received"] += len(added)
                 elif digest(path) != before_sha:
                     raise ValueError("cache_changed_concurrently")
@@ -261,12 +279,15 @@ def collect(schedule, out, client, budget=7200., pause=.03, *, clock=time.monoto
                 stat = path.stat() if path.exists() else None
                 state["identity"] = [stat.st_mtime_ns, stat.st_size] if stat else None
                 save_json(state_path, state)
+            except StorageBudgetExceeded:
+                report["status"] = "STORAGE_BUDGET_EXHAUSTED"
+                break
             except Exception as exc:
                 blocked_codes.add(code)
                 report["storage_errors"].append({"code": code, "error": type(exc).__name__})
             if report["pairs_attempted"] % 10 == 0:
                 progress(f"[intraday] session={day} pairs={report['pairs_attempted']} requests={report['requests']} elapsed={clock()-start:.1f}s", flush=True)
-        if report["status"] == "BUDGET_EXHAUSTED":
+        if report["status"] in {"BUDGET_EXHAUSTED", "STORAGE_BUDGET_EXHAUSTED"}:
             break
     if report["status"] == "RUNNING":
         report["status"] = "PASS_FINISHED"  # a scheduling pass, not full session coverage
@@ -284,9 +305,10 @@ def main():
     ap.add_argument("--retention-days", type=int, default=int(os.getenv("ITD_RETENTION_DAYS", "355")))
     ap.add_argument("--sleep", type=float, default=float(os.getenv("ITD_SLEEP", ".03")))
     ap.add_argument("--plan", action="store_true", help="Read panel only; no API calls or cache writes")
+    ap.add_argument("--min-free-gb", type=float, default=float(os.getenv("ITD_MIN_FREE_GB", "10")))
     args = ap.parse_args()
-    if not math.isfinite(args.budget) or args.budget <= 0 or args.retention_days <= 0 or not math.isfinite(args.sleep) or args.sleep < 0:
-        ap.error("budget/retention must be positive and sleep nonnegative")
+    if not math.isfinite(args.budget) or args.budget <= 0 or args.retention_days <= 0 or not math.isfinite(args.sleep) or args.sleep < 0 or not math.isfinite(args.min_free_gb) or args.min_free_gb < 0:
+        ap.error("budget/retention must be positive; sleep and min-free-gb must be nonnegative")
     now = datetime.now(KST)
     schedule = targets(pd.read_parquet(args.cache/"px_long.parquet", columns=["code", "date"]), now, args.retention_days)
     codes = {code for members in schedule.values() for code in members}
@@ -318,9 +340,9 @@ def main():
         os.environ["KIS_LIVE_RETRY_COUNT"] = "0"  # resume next pass; do not burn the budget on retry storms
         client = KISOpenAPIClient(timeout=10.)
         print(json.dumps(summary), flush=True)
-        report = collect(schedule, out, client, args.budget, args.sleep, now=now)
+        report = collect(schedule, out, client, args.budget, args.sleep, now=now, min_free_bytes=int(args.min_free_gb*1024**3))
         print(json.dumps(report, ensure_ascii=False))
-        return 1 if report["storage_errors"] or report["request_errors"] else 0
+        return 1 if report["storage_errors"] or report["request_errors"] or report["status"] == "STORAGE_BUDGET_EXHAUSTED" else 0
 
 
 if __name__ == "__main__":

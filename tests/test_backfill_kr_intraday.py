@@ -152,7 +152,7 @@ def test_compare_and_set_does_not_clobber_new_writer(tmp_path, monkeypatch):
         path.write_bytes(b"external writer")
     monkeypatch.setattr(pd.DataFrame, "to_parquet", interference)
     with pytest.raises(ValueError, match="concurrently"):
-        m.persist_bars(path, original, original, sha, tmp_path/"audit", "000001", "20261002")
+        m.persist_bars(path, original, original.set_axis(pd.to_datetime(["2026-10-02"])), sha, tmp_path/"audit", "000001", "20261002")
     assert path.read_bytes() == b"external writer"
 
 
@@ -194,3 +194,35 @@ def test_wraparound_and_outside_hours_are_not_coverage():
                          index=pd.to_datetime(["2026-10-02 10:00", "2026-10-06 08:00", "2026-10-06 10:00"]))
     result = m.filter_bars(frame, "20261006")
     assert list(result.index) == [pd.Timestamp("2026-10-06 10:00")]
+
+
+def test_existing_identical_bars_do_not_rewrite_or_backup_again(tmp_path):
+    frame=m.normalize_kis_minute_bars('000001',payload('20261006','100000'))
+    path=tmp_path/'000001.parquet';frame.to_parquet(path)
+    before=path.read_bytes();stamp=path.stat().st_mtime_ns
+    result=m.persist_bars(path,frame,frame,m.digest(path),tmp_path/'audit','000001','20261006')
+    assert result.equals(frame)
+    assert path.read_bytes()==before and path.stat().st_mtime_ns==stamp
+    assert not (tmp_path/'audit').exists()
+
+
+def test_low_disk_space_stops_before_network_and_preserves_cache(tmp_path,monkeypatch):
+    from types import SimpleNamespace
+    monkeypatch.setattr(m.shutil,'disk_usage',lambda _:SimpleNamespace(free=1))
+    client=Client()
+    result=run(tmp_path,client)
+    assert result['status']=='STORAGE_BUDGET_EXHAUSTED'
+    assert not client.calls
+    assert not list(tmp_path.glob('*.parquet'))
+
+
+def test_disk_budget_includes_backup_and_temporary_file(tmp_path,monkeypatch):
+    from types import SimpleNamespace
+    frame=m.normalize_kis_minute_bars('000001',payload('20261006','100000'))
+    path=tmp_path/'000001.parquet';frame.to_parquet(path)
+    before=path.read_bytes()
+    added=m.normalize_kis_minute_bars('000001',payload('20261006','113000'))
+    monkeypatch.setattr(m.shutil,'disk_usage',lambda _:SimpleNamespace(free=10*1024**3+1))
+    with pytest.raises(m.StorageBudgetExceeded):
+        m.persist_bars(path,frame,added,m.digest(path),tmp_path/'audit','000001','20261006')
+    assert path.read_bytes()==before and not (tmp_path/'audit').exists()
