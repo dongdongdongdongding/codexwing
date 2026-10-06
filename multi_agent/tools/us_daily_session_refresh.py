@@ -90,11 +90,41 @@ def _store(path, frame, audit):
     return True
 
 
+def _validate_merged_bars(existing, frame, target):
+    """Allow only unchanged, previously invalid history behind a valid target.
+
+    Historical quarantine is not repaired or certified here. New invalid bars,
+    changed invalid observations and an invalid requested close still fail.
+    Full-history adjustment checks run before this validation.
+    """
+    issues = bar_issues(frame)
+    bad = issues.ne('')
+    if not bad.any():
+        return []
+    reason = issues.loc[bad].iloc[0].replace('invalid_', 'invalid_raw_', 1)
+    if frame.loc[bad, 'date'].eq(target).any() or existing.empty:
+        raise ValueError(reason)
+    old_issues = bar_issues(existing)
+    prior = existing.loc[old_issues.ne('')].set_index('date')
+    incoming = frame.loc[bad].set_index('date')
+    if not incoming.index.isin(prior.index).all():
+        raise ValueError(reason)
+    if set(existing.columns) != set(frame.columns):
+        raise ValueError('quarantined_raw_schema_changed')
+    prior = prior.reindex(incoming.index).reindex(columns=incoming.columns)
+    same = incoming.eq(prior) | (incoming.isna() & prior.isna())
+    if not same.all().all():
+        raise ValueError('changed_quarantined_raw_bar')
+    return [{'date': str(pd.Timestamp(day).date()), 'reason': str(issue)}
+            for day, issue in zip(frame.loc[bad, 'date'], issues.loc[bad])]
+
+
 def refresh_raw(universe,paths,target,*,start,batch_size,timeout,sleep,budget,audit):
     from multi_agent.tools import backfill_us_daily_features as bf
     paths.raw_dir.mkdir(parents=True,exist_ok=True)
     target=pd.Timestamp(target);end=(target+pd.Timedelta(days=1)).date().isoformat()
     groups=defaultdict(list);skipped=[];failed=[];revised=[];written=[];visited=[];single_retries=[]
+    preserved_invalid={}
     names=dict(zip(universe.symbol.astype(str),universe.name.astype(str)))
     for symbol in names:
         path=bf._raw_path(paths,symbol)
@@ -104,7 +134,10 @@ def refresh_raw(universe,paths,target,*,start,batch_size,timeout,sleep,budget,au
             receipt=json.loads(receipt_path.read_text()) if receipt_path.exists() else {}
             if (target in set(dates) and receipt.get('required_through')==str(target.date())
                     and receipt.get('sha256')==digest(path)):
-                skipped.append(symbol);continue
+                skipped.append(symbol)
+                if receipt.get('preserved_invalid_bars'):
+                    preserved_invalid[symbol]=receipt['preserved_invalid_bars']
+                continue
             last=dates.max() if len(dates) else None
             first=max(pd.Timestamp(start),last-pd.Timedelta(days=14)) if last is not None else pd.Timestamp(start)
             groups[first.date().isoformat()].append(symbol)
@@ -150,12 +183,12 @@ def refresh_raw(universe,paths,target,*,start,batch_size,timeout,sleep,budget,au
                     frame=bf._merge_raw(existing,fetched)
                     if frame.date.duplicated().any():raise ValueError('duplicate_raw_dates')
                     if target not in set(pd.to_datetime(frame.date)):raise ValueError('merged_target_missing')
-                    issues=bar_issues(frame)
-                    if issues.ne('').any():
-                        raise ValueError(issues[issues.ne('')].iloc[0].replace('invalid_','invalid_raw_',1))
+                    quarantined=_validate_merged_bars(existing,frame,target)
                     if _store(path,frame,audit):written.append(symbol)
+                    if quarantined:preserved_invalid[symbol]=quarantined
                     save_json(paths.market_root/'.refresh/receipts'/f'{bf._safe_filename(symbol)}.json',
-                              {'required_through':str(target.date()),'sha256':digest(path),'audit':str(audit)})
+                              {'required_through':str(target.date()),'sha256':digest(path),'audit':str(audit),
+                               'preserved_invalid_bars':quarantined})
                 except Exception as exc:failed.append({'symbol':symbol,'reason':str(exc) or type(exc).__name__})
             print(json.dumps({'US_raw_visited':len(visited),'written':len(written),'failed':len(failed),'elapsed_seconds':round(time.monotonic()-began,1)}),flush=True)
             if sleep>0:time.sleep(sleep)
@@ -163,6 +196,7 @@ def refresh_raw(universe,paths,target,*,start,batch_size,timeout,sleep,budget,au
     planned={s for values in groups.values() for s in values}
     result={'target':str(target.date()),'written':written,'skipped_current':skipped,'failed':failed,
             'unvisited':sorted(planned-set(visited)),'full_adjustment_refresh':revised,'single_retries':single_retries,
+            'preserved_invalid_bars':preserved_invalid,
             'budget_seconds':budget,'elapsed_seconds':time.monotonic()-began,
             'budget_scope':'checked between batches; active network calls complete before stopping'}
     save_json(audit/'raw_result.json',result);return result

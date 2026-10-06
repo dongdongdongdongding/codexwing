@@ -137,3 +137,72 @@ def test_manual_cli_and_daily_refresh_share_writer_lock(setup,monkeypatch):
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         assert bf.main()==2
         assert bf.daily_refresh(paths,required_through='2026-10-06')['status']=='busy'
+
+
+def test_unchanged_historical_quarantine_does_not_block_new_valid_close(setup,tmp_path,monkeypatch):
+    paths,universe,old=setup
+    old.loc[0,'close']=0.
+    old.to_parquet(bf._raw_path(paths,'AAA'),index=False)
+    fetched=raw(['2026-10-01','2026-10-02','2026-10-05','2026-10-06'])
+    monkeypatch.setattr(bf,'_download_single',lambda *a:fetched.copy())
+    result=collect(setup,tmp_path)
+    assert result['written']==['AAA'] and not result['failed']
+    assert result['preserved_invalid_bars']=={'AAA':[{'date':'2026-09-30','reason':'invalid_prices'}]}
+    after=pd.read_parquet(bf._raw_path(paths,'AAA'))
+    pd.testing.assert_frame_equal(after.iloc[:1],old.iloc[:1])
+    assert after.date.max()==pd.Timestamp('2026-10-06')
+    assert pd.read_parquet(tmp_path/'audit/before/AAA.parquet').equals(old)
+    features=bf.compute_feature_frame(after)
+    assert features.iloc[0].source_bar_valid==0 and pd.isna(features.iloc[0].close)
+    assert pd.isna(features.iloc[1].ret_1d)
+    again=collect(setup,tmp_path/'again')
+    assert again['preserved_invalid_bars']==result['preserved_invalid_bars']
+    assert again['skipped_current']==['AAA']
+
+
+@pytest.mark.parametrize('mutation',['new_bad_date','changed_bad_value','changed_bad_metadata','invalid_target'])
+def test_legacy_quarantine_permission_cannot_accept_new_or_changed_errors(setup,tmp_path,monkeypatch,mutation):
+    paths,_,old=setup
+    old.loc[0,'close']=0.
+    old.to_parquet(bf._raw_path(paths,'AAA'),index=False)
+    fetched=pd.concat([old,raw(['2026-10-05','2026-10-06'])],ignore_index=True)
+    if mutation=='new_bad_date':fetched.loc[3,'close']=0.
+    elif mutation=='changed_bad_value':fetched.loc[0,'open']=8.
+    elif mutation=='changed_bad_metadata':fetched.loc[0,'source']='different_provider'
+    else:fetched.loc[4,'close']=0.
+    monkeypatch.setattr(bf,'_download_single',lambda *a:fetched.copy())
+    result=collect(setup,tmp_path)
+    assert result['failed'] and not result['written']
+    assert pd.read_parquet(bf._raw_path(paths,'AAA')).equals(old)
+
+
+def test_existing_invalid_target_still_cannot_get_a_fresh_receipt(setup,tmp_path,monkeypatch):
+    paths,_,old=setup
+    old=pd.concat([old,raw(['2026-10-06'])],ignore_index=True);old.loc[3,'close']=0.
+    old.to_parquet(bf._raw_path(paths,'AAA'),index=False)
+    monkeypatch.setattr(bf,'_download_single',lambda *a:old.copy())
+    result=collect(setup,tmp_path)
+    assert result['failed'] and not result['written']
+    assert not (paths.market_root/'.refresh/receipts/AAA.json').exists()
+
+
+def test_full_refresh_with_missing_old_invalid_date_remains_rejected(setup,tmp_path,monkeypatch):
+    paths,_,old=setup;old.loc[0,'close']=0.
+    old.to_parquet(bf._raw_path(paths,'AAA'),index=False)
+    fetched=raw(['2026-10-01','2026-10-02','2026-10-06'],factor=.5)
+    monkeypatch.setattr(bf,'_download_single',lambda *a:fetched.copy())
+    result=collect(setup,tmp_path)
+    assert result['failed'][0]['reason']=='adjustment_refresh_incomplete_history'
+    assert pd.read_parquet(bf._raw_path(paths,'AAA')).equals(old)
+
+
+def test_run_with_preserved_quarantine_is_partial_even_with_complete_latest_coverage(setup,tmp_path,monkeypatch):
+    paths,universe,old=setup;old.loc[0,'close']=0.
+    old.to_parquet(bf._raw_path(paths,'AAA'),index=False)
+    monkeypatch.setattr(bf,'_fetch_universe',lambda *a,**kw:universe.copy())
+    monkeypatch.setattr(bf,'_download_single',lambda *a:raw(['2026-10-01','2026-10-02','2026-10-06']))
+    result=sr.run(paths,required_through='2026-10-06',sleep=0,budget=30)
+    assert result['coverage']['current'] and result['raw_failed']==0
+    assert result['status']=='partial'
+    assert result['invalid_source_bars']=={'AAA':1}
+    assert not (paths.market_root/'.refresh/current.json').exists()
