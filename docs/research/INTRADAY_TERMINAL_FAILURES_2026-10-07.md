@@ -48,9 +48,51 @@ Independent raw Decimal inspection and cache comparison found:
   query still contains invalid 09:04 OHLC (open 3635 above high 3600).
 - 393890 and 460850: recovered failed slices match all 61 and 75 cached rows.
 
-These observations identify a bounded repair opportunity; this document does not
-claim it has been applied. Fresh receipts cannot prove the historical cause of
-the original unsaved responses. Evidence includes `journal_diagnosis.json`,
+Fresh receipts cannot prove the historical cause of the original unsaved
+responses. Evidence includes `journal_diagnosis.json`,
 `existing_cache_invalid_rows.json`, `query_window_comparison.json`,
 `fresh_cache_comparison.json` and `fresh_capture/`. Price sources, checkpoint
 state, models and live lane selection were not modified by this capture.
+
+## Applied reviewed recovery
+
+Issue `swing-main-wjdf`; implementation `abf0325`. After a coherent copy of all
+five actual cache/state/journal-head sets passed rehearsal and independent
+full-frame verification, `repair_intraday_terminal_cohort.py` created a fresh
+live plan under the operational writer lock and applied it at approximately
+23:13 KST. Live plan SHA:
+`2f13d5b6a8f70071522f36802885fd44c1369fa622760c057b9cbf0c42e9b98f`.
+
+The repair pins all eight accepted response hashes, preserves immutable before
+and after files, checks all mutation targets before writing, repeats each
+compare-and-set, validates both journal chains and resumes interrupted work.
+Both price-file metadata and checkpoint identity are bound to the plan. A busy
+writer, changed cache/state/backup, unexpected overlap, new timestamp count or
+replacement value aborts. It does not change the collector or parser.
+
+Actual changes were two price files, two journal heads and five checkpoints:
+
+- 011230: one received high value changed 2725→2730; all other 73,692-row content
+  stayed exact. Four accepted query windows restore its requested-slice state.
+- 220260: 100 provider bars added, with all 83,001 previous rows unchanged.
+  Independent Decimal verification matched all 500 newly added OHLCV cells.
+- 012280, 393890 and 460850: price files unchanged; only validated request
+  checkpoints recovered. 012280 stays partial because its 13:30 request is invalid.
+
+All five journal reconstructions match the live frames exactly; checkpoint
+identities match their files. Other dates' 36 checkpoint states are unchanged.
+Of 2,627 price files, only the two planned files changed modification time/size;
+the other 2,625 retained both. The excluded 013000/014130 caches and checkpoints
+also retained their exact hashes. Their ambiguous source rows remain unresolved.
+
+32 related tests passed in both checkouts, including mid-transaction interruption,
+concurrent changes, whole-plan preflight, writer exclusion, strict replacement
+scope and idempotency. Actual live replay wrote zero files and preserved all 29
+audit/target files' bytes, sizes and mtimes. The producer, collector/client and
+six frozen model pins remained unchanged. Four service API endpoints returned
+HTTP 200; this confirms responsiveness, not complete data health or qualification.
+
+Evidence is in `recovery/independent_live_verification.json`, immutable backups,
+the applied plan and `shadow_rehearsal/independent_verification.json`. Four repaired
+dates now have all requested slices; one remains partial. All retain unknown
+whole-session completeness. No strategy was retrained, evaluated or promoted.
