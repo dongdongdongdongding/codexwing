@@ -59,7 +59,14 @@ holiday-aware reference handling, observed zero net and HTTP failure. The real
 response also passes through QuantStrategy, scanner/DB payload construction and
 both deep-report paths while retaining quantities and contract evidence.
 
-`swing-main-2kmm` owns this source repair. `swing-main-lk6b` retains broader source
+Commit `c7bbc7c` is deployed to both branches. `deployed_check.json` verifies
+fresh production imports and the valid/invalid source cases. The launchd-managed
+web backend was restarted from PID 17364 to 16179 to load the new code;
+`web_reload_after.json` verifies running state and HTTP 200 for health, picks and
+ops status. The separate daily batch and its intraday collector remained running.
+HTTP success does not certify every lane's data freshness or issuance eligibility.
+
+`swing-main-2kmm` is closed after deployed verification. `swing-main-lk6b` retains broader source
 freshness and historical impact work. KR issuing swing lanes do not consume
 these investor values; this is not evidence of an improved H10 edge or calibrated
 probability.
