@@ -314,3 +314,7 @@ live lane are unchanged.
 ### Complete historical price-verification footprint
 
 The Q3 1,310-code comparison is insufficient for the two-year training history and broad-market features. The new [historical scope](LOWLIQ_HISTORY_SCOPE_2026-10-07.md) freezes 1,857,109 source rows / 2,949 codes, covering 410,384 training-eligibility/test-universe keys and conservative lookbacks. Both KIS price bases require 65,796 bounded, resumable requests. The first 10 live requests were captured successfully; the larger collection is in progress under `swing-main-d277`. No old study/model input was replaced and no test outcome was evaluated.
+
+### Historical reference v8
+
+The first fixed historical prefix led to [nine evidence-supported corrections across seven codes](LOWLIQ_HISTORY_REFERENCE_REPAIR_V8_2026-10-07.md), changing 3,271 adjusted rows while preserving every raw field and other source row. Independent whole-panel verification, actual reuse, 64 tests and the full Q3 recheck passed. In the same 43-code historical prefix, 41 coefficient intervals are nonempty; DH오토넥스 suspended-capital representation and a 가온전선 provider-precision exception remain unresolved. Whole-history capture continues. The old study and live producer are unchanged, and there is no source or H10 performance certificate.
