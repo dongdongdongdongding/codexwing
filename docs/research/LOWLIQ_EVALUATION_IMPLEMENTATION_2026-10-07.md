@@ -61,3 +61,35 @@ and H10 maturity, exact input bindings and explicitly accepted research-source,
 contract, calendar, universe and score-replay evidence. The existing rejected
 source must stop before outcomes are accessed. Hashes bind inputs, but the
 statistical engine does not independently authenticate upstream evidence claims.
+
+Implementation: `research/lowliq_fixed_window_evaluation.py` is a callable
+statistical engine with a deferred outcome loader. Its registered numerical
+thresholds are checked, so altered minimum samples, touch/cadence targets,
+primary costs or significance criteria are not silently accepted. The existing
+pinned fit/score runner is untouched. Connecting a new approved source and
+settlement bundle is still required; this implementation is not an end-to-end
+approval of any current candidate.
+
+53 related tests passed, covering known all-pass synthetic data, failed primary
+with a winning secondary seed, primary-cost failure with a profitable cheaper
+sensitivity, all-selected versus filled-only rates, missing/unresolved controls,
+same-market matching, preserved unavailable shift diagnostics, exact small-null
+placebo probabilities, input mutation, date/horizon corruption, threshold
+relaxation and outcome-loader refusal before source/maturity checks. Synthetic
+pass cases are tests, not saved candidate performance.
+
+`preflight_frozen_lowliq_evaluation.py` is deliberately metadata/date-only and has
+no outcome-evaluation mode. It verifies the frozen source SHA, both specs, legacy
+implementation and source-rejection receipt, then reads only the source date
+column. Both frozen arms have 62 signal sessions but only two observed sessions
+after the final signal in their October 2 source. Both are source-rejected and
+immature. Their performance remains unopened. Other admission-proof flags are
+unattached in this preflight; this is not a reversal of the earlier score replay
+audit or a new full evidence verification.
+
+Preflight receipts live in
+`runtime_state/audit/lowliq_evaluation_preflight_20261007/`. Content-addressed
+implementation versions are preserved, including the initial development
+receipt. Replaying the final implementation preserves result bytes, size and
+mtime. Existing producer/capture dependencies and six frozen model files remain
+unchanged. A later calendar alone cannot rehabilitate the rejected source.
