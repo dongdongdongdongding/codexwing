@@ -66,3 +66,15 @@ Validation: seven focused tests cover conflicting contracts, H3/H5 shadow
 misalignment, non-finite returns, holiday-aware observed-session timing, late
 creation and distinct contract/settlement/timing counts. Actual full-ledger
 capture preserves all source bytes and reproduces the reopening count.
+
+## Historical provenance follow-up
+
+The [VWAP provenance census](KOSDAQ_VWAP_PROVENANCE_2026-10-07.md) reconciles
+fourteen scan identities with twelve research rows and thirteen deep reports.
+Two June 30 archive-only identities are recorded after the declared entry and
+do not add valid forward samples. The twelve matched DB entry timestamps are
+nine hours later than their naive Korean ledger bar times; a DB-only comparison
+would falsely increase before-entry counts from one to seven across the fourteen
+identities. `swing-main-pncm` tracks that normalization. No original earlier
+score/model-input evidence was recovered in the explicitly searched sources,
+so this follow-up adds zero verified calibration samples and performs no refit.
