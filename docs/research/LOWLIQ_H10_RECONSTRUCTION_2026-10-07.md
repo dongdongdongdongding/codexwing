@@ -99,6 +99,43 @@ in production `runtime_state/audit/lowliq_krx_source_20261007/`; capture task
 
 ## Outcome boundary and source limits
 
+### Independent source comparison, October 7
+
+`research/compare_lowliq_krx_source.py` compared all 85,104 existing code/dates
+for the fixed 1,310-code universe, June 30–October 2. Its create-only plan pins
+the frozen panel, capture plan, comparison code and all 2,620 response files.
+An independent arithmetic replay verified every difference record and all
+510,624 nominal OHLCV/amount comparisons. A separate join verified all six raw
+fields against the current marcap source for all 85,104 rows, pinning its SHA
+before and after the read. Neither comparison computed test strategy outcomes.
+
+All nominal close, volume and traded amount values agree exactly. The only
+nominal differences are open/high/low on 1,394 rows across 106 codes (4,182
+cells): every such row has zero volume and amount, the panel stores zero OHL,
+and KIS stores the matching close in all three fields. The frozen builder copies
+these raw fields from marcap without replacing zeros. These are observed
+nontrading display conventions; copying KIS prices must not create a fill.
+All six nominal fields agree on every positive-volume row in this scope.
+
+After removing a constant currency scale at each code's last common traded
+close, adjusted OHLC differs by more than 1e-6 KRW in 11,532 cells across 129
+codes. Of these, 4,897 cells are on zero-volume rows; 6,635 cells across 65 codes
+are on positive-volume rows. Within the latter group, 3,586 cells across 41
+codes differ by more than one KRW. These two numerical cutoffs are diagnostics,
+not economic correctness thresholds or permissions to exclude observations.
+The frozen builder's share-count, administrative-reset and lagged-event
+heuristics require corporate-action reconciliation; a price difference alone
+does not establish which source is correct. Provider nominal versus adjusted
+volumes differ on 1,977 code/dates, while traded amounts agree on every row.
+
+Original data, frozen scores and study universes remain unchanged. Detailed
+differences, provider flags/factors, the independent replay script and its
+receipt are in production `runtime_state/audit/lowliq_krx_comparison_20261007/`.
+Nine focused comparison/capture tests cover scaling, missing/duplicate dates,
+nonfinite values, preservation and nontrading conventions. Source comparison
+task `swing-main-ivuh` is complete; economic-factor reconciliation, earlier
+feature history, final H10 prices and strategy qualification remain separate.
+
 The next-open contract is TP5/H10, with entry day included, no stop, and 1.0%
 round-trip primary cost; 0.30% and 0.215% are sensitivities. Unfilled entries stay
 in the selected denominator with zero touch and zero return. Missing or suspended
