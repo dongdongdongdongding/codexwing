@@ -27,7 +27,21 @@ These observations do not justify clamping high/low, discarding validation, cert
 
 Validation: **42 tests passed**, including mismatched cache values, malformed bars, preserved partial status, concurrent changes, whole-plan preflight, interrupted multi-file resume, idempotent reuse active-writer rejection and rejection of a reused plan outside the locked cache. A coherent snapshot of all seven actual cache/state pairs was used for an isolated rehearsal: eight hours recovered, seven price files byte-identical, other dates preserved, five complete-request states and two partial states. Actual replay changed none of 23 audit/state files and made zero network calls.
 
-**Live application is pending.** The current natural backfill process PID 11105 (parent 73759) holds the operational writer lock. The recovery command refused mutation; that worker was not restarted or interrupted. After it exits, re-read current state and create a live plan before applying. A changed checkpoint must be reviewed rather than overwritten using the rehearsal plan.
+**Live application completed at approximately 22:56 KST.** Natural backfill PID
+11105 terminated after its 7,200-second budget and released the writer lock.
+It was not restarted or interrupted. A fresh plan from current live state
+revalidated all eight requests and 440 cached rows, then atomically updated seven
+checkpoint files. The live plan SHA is
+`8364a590d1c12e9c624ee8707672e59c9c4353befb99aa35b006f89704acd9b5`.
+
+Independent verification confirmed all seven price files unchanged by hash and
+file identity, all 50 other day states unchanged, eight hours recovered, five
+`REQUESTED_ALL_SLICES` states and two preserved partial states. Actual live replay
+returned `REUSED` with zero writes and preserved all 23 audit/state files' bytes,
+sizes and modification times. Evidence is in
+`checkpoint_recovery/independent_live_verification.json`. No network request was
+made during planning, application or replay. This recovery is complete; session
+completeness and the two malformed responses remain unresolved.
 
 Commands from the deployed checkout:
 
@@ -36,4 +50,12 @@ python3 research/recover_intraday_slice_checkpoints.py --root /Users/dongdong/Pr
 python3 research/recover_intraday_slice_checkpoints.py --root /Users/dongdong/Projects/codex_swing/swing-main --apply
 ```
 
-Evidence is under production `runtime_state/audit/intraday_failed_slices_20261007`: original report, frozen plan, ten provider responses, diagnosis, overlap comparison, and `shadow_recovery_v2/independent_verification.json`. Recovery is tracked in `swing-main-x0iz`; broad daily coverage remains `swing-main-5lj2`. This does not resolve the 615,928 unvisited pairs from the older run, the two invalid requests, US/scanner partials, or any strategy qualification.
+Evidence is under production `runtime_state/audit/intraday_failed_slices_20261007`: original report, frozen plan, ten provider responses, diagnosis, overlap comparison, isolated rehearsal and live recovery evidence. Recovery is tracked in `swing-main-x0iz`; broad daily coverage remains `swing-main-5lj2`. This does not resolve the unvisited pairs, the two invalid requests, US/scanner partials, or any strategy qualification.
+
+The newer natural run `20261007T205547317819` ended `BUDGET_EXHAUSTED` after
+20,772 requests, adding 84,798 rows. It reports seven request errors, three
+storage errors and 610,735 unvisited pairs. Its original terminal report is
+preserved separately at `runtime_state/audit/intraday_terminal_20261007_205547/`,
+SHA `99aef45f30c266c5828b4794d32aef8a4845284ce805057e7a05daf162b303bb`.
+Those new failures are separate from the recovered older checkpoint cohort;
+neither this repair nor process termination establishes overall pipeline health.
