@@ -1,13 +1,14 @@
-# Flow snapshot metadata repair — full application verified
+# Flow snapshot metadata repair — completed
 
 All 37,639 planned rows passed application and independent full-row verification
 on October 7 at 13:17 KST. Both processes terminated successfully. The resumed
 application found 4,900 already-correct rows and applied the remaining 32,739.
 Unresolved IDs 151599/151600 remain byte-equivalent as decoded full rows.
 
-`swing-main-vva4` remains in progress only for the final same-command no-change
-replay, started after both processes terminated. Live counters, rather than this
-dated note, determine that replay's completion.
+The final same-command replay also terminated successfully. It checked all
+37,639 distinct IDs across 377 batches: all were already correct and no new
+mutation occurred. `swing-main-vva4` is closed. The final receipt was inspected
+at 13:29 KST.
 
 Plan SHA-256:
 `70fa2839fa1a6e853a6a2c98c5c33a7ffd74736fa9607cc5cee7e2e21df22ef5`.
@@ -48,8 +49,9 @@ Production audit root: `runtime_state/audit/flow_provider_lineage_20261007/`.
 
 - `metadata_repair/completed_application.json`: preserved full application,
   independent verification and unresolved-row results before replay.
-- `metadata_repair/latest.json`: current replay counters and completion flag.
-- `metadata_repair/no_change_replay.log`: final idempotence run, still pending.
+- `metadata_repair/latest.json`: completed replay counters.
+- `metadata_repair/no_change_replay.log` and `idempotence_result.json`: successful
+  terminal replay, distinct-ID coverage and zero new mutations.
 - `metadata_repair/independent_rest/latest.json`: independent verified count.
 - `metadata_repair/batch_*/before.json`, `before.sha256`, `events/`: originals
   and attempt receipts. The initial pilot also has `pilot100.json`.
@@ -59,9 +61,8 @@ Production audit root: `runtime_state/audit/flow_provider_lineage_20261007/`.
   that unresolved IDs 151599/151600 are unchanged.
 - `live_watch.json`: process and service observations.
 
-Both original counters reached 37,639 with no unresolved repair errors and
-untouched unresolved rows. Closure still requires a completed no-change replay.
-This restores provenance, not
+Both original counters and the no-change replay reached 37,639 with no
+unresolved repair errors and untouched unresolved rows. This restores provenance, not
 source freshness, uniform feature dimensions, training reproducibility or an edge.
 
 ## Related live-input correction
