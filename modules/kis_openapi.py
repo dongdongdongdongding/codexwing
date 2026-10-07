@@ -443,6 +443,12 @@ def _env_float(name: str, default: float) -> float:
         return float(default)
 
 
+def _shared_monotonic() -> float:
+    # Python <3.10 on macOS gives time.monotonic() a process-local origin.
+    # POSIX CLOCK_MONOTONIC is a host clock shared by independently started jobs.
+    return time.clock_gettime(time.CLOCK_MONOTONIC)
+
+
 def _live_request_throttle() -> None:
     spacing_sec = _env_float("KIS_LIVE_CALL_SLEEP_SEC", 0.12)
     if not math.isfinite(spacing_sec):
@@ -461,9 +467,11 @@ def _live_request_throttle() -> None:
         with os.fdopen(fd, "r+", encoding="ascii") as handle:
             fcntl.flock(handle, fcntl.LOCK_EX)
             try:
-                now = time.monotonic()
+                now = _shared_monotonic()
                 try:
                     prior = json.load(handle)
+                    if prior.get("clock") != "CLOCK_MONOTONIC":
+                        raise ValueError("legacy process-local clock state")
                     last, prior_spacing = float(prior["monotonic"]), float(prior["spacing_sec"])
                     if (not math.isfinite(last) or not math.isfinite(prior_spacing)
                             or last < 0 or last > now or prior_spacing < 0):
@@ -476,7 +484,8 @@ def _live_request_throttle() -> None:
                 if delay > 0:
                     time.sleep(delay)
                 handle.seek(0)
-                json.dump({"monotonic": time.monotonic(), "spacing_sec": spacing_sec}, handle)
+                json.dump({"clock": "CLOCK_MONOTONIC", "monotonic": _shared_monotonic(),
+                           "spacing_sec": spacing_sec}, handle)
                 handle.truncate()
                 handle.flush()
             finally:

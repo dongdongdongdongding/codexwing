@@ -32,7 +32,7 @@ class Response:
  def __exit__(self,*args):pass
  def read(self):return b"{}"
 def open_url(*args,**kwargs):
- calls.append(time.monotonic());return Response()
+ calls.append(time.clock_gettime(time.CLOCK_MONOTONIC));return Response()
 k.urllib.request.urlopen=open_url
 client=k.KISOpenAPIClient(config=k.KISConfig(app_key="test",app_secret="test",live_network_allowed=True))
 (base/(number+".ready")).write_text("ready")
@@ -44,9 +44,15 @@ for _ in range(3):client._raw_request("GET","https://example.invalid/",{},None)
 print(json.dumps(calls))
 '''
     env = {**os.environ, "PYTHONPATH": str(ROOT)}
-    children = [subprocess.Popen([sys.executable, "-c", script, str(tmp_path), str(i)],
-                                cwd=tmp_path, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                text=True) for i in range(4)]
+    children = []
+    for i in range(4):
+        children.append(subprocess.Popen([sys.executable, "-c", script, str(tmp_path), str(i)],
+                                         cwd=tmp_path, env=env, stdout=subprocess.PIPE,
+                                         stderr=subprocess.PIPE, text=True))
+        # macOS Python 3.9 monotonic() has a process-local origin. Simultaneous
+        # launches and local timestamps can conceal a broken shared-clock design.
+        if i == 0:
+            time.sleep(.4)
     try:
         deadline = time.monotonic() + 10
         while len(list(tmp_path.glob("*.ready"))) < 4 and time.monotonic() < deadline:
@@ -67,7 +73,8 @@ print(json.dumps(calls))
         assert min(b-a for a, b in zip(calls, calls[1:])) >= .045
         assert calls[-1]-calls[0] >= .64
         state = json.loads(path.read_text())
-        assert set(state) == {"monotonic", "spacing_sec"}
+        assert set(state) == {"clock", "monotonic", "spacing_sec"}
+        assert state["clock"] == "CLOCK_MONOTONIC"
         assert path.stat().st_mode & 0o777 == 0o600
     finally:
         for child in children:
@@ -76,8 +83,9 @@ print(json.dumps(calls))
             child.wait(timeout=5)
 
 
-@pytest.mark.parametrize("raw", ["", "{broken", '{"monotonic":1e99,"spacing_sec":0.02}',
-                                '{"monotonic":NaN,"spacing_sec":0.02}'])
+@pytest.mark.parametrize("raw", ["", "{broken", '{"monotonic":0.1,"spacing_sec":0.02}',
+    '{"clock":"CLOCK_MONOTONIC","monotonic":1e99,"spacing_sec":0.02}',
+    '{"clock":"CLOCK_MONOTONIC","monotonic":NaN,"spacing_sec":0.02}'])
 def test_uncertain_state_waits_full_interval_and_recovers(tmp_path, monkeypatch, raw):
     path = configure(tmp_path, monkeypatch)
     path.parent.mkdir();path.write_text(raw)
