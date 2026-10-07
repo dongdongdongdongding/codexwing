@@ -65,6 +65,25 @@ Tests cover all prefixes and rolling windows across 500 sessions, missing eligib
 dates, exact original top-three preservation, parent-record tampering and replay.
 The original 20 tests and five additional cadence tests pass (25 distinct tests).
 
+Actual reconstruction completed all 62 dates, retaining 41,625 eligible
+code/date rows and all six scores per row. The separate verifier
+`audit_lowliq_frozen_scores.py` reproduced **249,750 prediction cells exactly**,
+then independently checked rankings with NumPy ordering and both calendars with
+separate count logic. It read no test outcomes. Every variant has 38 parent firing
+dates versus 37 amended dates. The amendment has 111 selected records (three per
+firing date), a full-window rate of **2.98387097 firing dates per five sessions**,
+and at most three in every rolling five-session window. These are historical
+reconstructed selections, not issued recommendations or measured success rates.
+
+The amended completion receipt SHA256 is
+`a91747571ef13771f74b9a0396c80ed20d5281d7637361ad7e031a5f723603dc`.
+Both score sets are immutable; repeated reconstruction must reproduce them.
+The next source capture covers all 1,310 distinct eligible codes, with 2,620
+planned KIS J requests across adjusted and nominal bases through October 2.
+Its request plan precedes capture and includes parser/adapter fingerprints;
+errors and missing dates remain records. This collection reads no test returns
+and changes no live price cache. Tracking: `swing-main-djdd`.
+
 ## Outcome boundary and source limits
 
 The next-open contract is TP5/H10, with entry day included, no stop, and 1.0%
