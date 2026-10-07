@@ -1,0 +1,148 @@
+{
+  "id": "lowliq_touch10_reconstruction_20261007",
+  "beads": "swing-main-jm3e",
+  "registered_at": "2026-10-07T07:11:33.563138+00:00",
+  "purpose": "Fixed retrospective source-date-causal screen of repaired low-liquidity ranker for the user TP5/H10 and cadence target. Necessary research evidence only; never automatic promotion.",
+  "prior_evidence": "Inherited H5 SURVIVED report inadmissible after h4zv. Current adjustment as-of instability audited in xi1c. Old scores/models/picks are not reused. No corrected-candidate test scores or outcomes have been inspected.",
+  "fit_cutoff": "2026-06-30",
+  "train_signal_start": "2024-07-01",
+  "test_signal_start": "2026-07-01",
+  "test_signal_end": "2026-09-30",
+  "source": {
+    "panel_sha256": "8c6fba2daf8d995be66441d873094928f347618c3a41f208c9286509f4fb1981",
+    "panel_end": "2026-10-02",
+    "builder_sha256": "a44b3733a59886d75de676a466fb90d0c9aa5480f3f8cca3e2d9cb044db113da",
+    "fit_snapshot_sha256": "7c408afb5d91892af813d5d1c162636333812139963969c8f327dd2a572344e4",
+    "input_rule": "Discard dates after each fit/prediction cutoff BEFORE adjustment. Training features may use only information available by fit cutoff; each test-day feature uses that day prefix. Never load delist_date/exited or future labels into predictors. Historical raw revisions/publication times and heuristic factors are not certified by a date prefix. Independent corporate-action/price verification and true forward evidence remain promotion requirements."
+  },
+  "features": [
+    "ret_1d",
+    "ret_3d",
+    "ret_5d",
+    "ret_10d",
+    "ret_20d",
+    "ret_60d",
+    "ma5_dist",
+    "ma20_dist",
+    "ma60_dist",
+    "ma120_dist",
+    "ma20_slope",
+    "ma60_slope",
+    "rsi14",
+    "rsi_slope",
+    "accel",
+    "consec_up",
+    "dist_hi20",
+    "dist_hi60",
+    "dist_hi120",
+    "dist_lo20",
+    "dist_lo60",
+    "pos20",
+    "bb_pctb",
+    "bb_bw",
+    "atr_pct",
+    "vol20",
+    "close_loc",
+    "gap",
+    "vol_ratio",
+    "vol_trend",
+    "turn_z",
+    "obv_slope",
+    "cmf20",
+    "idx_mom20",
+    "idx_vol20"
+  ],
+  "feature_rules": "Causal rolling formulas from legacy harness, using date-limited adjusted prices and actual amount for liquidity. OBV difference computed as rolling signed-volume sum (algebraic equivalent); full-history consecutive-up count. Per-row market, prior-session market-cap weights and shifted index context. No outcome-based universe filter. Clip predictor values to [-10000,10000], missing remaining predictors retained for LightGBM.",
+  "universe": {
+    "markets": [
+      "KOSPI",
+      "KOSDAQ"
+    ],
+    "rolling_amount_sessions": 20,
+    "amount_min": 500000000,
+    "amount_max_exclusive": 3000000000,
+    "positive_signal_volume": true,
+    "required_predictors": [
+      "ret_1d",
+      "ret_3d",
+      "ret_5d",
+      "ret_10d",
+      "ret_20d",
+      "ret_60d"
+    ]
+  },
+  "contract": {
+    "entry": "next observed market-session open",
+    "horizon_sessions": 10,
+    "entry_day_counts": true,
+    "tp": 0.05,
+    "stop": null,
+    "primary_roundtrip_cost_pct": 1.0,
+    "cost_sensitivities_pct": [
+      0.3,
+      0.215
+    ],
+    "unfilled_entry": "Keep selected record, zero touch and zero net; do not replace or delay entry. Also report filled-only rates.",
+    "terminal_or_missing": "Keep pending/data_error; no last-quote liquidation fiction and no dropping from evaluation. Any unresolved price/exit or missing control blocks qualification.",
+    "target_label": "Binary H10 +5 touch including zero for complete no-touch windows. Training requires full market horizon and valid OHLCV, fillable entry and terminal resolution. Label availability is horizon-end session, even for early touches; require <= fit cutoff."
+  },
+  "model": {
+    "kind": "LGBMClassifier",
+    "n_estimators": 400,
+    "learning_rate": 0.05,
+    "num_leaves": 63,
+    "min_child_samples": 100,
+    "subsample": 0.8,
+    "subsample_freq": 0,
+    "colsample_bytree": 0.7,
+    "reg_lambda": 5,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "primary_seed": 0,
+    "num_threads": 4,
+    "minimum_train_rows": 20000,
+    "noise_control": "Three identical rankers on 35 independent N(0,1) inputs, seeds0,1,2. Separate deterministic train and per-date prediction RNG streams. No seed switching or hyperparameter search."
+  },
+  "selection": {
+    "top_k_combined_markets": 3,
+    "ties": "score descending, then code ascending",
+    "threshold": null,
+    "cadence": {
+      "kind": "first_eligible_dates_in_rolling_sessions",
+      "window_sessions": 5,
+      "max_firing_dates": 3
+    },
+    "no_replacement_on_unfilled": true
+  },
+  "evaluation": {
+    "scope": "Entire fixed 2026Q3 signal window, calendar inferred from all observed market dates in frozen panel; cross-check calendar completeness before qualification. No performance output before the entire H10 window is available. Save score/universe/cadence artifacts first.",
+    "minimum_resolved": 30,
+    "minimum_firing_dates": 20,
+    "touch_rate_all_selected_min": 0.7,
+    "firing_dates_per_five_sessions": [
+      2,
+      3
+    ],
+    "net_ev_block_ci_lower_gt": 0,
+    "same_day_excess_block_ci_lower_gt": 0,
+    "paired_excess_min_pp": 0.3,
+    "unresolved_selected_or_control_max": 0,
+    "same_day_controls": "All same-date market/liquidity/feature-eligible nonselected tickers; identical contract, maturity, costs and unfilled handling. Report each market separately, combined primary; no post-hoc market-subset promotion.",
+    "placebo": "Random-ticker relabel within each date and market at equal selected counts,5000draws; circular firing-date shifts diagnostic only. Same-date paired primary-vs-noise comparison, mean of3noise seeds; no improvement claim below0.3pp.",
+    "block_sessions": 5,
+    "bootstrap_draws": 5000,
+    "statistics_seed": 20261007,
+    "family_size": 3,
+    "family_adjusted_ticker_p_max": 0.05,
+    "family_scope": "This fixed candidate plus two current KR60/120 studies. Not an adjustment for the entire historical research search. Retrospective result cannot certify forward calibration.",
+    "secondary_seeds": "Report all, never choose the best; primary0 must pass all primary gates. No independent feature-increment claim without three-seed/equal-noise comparison."
+  },
+  "kill_rule": "At the fixed mature/source-complete evaluation any target miss rejects this candidate for promotion. Missing/unverified source evidence is NOT_EVALUABLE_SOURCE, not a profitable/losing trade. No interim promotion, outcome-driven extension, threshold or direction change, or reselection.",
+  "publication": {
+    "allowed": false,
+    "reason": "Retrospective screen only. Requires independent source checks, immutable forward current-epoch evidence, existing category-specific release gates and full consumer wiring before replacing a lane. Passing pooled statistics cannot certify a category. Existing producer hash and KR60/120 studies unchanged."
+  }
+}
