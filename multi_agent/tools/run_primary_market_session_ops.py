@@ -355,10 +355,15 @@ def _run_command(command: Mapping[str, Any], *, dry_run: bool) -> Dict[str, Any]
     env = os.environ.copy()
     env.update(env_delta)
     flow_receipt = None
+    us_receipt = None
     if command.get("name") == "primary_daily_ops":
         flow_receipt = PROJECT_ROOT / "runtime_state/long_term/ops/flow_batches" / (
             datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%f") + ".json")
         env["FLOW_RECEIPT_PATH"] = str(flow_receipt)
+    if command.get("name") == "nasdaq_full_universe_scan":
+        us_receipt = PROJECT_ROOT / "runtime_state/long_term/ops/us_scan_batches" / (
+            datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%f") + ".json")
+        env["US_RESEARCH_RECEIPT_PATH"] = str(us_receipt)
     proc = subprocess.run(
         argv,
         cwd=str(PROJECT_ROOT),
@@ -380,17 +385,20 @@ def _run_command(command: Mapping[str, Any], *, dry_run: bool) -> Dict[str, Any]
         "started_at": started_at,
         "finished_at": datetime.now(timezone.utc).isoformat(),
     }
-    if flow_receipt is not None:
-        result["step_artifacts"] = {"flow_update": {"path": str(flow_receipt), "status": "not_observed"}}
-        if flow_receipt.exists():
+    for key, receipt_path in (("flow_update", flow_receipt), ("us_full_universe_scan", us_receipt)):
+        if receipt_path is None:
+            continue
+        artifact = {"path": str(receipt_path), "status": "not_observed"}
+        result.setdefault("step_artifacts", {})[key] = artifact
+        if receipt_path.exists():
             try:
-                raw = flow_receipt.read_bytes()
+                raw = receipt_path.read_bytes()
                 receipt = json.loads(raw)
-                result["step_artifacts"]["flow_update"].update(
+                artifact.update(
                     {k: v for k, v in receipt.items() if k != "symbols"},
                     sha256=hashlib.sha256(raw).hexdigest())
             except (ValueError, OSError):
-                result["step_artifacts"]["flow_update"]["status"] = "unreadable"
+                artifact["status"] = "unreadable"
     return result
 
 

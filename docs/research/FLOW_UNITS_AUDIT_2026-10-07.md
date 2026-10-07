@@ -72,6 +72,11 @@ Audit root on the production machine:
 - `full_cache_dimensional_bounds.json`: whole-cache sanity checks.
 - `before_contracts.json`, `contract_invariance.json`: numeric compatibility.
 - `model_input_audit.json`: four selected bundles, hashes and feature counts.
+- `deployed_readback.json`, `deployed_live_response.json`: commit `72bf8b0`
+  deployed to both branches; a fresh 005930 completed-date response exactly
+  matches the earlier raw daily rows and returns `KRW_million`. Cache and four
+  model hashes remain unchanged; `/api/health`, `/api/picks`, `/api/ops/status`
+  all return HTTP 200. Provider-mixing follow-up: `swing-main-x0fq`.
 
 Source cache SHA-256 remains
 `ba24a26df7b1abc220f39b51012d8ecade05d40327ba8597fdd7d55622f4c121`.
