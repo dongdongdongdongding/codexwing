@@ -16,7 +16,7 @@ import os
 import subprocess
 import sys
 import tempfile
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict
 from collections import Counter
@@ -38,18 +38,64 @@ def _short_days() -> int:
 
 
 def _ext_days() -> int:
-    d = CACHE / "intraday_ext"
-    if not d.exists():
-        return 0
+    return _ext_evidence()["days"]
+
+
+def _ext_evidence(now: datetime | None = None) -> dict:
+    """Full observed cache census; not complete-session/PIT certification."""
     import pandas as pd
-    fs = sorted(d.glob("*.parquet"))[:5]
+    now = now or datetime.now(timezone.utc)
+    if now.tzinfo is None:
+        raise ValueError("now must be timezone aware")
+    local = now.astimezone(timezone(timedelta(hours=9)))
+    d = CACHE / "intraday_ext"
+    files = sorted(d.glob("*.parquet"))
+    def identity(path):
+        stat = path.stat()
+        return [stat.st_ino, stat.st_size, stat.st_mtime_ns]
+    identities = {str(f): identity(f) for f in files}
     days = set()
-    for f in fs:
+    symbols, errors = [], []
+    for f in files:
         try:
-            days |= set(pd.to_datetime(pd.read_parquet(f).index).strftime("%Y%m%d"))
-        except Exception:
-            pass
-    return len(days)
+            if len(f.stem) != 6 or not f.stem.isdigit():
+                raise ValueError("invalid symbol filename")
+            index = pd.read_parquet(f, columns=[]).index
+            if not isinstance(index, pd.DatetimeIndex) or index.hasnans:
+                raise ValueError("invalid time index")
+            if index.tz is not None:
+                index = index.tz_convert("Asia/Seoul").tz_localize(None)
+            minute = index.hour * 60 + index.minute
+            day = index.normalize()
+            today = pd.Timestamp(local.date())
+            completed = (day < today) | ((day == today) & (local.hour >= 20))
+            index = index[(minute >= 480) & (minute < 1200) & completed]
+            observed = set(index.normalize().unique().strftime("%Y%m%d"))
+            after = index[index.hour >= 16]
+            days |= observed
+            symbols.append({"symbol": f.stem, "days": len(observed),
+                            "after_16h_days": len(after.normalize().unique()),
+                            "identity": identities[str(f)]})
+        except Exception as exc:
+            errors.append({"file": f.name, "error": type(exc).__name__})
+    # A scheduled collector can atomically replace files while we inspect them.
+    stable = files == sorted(d.glob("*.parquet"))
+    for f in files:
+        try:
+            stable = (identity(f) == identities[str(f)]) and stable
+        except OSError:
+            stable = False
+    n = sum(s["days"] > 0 for s in symbols)
+    progress = min(len(days) / 120, n / 300)
+    return {"days": len(days), "symbols": n, "need_days": 120, "need_symbols": 300,
+            "progress": progress, "files_seen": len(files), "file_errors": errors,
+            "snapshot_stable": stable, "per_symbol": symbols,
+            "first_date": min(days) if days else None,
+            "last_date": max(days) if days else None,
+            "ready": progress >= 1 and stable and not errors,
+            "scope": "observed_UN_cache_08_to_20h_date_union_completed_dates_only",
+            "complete_sessions_verified": False, "point_in_time_universe_verified": False,
+            "promotion_allowed": False}
 
 
 META_LEDGERS = (
@@ -129,10 +175,12 @@ QUEUE: Dict[str, Dict[str, Any]] = {
     # 두 가설(급증×항복 H-A, 피크아웃 H-B) 모두 킬 완료(informed shorts 보조정리). 큐 좀비였음.
     # 공매도 축 잔여는 분봉/이벤트 입도 재탐사감으로만 보류(§23 명시).
     "ext_session_transfer": {
-        "need": 120, "have": _ext_days,
-        "title": "[재개봉] 확장세션 가격발견 → 익일 전이 (intraday_ext 120거래일 도달)",
+        "need": 1, "have": lambda: _ext_evidence()["progress"],
+        "title": "[재개봉] 확장세션 가격발견 → 익일 전이 (120거래일 및 300종목 관측)",
         "desc": "사전등록(2026-07-07): 애프터장(16:00-20:00) 가격/거래 이벤트가 익일 시가·일중에 전이되는가 "
-                "(KR판 세션테이프). 현실체결(다음 세션 시가) 필수 — B트랙 갭 아티팩트 교훈. 정규장 대비 증분 판정.",
+                "(KR판 세션테이프). 현실체결(다음 세션 시가) 필수 — B트랙 갭 아티팩트 교훈. 정규장 대비 증분 판정. "
+                "OD-60: 두 수집 축 충족 후 별도로 세션 커버리지·PIT를 검증한다. "
+                "기각된 203종목 잔차 연속 규칙을 재개하거나 성과/발행을 인증하지 않는다.",
     },
     "live_meta_calibration": {
         "need": 100, "have": _lanes_resolved_total,
@@ -182,7 +230,10 @@ def run_queue(*, no_tickets: bool = False) -> dict:
     for key, cfg in QUEUE.items():
         evidence = None
         try:
-            if key in ("live_meta_calibration", "live_meta_calibration_full"):
+            if key == "ext_session_transfer":
+                evidence = _ext_evidence()
+                have = evidence["progress"]
+            elif key in ("live_meta_calibration", "live_meta_calibration_full"):
                 if meta is None:
                     meta = _meta_evidence()
                 evidence = meta
@@ -192,6 +243,8 @@ def run_queue(*, no_tickets: bool = False) -> dict:
         except Exception:
             have = -1
         ready = have >= cfg["need"]
+        if key == "ext_session_transfer":
+            ready = ready and bool(evidence and evidence["ready"])
         if key == "live_meta_calibration_full":
             ready = ready and bool(evidence and evidence["known_non_risk_off"] > 0)
         item = {"key": key, "have": have, "need": cfg["need"],

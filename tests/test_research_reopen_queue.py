@@ -1,5 +1,8 @@
 import json
+from datetime import datetime, timezone
 from types import SimpleNamespace
+
+import pandas as pd
 
 from multi_agent.tools import research_reopen_queue as queue
 
@@ -85,3 +88,68 @@ def test_199_with_regime_is_not_ready(tmp_path, monkeypatch):
         [{"exit_t5_h5": 1, "mkt_state": "NORMAL"}] * 199)
     assert not queue.run_queue()["items"][1]["ready"]
     assert not calls
+
+
+def ext_cache(tmp_path, monkeypatch, n=6, days=120):
+    monkeypatch.setattr(queue, "CACHE", tmp_path)
+    d = tmp_path / "intraday_ext"
+    d.mkdir()
+    dates = pd.bdate_range("2025-01-01 19:59", periods=days, normalize=False)
+    for i in range(n):
+        pd.DataFrame({"close": 1}, index=dates).to_parquet(d / f"{i:06d}.parquet")
+    return d
+
+
+def test_ext_census_includes_files_beyond_first_five(tmp_path, monkeypatch):
+    d = ext_cache(tmp_path, monkeypatch)
+    pd.DataFrame({"close": [1]}, index=pd.to_datetime(["2025-10-01 19:59"])).to_parquet(d / "000005.parquet")
+    out = queue._ext_evidence()
+    assert out["days"] == 121 and out["symbols"] == 6
+    assert out["progress"] == 6 / 300 and not out["ready"]
+    assert not out["promotion_allowed"]
+
+
+def test_ext_both_axes_required_and_historical_ticket_preserved(tmp_path, monkeypatch):
+    ext_cache(tmp_path, monkeypatch, n=300, days=120)
+    monkeypatch.setattr(queue, "STATE", tmp_path / "state.json")
+    monkeypatch.setattr(queue, "OUT", tmp_path / "report.json")
+    monkeypatch.setattr(queue, "QUEUE", {"ext_session_transfer": queue.QUEUE["ext_session_transfer"]})
+    queue.STATE.write_text(json.dumps({"ext_session_transfer": "2026-08-24"}))
+    def unexpected(*a, **kw):
+        raise AssertionError("old ticket must not be reissued")
+    monkeypatch.setattr(queue.subprocess, "run", unexpected)
+    item = queue.run_queue()["items"][0]
+    assert item["ready"] and item["have"] == item["need"] == 1
+    assert json.loads(queue.STATE.read_text())["ext_session_transfer"] == "2026-08-24"
+    for f in (tmp_path / "intraday_ext").glob("*.parquet"):
+        frame = pd.read_parquet(f).iloc[:119]
+        frame.to_parquet(f)
+    out = queue._ext_evidence()
+    assert out["symbols"] == 300 and out["days"] == 119 and not out["ready"]
+
+
+def test_ext_empty_invalid_and_current_day_not_counted(tmp_path, monkeypatch):
+    d = ext_cache(tmp_path, monkeypatch, n=1, days=1)
+    pd.DataFrame({"close": []}, index=pd.DatetimeIndex([])).to_parquet(d / "000001.parquet")
+    pd.DataFrame({"close": [1]}).to_parquet(d / "000002.parquet")
+    pd.DataFrame({"close": [1, 1, 1]}, index=pd.to_datetime([
+        "2026-10-07 08:00Z", "2026-10-08 08:00Z", "2026-10-06 23:00Z"])
+    ).to_parquet(d / "000003.parquet")
+    out = queue._ext_evidence(datetime(2026, 10, 7, 0, tzinfo=timezone.utc))
+    assert out["symbols"] == 1 and out["days"] == 1
+    assert out["file_errors"] == [{"file": "000002.parquet", "error": "ValueError"}]
+    assert not out["ready"]
+    out = queue._ext_evidence(datetime(2026, 10, 7, 11, tzinfo=timezone.utc))
+    assert out["symbols"] == 2 and out["days"] == 2
+
+
+def test_ext_changed_snapshot_not_ready(tmp_path, monkeypatch):
+    d = ext_cache(tmp_path, monkeypatch, n=1, days=120)
+    original = pd.read_parquet
+    def replace_while_reading(path, **kwargs):
+        result = original(path, **kwargs)
+        path.touch()
+        return result
+    monkeypatch.setattr(pd, "read_parquet", replace_while_reading)
+    out = queue._ext_evidence()
+    assert not out["snapshot_stable"] and not out["ready"]
