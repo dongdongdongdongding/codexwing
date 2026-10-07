@@ -64,4 +64,42 @@ and lane-map suites pass **127 tests**. Tests cover all nine unknown-field
 revisions, missing fields/identity/date scope, reference corruption, unchanged
 already-fixed provider values, duplicate indices and refresh rejection of an
 uncertified revision. Production application and full-panel evidence follow
-below when verified. No H10 strategy improvement is inferred from data repair.
+below. No H10 strategy improvement is inferred from data repair.
+
+## Deployed application and full-panel verification
+
+Code `4712cc1` was pushed to both branches before applying the source repair.
+`apply_and_rebuild.py` took the US writer lock and recorded 3,976 input paths,
+including the actual then-current `103619334148` panel, all raw universe paths,
+listing/universe metadata and the issued ledger. The old panel was preserved
+by a verified hardlink; `_store` preserved the complete original VWAV file.
+The application changed exactly the two declared dates. All 308 other raw rows,
+all other raw files and protected metadata/ledger hashes remain unchanged.
+
+The new `daily_features_20180101_20261007_20261007_141800054360.parquet` contains
+**5,605,406 rows**, matching the actual previous panel's row count. Its SHA256 is
+`72ddf6f9dc7e1e3560156ab75ca27b5bac3d4e41a766f92ebb82f7e276318ec3`.
+All **5,605,096 non-VWAV rows** are exactly unchanged across every column.
+
+VWAV retains 310 rows. Invalid source rows drop from 299 to 0, feature-ready
+rows increase from 0 to 191, and rows with the current model's feature set and
+H20 target available increase from 0 to 71. The latter is data availability,
+not proof that these rows pass model admission or that a model was trained.
+Independent Decimal calculations verify **6,800** return, liquidity and
+close-reference future-price/label checks. These labels are not executable
+next-open H10 contracts.
+
+The actual current admission pool remains **322 candidates**, including exactly
+equal membership, 250-day admission history and percentile values. No model was
+refitted and the issued ledger is byte-identical. A repeat apply reports no
+changed dates and no source write. A repeat full-panel call reuses the verified
+new panel; health, picks, overview and ops-status APIs all return HTTP 200.
+The separate daily worker 97991/97996 and collector 10244 remained live and were
+not restarted; their overall batch success remains unverified.
+
+Operational evidence is under `runtime_state/audit/vwav_basis_repair_20261007/`:
+`before.json`, `storage/`, `applied.json`, `rebuild_result.json`, `verify.py`,
+`verification.json`, `pool_before.csv`, `pool_after.csv`, `replay/applied.json`,
+`cache_reuse.json` and `api_after.json`. The capture/verification jobs completed.
+The normalization of other source series and qualification/replacement of an
+H10 edge lane remain separate unfinished work.
