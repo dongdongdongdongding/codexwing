@@ -1,0 +1,658 @@
+{
+  "version": "verified_fixed_reference_events_v5",
+  "price_convention": "KRX_OFFICIAL_FIXED_REFERENCE_OVERLAY_V1",
+  "source_sha256": "78a8d8c296d90484da62fd3dd4cff20079e07e794dad863dcd1f35d9f7848482",
+  "source_rows": 5360785,
+  "receipts_sha256": "8d1d33af302c6794a64a3e6a2cbca4e30daedd3fd6a8f210325abd728b7aee53",
+  "economics_sha256": "10076d6549630af62332b109ec0fce66295de71e700d266ce5a742404a8b6f12",
+  "chunk_implementation_sha256": "6128ab7ce1d3394da5097e87f604762975201b121ded97376f9c92ac0716d306",
+  "builder_implementation_sha256": "da3ceb595898d01899588b6192218b8699b830915f8058d614c6104b3640a783",
+  "evidence_verifier_sha256": "89832272b0b5a01149024dce52b4ea05a5e1b1ef9a1d60ebda0c758ac6782e1e",
+  "contracts": {
+    "002680": {
+      "date": "2026-07-10",
+      "prior_close": 374,
+      "reference_price": 1870,
+      "before_factor": 1.0,
+      "old_event_factor": 0.19999997524507301,
+      "body": "002680_20260709000503_20260709001274_body_0"
+    },
+    "002780": {
+      "date": "2026-09-07",
+      "prior_close": 782,
+      "reference_price": 7820,
+      "before_factor": 1.0,
+      "old_event_factor": 0.09999999656290642,
+      "body": "002780_20260904000385_20260904001093_body_0"
+    },
+    "006490": {
+      "date": "2026-07-16",
+      "prior_close": 310,
+      "reference_price": 1550,
+      "before_factor": 1.1588737541249285,
+      "old_event_factor": 0.23177474925773411,
+      "body": "006490_20260715000522_20260715001469_body_0"
+    },
+    "009620": {
+      "date": "2026-09-17",
+      "prior_close": 870,
+      "reference_price": 4350,
+      "before_factor": 1.2179092033516599,
+      "old_event_factor": 0.24358179884903544,
+      "body": "009620_20260916000562_20260916001306_body_0"
+    },
+    "012170": {
+      "date": "2026-08-28",
+      "prior_close": 748,
+      "reference_price": 3740,
+      "before_factor": 0.008393652863546543,
+      "old_event_factor": 0.0016787302411113846,
+      "body": "012170_20260827000395_20260827001198_body_0"
+    },
+    "018470": {
+      "date": "2026-09-11",
+      "prior_close": 973,
+      "reference_price": 4865,
+      "before_factor": 1.1941262954872212,
+      "old_event_factor": 0.23882525721146133,
+      "body": "018470_20260910000357_20260910000995_body_0"
+    },
+    "033170": {
+      "date": "2026-08-26",
+      "prior_close": 340,
+      "reference_price": 1700,
+      "before_factor": 1.0,
+      "old_event_factor": 0.1999999906681945,
+      "body": "033170_20260825000598_20260825001414_body_0"
+    },
+    "034940": {
+      "date": "2026-08-27",
+      "prior_close": 550,
+      "reference_price": 2750,
+      "before_factor": 1.0,
+      "old_event_factor": 0.19999998708837205,
+      "body": "034940_20260826000573_20260826001464_body_0"
+    },
+    "043200": {
+      "date": "2026-08-27",
+      "prior_close": 512,
+      "reference_price": 1024,
+      "before_factor": 1.0,
+      "old_event_factor": 0.4999999880395122,
+      "body": "043200_20260826000572_20260826001467_body_0"
+    },
+    "051980": {
+      "date": "2026-10-02",
+      "prior_close": 1035,
+      "reference_price": 10350,
+      "before_factor": 0.4969553587477207,
+      "old_event_factor": 0.04969553184873064,
+      "body": "051980_20261001000574_20261001001356_body_0"
+    },
+    "054940": {
+      "date": "2026-08-12",
+      "prior_close": 760,
+      "reference_price": 3800,
+      "before_factor": 1.0,
+      "old_event_factor": 0.19999998191330032,
+      "body": "054940_20260811000756_20260811001296_body_0"
+    },
+    "062970": {
+      "date": "2026-08-07",
+      "prior_close": 1162,
+      "reference_price": 2325,
+      "before_factor": 1.5,
+      "old_event_factor": 0.75,
+      "body": "062970_20260806000649_20260806001411_body_0"
+    },
+    "067390": {
+      "date": "2026-08-28",
+      "prior_close": 506,
+      "reference_price": 5060,
+      "before_factor": 1.0,
+      "old_event_factor": 0.09999999786303264,
+      "body": "067390_20260827000542_20260827001325_body_0"
+    },
+    "082850": {
+      "date": "2026-09-07",
+      "prior_close": 897,
+      "reference_price": 4485,
+      "before_factor": 1.0,
+      "old_event_factor": 0.19999998761778018,
+      "body": "082850_20260904000702_20260904001724_body_0"
+    },
+    "084680": {
+      "date": "2026-10-02",
+      "prior_close": 532,
+      "reference_price": 2660,
+      "before_factor": 1.0,
+      "old_event_factor": 0.1999999957688731,
+      "body": "084680_20261001000399_20261001001038_body_0"
+    },
+    "091810": {
+      "date": "2026-08-31",
+      "prior_close": 626,
+      "reference_price": 3130,
+      "before_factor": 1.4744332912916123,
+      "old_event_factor": 0.29488665594788904,
+      "body": "091810_20260828000484_20260828001188_body_0"
+    },
+    "105550": {
+      "date": "2026-08-12",
+      "prior_close": 397,
+      "reference_price": 1985,
+      "before_factor": 2.0,
+      "old_event_factor": 0.39999999489190313,
+      "body": "105550_20260811000752_20260811001298_body_0"
+    },
+    "113810": {
+      "date": "2026-07-28",
+      "prior_close": 465,
+      "reference_price": 2325,
+      "before_factor": 1.0,
+      "old_event_factor": 0.19999999387030504,
+      "body": "113810_20260727000715_20260727001284_body_0"
+    },
+    "123010": {
+      "date": "2026-07-27",
+      "prior_close": 1554,
+      "reference_price": 3110,
+      "before_factor": 1.5780148674671188,
+      "old_event_factor": 0.7890074110594563,
+      "body": "123010_20260724000827_20260724001573_body_0"
+    },
+    "204840": {
+      "date": "2026-08-11",
+      "prior_close": 814,
+      "reference_price": 4070,
+      "before_factor": 1.0,
+      "old_event_factor": 0.19999999742098565,
+      "body": "204840_20260810000821_20260810001572_body_0"
+    },
+    "207760": {
+      "date": "2026-09-02",
+      "prior_close": 384,
+      "reference_price": 1920,
+      "before_factor": 2.3067846607669615,
+      "old_event_factor": 0.4613569154938543,
+      "body": "207760_20260901000607_20260901001340_body_0"
+    },
+    "214680": {
+      "date": "2026-09-10",
+      "prior_close": 960,
+      "reference_price": 4800,
+      "before_factor": 1.0,
+      "old_event_factor": 0.1999999976041321,
+      "body": "214680_20260909000583_20260909001496_body_0"
+    },
+    "239340": {
+      "date": "2026-09-21",
+      "prior_close": 504,
+      "reference_price": 2520,
+      "before_factor": 1.0,
+      "old_event_factor": 0.19999997034800399,
+      "body": "239340_20260918000643_20260918000899_body_0"
+    },
+    "276730": {
+      "date": "2026-08-21",
+      "prior_close": 11470,
+      "reference_price": 2295,
+      "before_factor": 0.01276206322795341,
+      "old_event_factor": 0.06381031613976705,
+      "body": "276730_20260820000637_20260820001226_body_0"
+    },
+    "285800": {
+      "date": "2026-09-11",
+      "prior_close": 733,
+      "reference_price": 3665,
+      "before_factor": 1.0,
+      "old_event_factor": 0.19999998886966494,
+      "body": "285800_20260910000536_20260910001209_body_0"
+    },
+    "291230": {
+      "date": "2026-08-14",
+      "prior_close": 588,
+      "reference_price": 2940,
+      "before_factor": 1.0,
+      "old_event_factor": 0.2145985401459854,
+      "body": "291230_20260813001091_20260813002862_body_0"
+    },
+    "300120": {
+      "date": "2026-08-20",
+      "prior_close": 491,
+      "reference_price": 2455,
+      "before_factor": 2.777742595283231,
+      "old_event_factor": 0.5555485078343543,
+      "body": "300120_20260819000470_20260819001130_body_0"
+    },
+    "378800": {
+      "date": "2026-09-29",
+      "prior_close": 510,
+      "reference_price": 2550,
+      "before_factor": 1.0,
+      "old_event_factor": 0.199999995675024,
+      "body": "378800_20260928000617_20260928001315_body_0"
+    },
+    "900270": {
+      "date": "2026-08-25",
+      "prior_close": 420,
+      "reference_price": 2100,
+      "before_factor": 0.13789142133624893,
+      "old_event_factor": 0.027578283188348006,
+      "body": "900270_20260824000606_20260824001463_body_0"
+    }
+  },
+  "rules": [
+    {
+      "code": "002680",
+      "start": "2026-07-10",
+      "end": "2026-09-18",
+      "rows": 49,
+      "old_factor": 0.19999997524507301,
+      "new_factor": 0.2,
+      "expected_stocks": 6463359,
+      "evidence": "002680_20260709000503_20260709001274_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "002680",
+      "start": "2026-09-21",
+      "end": "2026-10-02",
+      "rows": 8,
+      "old_factor": 0.19999997524507301,
+      "new_factor": 0.2,
+      "expected_stocks": 7756030,
+      "evidence": "002680_20260709000503_20260709001274_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "002780",
+      "start": "2026-09-07",
+      "end": "2026-10-02",
+      "rows": 18,
+      "old_factor": 0.09999999656290642,
+      "new_factor": 0.1,
+      "expected_stocks": 14547174,
+      "evidence": "002780_20260904000385_20260904001093_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "006490",
+      "start": "2026-07-16",
+      "end": "2026-09-09",
+      "rows": 38,
+      "old_factor": 0.23177474925773411,
+      "new_factor": 0.2317747508249857,
+      "expected_stocks": 29577223,
+      "evidence": "006490_20260715000522_20260715001469_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "006490",
+      "start": "2026-09-10",
+      "end": "2026-10-02",
+      "rows": 15,
+      "old_factor": 0.1390648432856341,
+      "new_factor": 0.139064844225985,
+      "expected_stocks": 17746333,
+      "evidence": "006490_20260715000522_20260715001469_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "009620",
+      "start": "2026-09-17",
+      "end": "2026-10-02",
+      "rows": 10,
+      "old_factor": 0.24358179884903544,
+      "new_factor": 0.24358184067033198,
+      "expected_stocks": 3494609,
+      "evidence": "009620_20260916000562_20260916001306_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "012170",
+      "start": "2026-08-28",
+      "end": "2026-08-31",
+      "rows": 2,
+      "old_factor": 0.0016787302411113846,
+      "new_factor": 0.0016787305727093086,
+      "expected_stocks": 4050038,
+      "evidence": "012170_20260827000395_20260827001198_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "012170",
+      "start": "2026-09-01",
+      "end": "2026-10-02",
+      "rows": 22,
+      "old_factor": 0.0016787302411113846,
+      "new_factor": 0.0016787305727093086,
+      "expected_stocks": 7296721,
+      "evidence": "012170_20260827000395_20260827001198_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "018470",
+      "start": "2026-09-11",
+      "end": "2026-10-02",
+      "rows": 14,
+      "old_factor": 0.23882525721146133,
+      "new_factor": 0.23882525909744423,
+      "expected_stocks": 25326344,
+      "evidence": "018470_20260910000357_20260910000995_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "033170",
+      "start": "2026-08-26",
+      "end": "2026-10-02",
+      "rows": 26,
+      "old_factor": 0.1999999906681945,
+      "new_factor": 0.2,
+      "expected_stocks": 17145663,
+      "evidence": "033170_20260825000598_20260825001414_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "034940",
+      "start": "2026-08-27",
+      "end": "2026-10-02",
+      "rows": 25,
+      "old_factor": 0.19999998708837205,
+      "new_factor": 0.2,
+      "expected_stocks": 6195965,
+      "evidence": "034940_20260826000573_20260826001464_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "043200",
+      "start": "2026-08-27",
+      "end": "2026-10-02",
+      "rows": 25,
+      "old_factor": 0.4999999880395122,
+      "new_factor": 0.5,
+      "expected_stocks": 20902157,
+      "evidence": "043200_20260826000572_20260826001467_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "051980",
+      "start": "2026-10-02",
+      "end": "2026-10-02",
+      "rows": 1,
+      "old_factor": 0.04969553184873064,
+      "new_factor": 0.04969553587477207,
+      "expected_stocks": 11109170,
+      "evidence": "051980_20261001000574_20261001001356_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "054940",
+      "start": "2026-08-12",
+      "end": "2026-10-02",
+      "rows": 35,
+      "old_factor": 0.19999998191330032,
+      "new_factor": 0.2,
+      "expected_stocks": 6634709,
+      "evidence": "054940_20260811000756_20260811001296_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "062970",
+      "start": "2026-08-07",
+      "end": "2026-09-10",
+      "rows": 24,
+      "old_factor": 0.75,
+      "new_factor": 0.7496774193548387,
+      "expected_stocks": 28544307,
+      "evidence": "062970_20260806000649_20260806001411_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "062970",
+      "start": "2026-09-11",
+      "end": "2026-10-02",
+      "rows": 14,
+      "old_factor": 0.75,
+      "new_factor": 0.7496774193548387,
+      "expected_stocks": 30122423,
+      "evidence": "062970_20260806000649_20260806001411_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "067390",
+      "start": "2026-08-28",
+      "end": "2026-10-02",
+      "rows": 24,
+      "old_factor": 0.09999999786303264,
+      "new_factor": 0.1,
+      "expected_stocks": 42115757,
+      "evidence": "067390_20260827000542_20260827001325_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "082850",
+      "start": "2026-09-07",
+      "end": "2026-10-02",
+      "rows": 18,
+      "old_factor": 0.19999998761778018,
+      "new_factor": 0.2,
+      "expected_stocks": 9691315,
+      "evidence": "082850_20260904000702_20260904001724_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "084680",
+      "start": "2026-10-02",
+      "end": "2026-10-02",
+      "rows": 1,
+      "old_factor": 0.1999999957688731,
+      "new_factor": 0.2,
+      "expected_stocks": 28361238,
+      "evidence": "084680_20261001000399_20261001001038_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "091810",
+      "start": "2026-08-31",
+      "end": "2026-10-02",
+      "rows": 23,
+      "old_factor": 0.29488665594788904,
+      "new_factor": 0.29488665825832244,
+      "expected_stocks": 102106091,
+      "evidence": "091810_20260828000484_20260828001188_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "105550",
+      "start": "2026-08-12",
+      "end": "2026-10-02",
+      "rows": 35,
+      "old_factor": 0.39999999489190313,
+      "new_factor": 0.4,
+      "expected_stocks": 15661410,
+      "evidence": "105550_20260811000752_20260811001298_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "113810",
+      "start": "2026-07-28",
+      "end": "2026-10-02",
+      "rows": 46,
+      "old_factor": 0.19999999387030504,
+      "new_factor": 0.2,
+      "expected_stocks": 6525610,
+      "evidence": "113810_20260727000715_20260727001284_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "123010",
+      "start": "2026-07-27",
+      "end": "2026-08-07",
+      "rows": 10,
+      "old_factor": 0.7890074110594563,
+      "new_factor": 0.788500033454631,
+      "expected_stocks": 17398867,
+      "evidence": "123010_20260724000827_20260724001573_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "123010",
+      "start": "2026-08-10",
+      "end": "2026-10-02",
+      "rows": 37,
+      "old_factor": 0.7890074110594563,
+      "new_factor": 0.788500033454631,
+      "expected_stocks": 20215767,
+      "evidence": "123010_20260724000827_20260724001573_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "204840",
+      "start": "2026-08-11",
+      "end": "2026-10-02",
+      "rows": 36,
+      "old_factor": 0.19999999742098565,
+      "new_factor": 0.2,
+      "expected_stocks": 15509801,
+      "evidence": "204840_20260810000821_20260810001572_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "207760",
+      "start": "2026-09-02",
+      "end": "2026-10-02",
+      "rows": 21,
+      "old_factor": 0.4613569154938543,
+      "new_factor": 0.4613569321533923,
+      "expected_stocks": 16615956,
+      "evidence": "207760_20260901000607_20260901001340_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "214680",
+      "start": "2026-09-10",
+      "end": "2026-10-02",
+      "rows": 15,
+      "old_factor": 0.1999999976041321,
+      "new_factor": 0.2,
+      "expected_stocks": 16695411,
+      "evidence": "214680_20260909000583_20260909001496_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "239340",
+      "start": "2026-09-21",
+      "end": "2026-10-02",
+      "rows": 8,
+      "old_factor": 0.19999997034800399,
+      "new_factor": 0.2,
+      "expected_stocks": 5395926,
+      "evidence": "239340_20260918000643_20260918000899_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "276730",
+      "start": "2026-08-21",
+      "end": "2026-08-28",
+      "rows": 6,
+      "old_factor": 0.06381031613976705,
+      "new_factor": 0.06378251208044688,
+      "expected_stocks": 22577400,
+      "evidence": "276730_20260820000637_20260820001226_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "276730",
+      "start": "2026-08-31",
+      "end": "2026-10-02",
+      "rows": 23,
+      "old_factor": 0.06381031613976705,
+      "new_factor": 0.06378251208044688,
+      "expected_stocks": 23607980,
+      "evidence": "276730_20260820000637_20260820001226_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "285800",
+      "start": "2026-09-11",
+      "end": "2026-10-02",
+      "rows": 14,
+      "old_factor": 0.19999998886966494,
+      "new_factor": 0.2,
+      "expected_stocks": 3593782,
+      "evidence": "285800_20260910000536_20260910001209_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "291230",
+      "start": "2026-08-14",
+      "end": "2026-10-02",
+      "rows": 33,
+      "old_factor": 0.2145985401459854,
+      "new_factor": 0.2,
+      "expected_stocks": 24011231,
+      "evidence": "291230_20260813001091_20260813002862_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "300120",
+      "start": "2026-08-20",
+      "end": "2026-10-02",
+      "rows": 30,
+      "old_factor": 0.5555485078343543,
+      "new_factor": 0.5555485190566462,
+      "expected_stocks": 9900803,
+      "evidence": "300120_20260819000470_20260819001130_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "378800",
+      "start": "2026-09-29",
+      "end": "2026-10-02",
+      "rows": 4,
+      "old_factor": 0.199999995675024,
+      "new_factor": 0.2,
+      "expected_stocks": 9248606,
+      "evidence": "378800_20260928000617_20260928001315_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "900270",
+      "start": "2026-08-25",
+      "end": "2026-09-03",
+      "rows": 8,
+      "old_factor": 0.027578283188348006,
+      "new_factor": 0.027578284267249786,
+      "expected_stocks": 5112288,
+      "evidence": "900270_20260824000606_20260824001463_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "900270",
+      "start": "2026-09-04",
+      "end": "2026-09-22",
+      "rows": 13,
+      "old_factor": 0.027578283188348006,
+      "new_factor": 0.027578284267249786,
+      "expected_stocks": 10712288,
+      "evidence": "900270_20260824000606_20260824001463_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    },
+    {
+      "code": "900270",
+      "start": "2026-09-23",
+      "end": "2026-10-02",
+      "rows": 6,
+      "old_factor": 0.027578283188348006,
+      "new_factor": 0.027578284267249786,
+      "expected_stocks": 12461641,
+      "evidence": "900270_20260824000606_20260824001463_body_0",
+      "reason": "Replace only the covered event multiplier with official fixed-reference ratio; preserve later relative factor transitions."
+    }
+  ],
+  "source_certified": false,
+  "portfolio_return_certified": false,
+  "publication_allowed": false,
+  "limitations": "Only fixed published reference prices; all auction-determined references and earlier histories remain unresolved. Preserve later unrelated multipliers, notably006490September10capitalreduction. No parent study/live/model/outcome replacements; no portfolio-return certificate."
+}

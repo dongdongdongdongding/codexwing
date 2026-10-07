@@ -277,3 +277,10 @@ applies 16 price-reference events and removes two mistimed paid-issue factors:
 17 codes, 700 rows, whole-panel raw/unaffected fields exact. It preserves earlier
 uncertified bases and does not certify event-spanning portfolio returns. The
 cumulative 31 event corrections remain partial source work, not lane promotion.
+
+The [v5 fixed-reference overlay](KR_FIXED_REFERENCE_REPAIR_V5_2026-10-07.md)
+reconciles 30 par-change reference notices (29 updates, one already matching),
+changing 737 rows while retaining later unrelated factors. Direct comparison
+against the original source confirms 55 codes/1,765 cumulative changed rows;
+complete-history, auction-reference and event-spanning return certification
+remain unresolved.
