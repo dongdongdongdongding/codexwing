@@ -39,3 +39,19 @@ the exact prior report; `before_replay.json` compares old/new code against it.
 The actual prior report had pooled DEGRADE and current publication blocks, so
 omitting its flag did not itself open a live lane. The reproduced bypass uses
 hypothetical healthy pooled evidence in tests, not fabricated live performance.
+
+Validation and deployment: **351 tests passed**. Commit `2064665` was pushed to
+both branches; the operational report was regenerated with `--no-tickets`, and
+the web backend was restarted to load the code. All four health/picks/overview/
+ops endpoints returned HTTP 200. The returned four KR/US swing cards all had
+`stream_excluded=true`, no sizing, and OBSERVE status. API availability is not
+pipeline completeness or strategy qualification.
+
+The regenerated report blocks KOSPI n=30, KOSDAQ n=8, US n=3. KOSDAQ changed from
+n=9 because four historical rows lack issued TP; two were already excluded as
+an ambiguous same-day pair and one is unresolved. The remaining resolved row no
+longer contributes to exact-contract evidence. No ledger outcome was changed.
+Actual recent KOSPI/KOSDAQ ledger rows were replayed through interpretation and
+stored-card rendering: both remained non-actionable and retained the explicit
+uncalibrated t5_5 model-score label. This was a local consumer replay, not a
+Discord send or DB write. Nine pinned producer/capture/model files were unchanged.
