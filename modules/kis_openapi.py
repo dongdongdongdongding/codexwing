@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 import hashlib
+import math
 import os
+from pathlib import Path
 import threading
 import time
 import urllib.error
@@ -363,7 +365,6 @@ class KISTokenState:
 _TOKEN_CACHE_LOCK = threading.Lock()
 _TOKEN_CACHE: Dict[tuple, KISTokenState] = {}
 _LIVE_REQUEST_RATE_LOCK = threading.Lock()
-_LIVE_REQUEST_LAST_AT = 0.0
 
 
 def _token_file_cache_path() -> str:
@@ -443,15 +444,43 @@ def _env_float(name: str, default: float) -> float:
 
 
 def _live_request_throttle() -> None:
-    spacing_sec = max(0.0, _env_float("KIS_LIVE_CALL_SLEEP_SEC", 0.12))
+    spacing_sec = _env_float("KIS_LIVE_CALL_SLEEP_SEC", 0.12)
+    if not math.isfinite(spacing_sec):
+        raise ValueError("KIS call spacing must be finite")
     if spacing_sec <= 0:
         return
-    global _LIVE_REQUEST_LAST_AT
+    # All local workers/worktrees share this pacing budget. This is intentionally
+    # conservative across credentials; no account/token material is stored here.
+    import fcntl
+    path = Path(os.getenv("KIS_LIVE_RATE_STATE_PATH") or
+                Path.home() / ".cache/codex_swing/kis_live_rate.json")
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     with _LIVE_REQUEST_RATE_LOCK:
-        elapsed = time.monotonic() - _LIVE_REQUEST_LAST_AT
-        if elapsed < spacing_sec:
-            time.sleep(spacing_sec - elapsed)
-        _LIVE_REQUEST_LAST_AT = time.monotonic()
+        # Never replace this inode: every process must lock the same file.
+        fd = os.open(path, os.O_CREAT | os.O_RDWR, 0o600)
+        with os.fdopen(fd, "r+", encoding="ascii") as handle:
+            fcntl.flock(handle, fcntl.LOCK_EX)
+            try:
+                now = time.monotonic()
+                try:
+                    prior = json.load(handle)
+                    last, prior_spacing = float(prior["monotonic"]), float(prior["spacing_sec"])
+                    if (not math.isfinite(last) or not math.isfinite(prior_spacing)
+                            or last < 0 or last > now or prior_spacing < 0):
+                        raise ValueError("invalid or prior-boot rate state")
+                except (ValueError, KeyError, TypeError):
+                    # Empty/truncated state or clock reset: wait one full interval
+                    # rather than treating uncertain state as an unused budget.
+                    last, prior_spacing = now, spacing_sec
+                delay = max(spacing_sec, prior_spacing) - (now - last)
+                if delay > 0:
+                    time.sleep(delay)
+                handle.seek(0)
+                json.dump({"monotonic": time.monotonic(), "spacing_sec": spacing_sec}, handle)
+                handle.truncate()
+                handle.flush()
+            finally:
+                fcntl.flock(handle, fcntl.LOCK_UN)
 
 
 def _retryable_kis_text(text: str) -> bool:
