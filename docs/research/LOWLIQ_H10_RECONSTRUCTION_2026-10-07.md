@@ -78,11 +78,24 @@ reconstructed selections, not issued recommendations or measured success rates.
 The amended completion receipt SHA256 is
 `a91747571ef13771f74b9a0396c80ed20d5281d7637361ad7e031a5f723603dc`.
 Both score sets are immutable; repeated reconstruction must reproduce them.
-The next source capture covers all 1,310 distinct eligible codes, with 2,620
-planned KIS J requests across adjusted and nominal bases through October 2.
+Independent source capture covered all 1,310 distinct eligible codes, with 2,620
+completed KIS J requests across adjusted and nominal bases through October 2.
 Its request plan precedes capture and includes parser/adapter fingerprints;
 errors and missing dates remain records. This collection reads no test returns
-and changes no live price cache. Tracking: `swing-main-djdd`.
+and changes no live price cache. The actual run completed in 531.17 seconds:
+170,208 basis-specific daily rows, no missing or additional existing-panel dates,
+and no failed or empty captures. Separate Decimal checks verified 851,040 OHLCV
+fields plus request identities, dates and hashes. Actual replay made zero network
+calls and preserved all 2,620 response files byte-for-byte.
+
+**The two provider bases report different volume values on 1,977 code/dates.**
+That observation is not a source-error or economic-basis verdict; it means the
+adjusted and nominal volume fields must not be assumed interchangeable. Nominal
+source comparison, adjusted price-path comparison and any supported correction
+are tracked separately in `swing-main-ivuh`. Earlier feature lookbacks and the
+remaining final H10 prices are outside this June 30–October 2 capture. Evidence is
+in production `runtime_state/audit/lowliq_krx_source_20261007/`; capture task
+`swing-main-djdd` is complete, source certification and strategy qualification are not.
 
 ## Outcome boundary and source limits
 
