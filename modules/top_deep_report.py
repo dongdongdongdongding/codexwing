@@ -13,6 +13,7 @@ import yfinance as yf
 from modules.entry_readiness import build_entry_readiness_analysis
 from modules.entry_readiness_contract import build_entry_readiness_contract
 from modules.execution_stop_display import build_execution_stop_display
+from modules.investor_flow_units import canonical_flow_unit
 from modules.practical_entry_gate import evaluate_practical_entry_gate
 from modules.candidate_data_quality import build_candidate_data_quality
 from modules.candidate_interpretation import build_candidate_interpretation
@@ -665,7 +666,7 @@ def _flow_snapshot_from_kis_sidecar(kis_sidecar: Dict[str, Any]) -> Dict[str, An
         "valid": bool(flow.get("valid")),
         "type": flow.get("type") or "KR",
         "source": f"kis_openapi_sidecar:{flow.get('flow_source') or 'kis_openapi'}",
-        "flow_unit": flow.get("flow_unit"),
+        "flow_unit": canonical_flow_unit(flow),
         "whale_score": _safe_float(flow.get("whale_score")),
         "foreigner": _safe_float(flow.get("foreigner_1d") if _present(flow.get("foreigner_1d")) else flow.get("foreigner")),
         "institution": _safe_float(flow.get("institution_1d") if _present(flow.get("institution_1d")) else flow.get("institution")),
@@ -859,7 +860,7 @@ def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[
             "valid": True,
             "type": "KR" if str(ticker).upper().endswith((".KS", ".KQ")) else "UNKNOWN",
             "source": f"scan_row:{direct_source}" if direct_source else "scan_row",
-            "flow_unit": base.get("flow_unit") or "shares",
+            "flow_unit": canonical_flow_unit(base, "shares"),
             "whale_score": whale,
             "foreigner": direct.get("foreigner"),
             "institution": direct.get("institution"),
@@ -923,7 +924,7 @@ def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[
             "valid": bool(payload.get("valid")),
             "type": payload.get("type") or "KR",
             "source": f"live_fetch:{payload.get('flow_source') or 'quant_strategy'}",
-            "flow_unit": payload.get("flow_unit"),
+            "flow_unit": canonical_flow_unit(payload),
             "whale_score": fetched_whale if fetched_whale is not None else direct.get("whale_score"),
             "scan_whale_score": direct.get("whale_score"),
             "foreigner": _safe_float(payload.get("foreigner")),

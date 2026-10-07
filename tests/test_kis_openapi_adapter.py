@@ -276,7 +276,7 @@ def test_investor_flow_parser_prefers_amount_and_keeps_quantity_fields():
 
     snapshot = parse_investor_flow_snapshot("005930.KS", payload)
 
-    assert snapshot["flow_unit"] == "KRW"
+    assert snapshot["flow_unit"] == "KRW_million"
     assert snapshot["flow_asof"] == "20260604"
     assert snapshot["foreigner_1d"] == 1000000
     assert snapshot["institution_1d"] == -200000

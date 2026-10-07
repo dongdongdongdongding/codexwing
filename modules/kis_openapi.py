@@ -13,6 +13,7 @@ import urllib.request
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional
+from modules.investor_flow_units import KIS_INVESTOR_AMOUNT_UNIT
 
 
 KIS_REAL_REST_DOMAIN = "https://openapi.koreainvestment.com:9443"
@@ -1253,7 +1254,7 @@ def parse_investor_flow_snapshot(symbol: str, payload: Mapping[str, Any]) -> Dic
         "ticker": normalize_kr_stock_code(symbol),
         "source": "kis_openapi",
         "source_status": "ok" if rows else "empty_output",
-        "flow_unit": "KRW" if use_amount else "shares",
+        "flow_unit": KIS_INVESTOR_AMOUNT_UNIT if use_amount else "shares",
         "flow_asof": asof,
         "foreigner_1d": f1,
         "institution_1d": i1,

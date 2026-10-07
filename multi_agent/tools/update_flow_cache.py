@@ -24,6 +24,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from multi_agent.tools.backfill_kr_intraday import request_deadline
+from modules.investor_flow_units import FLOW_CACHE_UNITS
 
 FIELDS = dict(frgn_ntby="frgn_ntby_qty", orgn_ntby="orgn_ntby_qty",
               prsn_ntby="prsn_ntby_qty", frgn_val="frgn_ntby_tr_pbmn",
@@ -173,6 +174,7 @@ def collect(cache, audit, client, *, now, universe=600, apply=False):
     degraded = any(counts[k] for k in ("error_symbols", "empty_symbols", "stale_symbols", "overlap_conflicts"))
     report = {"status": "degraded" if degraded else "ok", "apply": apply, **counts,
               "source": "KIS:investor_trading_daily:J:raw_provider_units",
+              "field_units": FLOW_CACHE_UNITS,
               "cohort": "current_120_calendar_day_median_liquidity_collection_only",
               "historical_completeness_verified": False, "point_in_time_universe": False,
               "excluded_on_or_after": str(today.date()), "price_calendar_latest": str(px.date.max().date()),

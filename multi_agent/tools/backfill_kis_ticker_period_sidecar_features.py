@@ -29,6 +29,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from modules.kis_openapi import KISConfig, KISOpenAPIClient, normalize_kr_stock_code
+from modules.investor_flow_units import KIS_INVESTOR_AMOUNT_UNIT
 from modules.kis_operational_adapter import normalize_kis_flow_for_whale_contract, normalize_kis_news_titles
 from multi_agent.tools.augment_kis_historical_proxy_with_sidecar_cache import (
     _present_mask,
@@ -418,7 +419,7 @@ def build_flow_lookup(cache: Mapping[str, Any]) -> Dict[str, Dict[str, Any]]:
         flow = {
             "source": "kis_openapi",
             "source_status": "ok",
-            "flow_unit": "KRW" if use_amount else "shares",
+            "flow_unit": KIS_INVESTOR_AMOUNT_UNIT if use_amount else "shares",
             "flow_asof": date_key,
             "foreigner_1d": f1,
             "institution_1d": i1,

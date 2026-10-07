@@ -5,6 +5,7 @@ import math
 from typing import Any, Dict, Mapping
 
 from modules.kis_theme_news_evidence import build_kis_theme_news_evidence
+from modules.investor_flow_units import canonical_flow_unit
 
 
 KIS_SIDECAR_MODEL_NUMERIC_FEATURES = (
@@ -408,7 +409,7 @@ def flatten_kis_model_features(row: Mapping[str, Any]) -> Dict[str, Any]:
     out["kis_prefilter_quote_status_warning"] = _text(quote.get("status_warning"))
     out["kis_prefilter_flow_source"] = _text(flow.get("flow_source"))
     out["kis_prefilter_flow_source_status"] = _text(flow.get("source_status"))
-    out["kis_prefilter_flow_unit"] = _text(flow.get("flow_unit"))
+    out["kis_prefilter_flow_unit"] = _text(canonical_flow_unit(flow))
 
     theme_news = build_kis_theme_news_evidence(row)
     theme_payload = _json_dict(theme_news.get("theme"))

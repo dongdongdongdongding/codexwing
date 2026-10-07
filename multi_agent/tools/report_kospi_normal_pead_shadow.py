@@ -59,6 +59,7 @@ REPORT_JSON = PROJECT_ROOT / "runtime_state" / "reports" / "experimental" / "kos
 REPORT_MD = PROJECT_ROOT / "runtime_state" / "reports" / "experimental" / "kospi_normal_pead_shadow_latest.md"
 
 from modules.trading_costs import KR_ROUNDTRIP_COST_PCT as COST  # 단일 출처(0.215)
+from modules.investor_flow_units import FLOW_FEATURE_UNITS_VERSION, net_amount_to_turnover
 RAW = ["ret_5d", "ret_20d", "ma20_dist", "ma60_dist", "dist_hi20", "dist_lo20"]
 FLOW = ["frgn_acc5_r", "orgn_acc5_r", "smart_acc5_r", "both_buy", "frgn_int"]
 PEAD = ["days_since", "post_earn", "reaction", "post_x_react"]
@@ -234,7 +235,7 @@ def build_panel(universe_n: int) -> pd.DataFrame:
     fm["orgn_acc5_r"] = gf["orgn_r"].transform(lambda s: s.rolling(5).sum())
     fm["smart_acc5_r"] = fm["frgn_acc5_r"] + fm["orgn_acc5_r"]
     fm["both_buy"] = ((fm["frgn_acc5_r"] > 0) & (fm["orgn_acc5_r"] > 0)).astype(float)
-    fm["frgn_int"] = (fm["frgn_val"] / (fm["acml_val"] + 1)).groupby(fm["code"]).transform(lambda s: s.rolling(5).mean())
+    fm["frgn_int"] = net_amount_to_turnover(fm["frgn_val"], fm["acml_val"]).groupby(fm["code"]).transform(lambda s: s.rolling(5).mean())
     df = px.merge(fm[["code", "date"] + FLOW], on=["code", "date"], how="left").sort_values(["code", "date"]).reset_index(drop=True)
 
     # price features + own-series z-norm (rolling 252, min 60)
@@ -407,12 +408,14 @@ def main() -> None:
     LEDGER.parent.mkdir(parents=True, exist_ok=True)
     with LEDGER.open("a", encoding="utf-8") as fh:
         for p in picks:
-            fh.write(json.dumps({"date": result["asof"], "panel_capw_excess": None, "ks11_excess": None, **p},
+            fh.write(json.dumps({"date": result["asof"], "panel_capw_excess": None, "ks11_excess": None,
+                                 "flow_feature_units_version": FLOW_FEATURE_UNITS_VERSION, **p},
                                 ensure_ascii=False) + "\n")
     summary = resolve_pending(today)
 
     production = os.getenv("AG_KOSPI_NORMAL_PEAD_PRODUCTION", "0").strip() not in ("0", "", "false", "False")
     report = {"generated_at": datetime.now(timezone.utc).isoformat(), "today": today, **result,
+              "flow_feature_units_version": FLOW_FEATURE_UNITS_VERSION,
               "forward_summary": summary, "production_enabled": production,
               "note": "NON-EDGE falsification ledger (edge retracted 2026-06-23: ~0 vs internally-consistent "
                       "benchmark, CI includes 0). KOSPI NORMAL; price+flow+coarse-PEAD ENS; >=100억; top-5. "

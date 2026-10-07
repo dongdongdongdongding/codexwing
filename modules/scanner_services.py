@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, Mapping, Optional
 
 from multi_agent.agents.kr_quant_reranker import compute_kr_quant_rerank
 from modules import quant_analysis
+from modules.investor_flow_units import canonical_flow_unit
 from modules.kr_regime_ranker import predict_rank_overlay
 from modules.inverted_signal_features import compute_low_prob_high_score_features
 from modules.kosdaq_3d_continuation_ranker import predict_continuation_overlay
@@ -2591,7 +2592,8 @@ def _flow_persistence_fields(whale_data: Optional[Dict[str, Any]], leader_signal
         "whale_flow_3d": pick_flow_meta("whale_flow_3d", default=None),
         "whale_flow_10d": pick_flow_meta("whale_flow_10d", default=None),
         "flow_source": pick_flow_meta("flow_source", default=None),
-        "flow_unit": pick_flow_meta("flow_unit", default=None),
+        "flow_unit": canonical_flow_unit({"flow_unit": pick_flow_meta("flow_unit", default=None),
+                                           "flow_source": pick_flow_meta("flow_source", default=None)}),
         "flow_window": pick_flow_meta("flow_window", default=None),
         "flow_asof": pick_flow_meta("flow_asof", default=None),
         "flow_warnings": pick("warnings", "flow_warnings", default=[]),

@@ -8,6 +8,7 @@ import pandas as pd
 
 from modules.kis_news_scope import classify_kis_news_source_scope, filter_kis_news_rows_for_symbol
 from modules.kis_openapi import normalize_kr_stock_code
+from modules.investor_flow_units import canonical_flow_unit
 
 
 KIS_OPERATIONAL_CONTRACT_VERSION = "kis_operational_adapter_v1"
@@ -481,7 +482,7 @@ def normalize_kis_flow_for_whale_contract(flow: Mapping[str, Any]) -> Dict[str, 
         "whale_flow_10d": int(whale_10d),
         "flow_window": "1d",
         "flow_asof": flow.get("flow_asof"),
-        "flow_unit": flow.get("flow_unit") or "source_units",
+        "flow_unit": canonical_flow_unit(flow, "source_units"),
         "valid": bool(valid),
         "type": "KR",
         "flow_source": "kis_openapi",

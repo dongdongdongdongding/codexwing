@@ -14,6 +14,9 @@ Discipline:
 - EV net of 0.3% round-trip cost; tail via forward 3d min-low
 """
 import os, sys, json, warnings
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from modules.investor_flow_units import FLOW_FEATURE_UNITS_VERSION, net_amount_to_turnover
 warnings.filterwarnings("ignore")
 import numpy as np
 import pandas as pd
@@ -46,13 +49,13 @@ def build_flow_features(shift: int) -> pd.DataFrame:
     adv20 = g["acml_val"].apply(lambda s: s.rolling(20, min_periods=5).mean())
     fv, ov = f["frgn_val"], f["orgn_val"]
     out = pd.DataFrame({"code": f["code"], "date": f["date"]})
-    out["fr1"] = fv / (adv20 + 1)
-    out["or1"] = ov / (adv20 + 1)
+    out["fr1"] = net_amount_to_turnover(fv, adv20)
+    out["or1"] = net_amount_to_turnover(ov, adv20)
     for w in (5, 20):
         fs = g["frgn_val"].apply(lambda s: s.rolling(w, min_periods=max(2, w // 4)).sum())
         os_ = g["orgn_val"].apply(lambda s: s.rolling(w, min_periods=max(2, w // 4)).sum())
-        out[f"fr{w}"] = fs / (w * adv20 + 1)
-        out[f"or{w}"] = os_ / (w * adv20 + 1)
+        out[f"fr{w}"] = net_amount_to_turnover(fs, w * adv20)
+        out[f"or{w}"] = net_amount_to_turnover(os_, w * adv20)
     m20 = g["frgn_val"].apply(lambda s: s.rolling(20, min_periods=5).mean())
     s20 = g["frgn_val"].apply(lambda s: s.rolling(20, min_periods=5).std())
     out["fz20"] = (fv - m20) / (s20 + 1e-9)
@@ -198,7 +201,8 @@ def main():
                   f"({r.get('months_ge70')}/{r.get('months_active')} mo>=70) mae_avg={r.get('mae3_avg')}", flush=True)
 
     with open(OUT_JSON, "w") as fh:
-        json.dump({"flow_coverage_liq30": round(float(cov), 4), "results": results}, fh, indent=1)
+        json.dump({"flow_feature_units_version": FLOW_FEATURE_UNITS_VERSION,
+                   "flow_coverage_liq30": round(float(cov), 4), "results": results}, fh, indent=1)
     print(f"[done] {OUT_JSON}", flush=True)
 
 
