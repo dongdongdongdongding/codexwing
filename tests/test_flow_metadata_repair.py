@@ -56,6 +56,7 @@ def test_dry_run_apply_and_replay_preserve_all_other_fields(tmp_path):
     repeated = repair.process_batch([e], db, tmp_path, "plan", apply=True)
     assert repeated["counts"] == {"already_correct": 1} and db.calls == 1
     assert (tmp_path / "before.json").read_bytes() == backup
+    assert len(list((tmp_path / "events").glob("*.json"))) == 3
 
 
 @pytest.mark.parametrize("field,value", [("foreigner_1d", 99), ("return_5d_pct", -4), ("updated_at", "new")])
@@ -76,6 +77,22 @@ def test_lost_response_is_reconciled_without_duplicate_mutation(tmp_path):
     assert result["transport_error"] == "TimeoutError"
     assert repair.process_batch([e], db, tmp_path, "plan", apply=True)["counts"] == {"already_correct": 1}
     assert db.calls == 1
+
+
+def test_crash_after_commit_resumes_from_immutable_backup(tmp_path):
+    e, captured = fixture()
+    db = DB(captured)
+    original_read = db.read
+    def interrupted_read(ids):
+        if db.calls:
+            raise ConnectionError("readback unavailable")
+        return original_read(ids)
+    db.read = interrupted_read
+    with pytest.raises(ConnectionError):
+        repair.process_batch([e], db, tmp_path, "plan", apply=True)
+    db.read = original_read
+    result = repair.process_batch([e], db, tmp_path, "plan", apply=True)
+    assert result["counts"] == {"already_correct": 1} and db.calls == 1
 
 
 def test_wrong_or_changed_owner_never_updates(tmp_path):

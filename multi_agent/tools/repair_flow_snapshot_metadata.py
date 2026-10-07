@@ -16,6 +16,7 @@ from pathlib import Path
 import re
 import sys
 import tempfile
+from datetime import datetime, timezone
 from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -191,7 +192,10 @@ def process_batch(entries, db, directory, plan_sha, *, apply=False):
     ok = all(s in {"applied_verified", "already_correct", "eligible"} for s in statuses.values())
     receipt = {"plan_sha256": plan_sha, "apply": apply, "status": "ok" if ok else "degraded",
                "counts": counts, "row_status": statuses, "transport_error": error,
-               "backup_sha256": digest(backup_path.read_bytes())}
+               "backup_sha256": digest(backup_path.read_bytes()),
+               "recorded_at": datetime.now(timezone.utc).isoformat()}
+    event = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%f")
+    write_json(directory / "events" / f"{event}.json", receipt)
     write_json(directory / ("apply.json" if apply else "preview.json"), receipt)
     return receipt
 
