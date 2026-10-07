@@ -482,6 +482,8 @@ def main() -> int:
     parser.add_argument("--run-due", action="store_true", help="Run sessions due at --now, using state for idempotence.")
     parser.add_argument("--print-schedule", action="store_true", help="Print the six-window schedule and command plan.")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--synchronous", action="store_true",
+                        help="Run full sessions in this process (manual diagnostics only).")
     parser.add_argument("--continue-on-error", action="store_true", default=True)
     parser.add_argument("--due-window-minutes", type=int, default=10,
                         help="Window for --no-catch-up (default: latest elapsed boundary today).")
@@ -511,6 +513,14 @@ def main() -> int:
 
     if args.run_due:
         state_path = Path(args.state_path)
+        if not args.dry_run and not args.synchronous:
+            from multi_agent.tools.primary_session_dispatch import dispatch
+            payload = dispatch(now_utc, state_path=state_path, report_dir=report_dir,
+                               include_weekends=bool(args.include_weekends),
+                               catch_up=not args.no_catch_up,
+                               due_window_minutes=int(args.due_window_minutes))
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+            return 0
         state = _load_state(state_path)
         sessions = due_sessions(
             now_utc,
