@@ -3142,46 +3142,33 @@ class QuantStrategy:
             else:
                 res['warnings'].append("pykrx_unavailable")
 
-            # Naver Finance HTML fallback
+            # The old frgn.naver HTML endpoint now redirects to an app shell.
+            # Use the public page's KRX trend response; never turn missing rows
+            # or missing quantities into measured zero flow.
             if _flow_source is None:
                 try:
-                    import requests
-                    from bs4 import BeautifulSoup
-
-                    url = f"https://finance.naver.com/item/frgn.naver?code={code}"
-                    headers = {"User-Agent": "Mozilla/5.0"}
-                    res_req = requests.get(url, headers=headers, timeout=5)
-                    soup = BeautifulSoup(res_req.text, "html.parser")
-                    tables = soup.find_all("table", {"class": "type2"})
-                    if len(tables) >= 2:
-                        df_html = pd.read_html(io.StringIO(str(tables[1])), header=1)[0]
-                        df_html = df_html.dropna(subset=['날짜'])
-                        df_html['Institution'] = pd.to_numeric(df_html['순매매량'].astype(str).str.replace(',', ''), errors='coerce').fillna(0)
-                        df_html['Foreigner'] = pd.to_numeric(df_html['순매매량.1'].astype(str).str.replace(',', ''), errors='coerce').fillna(0)
-                        recent = df_html.head(10)
-                        recent_1d = df_html.head(1)
-                        recent_3d = df_html.head(3)
-                        sum_inst_1d = float(recent_1d['Institution'].sum())
-                        sum_for_1d = float(recent_1d['Foreigner'].sum())
-                        sum_ret_1d = -1 * (sum_inst_1d + sum_for_1d)
-                        sum_inst_3d = float(recent_3d['Institution'].sum())
-                        sum_for_3d = float(recent_3d['Foreigner'].sum())
-                        sum_ret_3d = -1 * (sum_inst_3d + sum_for_3d)
-                        sum_inst_10d = float(recent['Institution'].sum())
-                        sum_for_10d = float(recent['Foreigner'].sum())
-                        sum_ret_10d = -1 * (sum_inst_10d + sum_for_10d)
-                        sum_inst, sum_for, sum_ret = sum_inst_10d, sum_for_10d, sum_ret_10d
-                        try:
-                            flow_asof = str(recent_1d['날짜'].iloc[0])
-                        except Exception:
-                            flow_asof = None
-                        _flow_source = 'naver'
-                        res['flow_unit'] = 'shares'
-                except Exception:
-                    pass
+                    from modules.naver_investor_flow import fetch_naver_flow_frame
+                    df_html, naver_metadata = fetch_naver_flow_frame(code)
+                    recent_1d, recent_3d, recent = df_html.head(1), df_html.head(3), df_html.head(10)
+                    sum_inst_1d = float(recent_1d['Institution'].sum())
+                    sum_for_1d = float(recent_1d['Foreigner'].sum())
+                    sum_ret_1d = float(recent_1d['Retail'].sum())
+                    sum_inst_3d = float(recent_3d['Institution'].sum())
+                    sum_for_3d = float(recent_3d['Foreigner'].sum())
+                    sum_ret_3d = float(recent_3d['Retail'].sum())
+                    sum_inst_10d = float(recent['Institution'].sum())
+                    sum_for_10d = float(recent['Foreigner'].sum())
+                    sum_ret_10d = float(recent['Retail'].sum())
+                    sum_inst, sum_for, sum_ret = sum_inst_10d, sum_for_10d, sum_ret_10d
+                    flow_asof = str(recent_1d['날짜'].iloc[0])
+                    _flow_source = 'naver'
+                    res['flow_unit'] = 'shares'
+                    res.update(naver_metadata)
+                except Exception as exc:
+                    res['warnings'].append(f"naver_flow_failed:{exc}")
 
             if _flow_source is None:
-                res['reason'] = "Both pykrx and Naver scraper failed"
+                res['reason'] = "Both pykrx and Naver flow failed"
                 return res
 
             daily_whale_flow = sum_inst_1d + sum_for_1d

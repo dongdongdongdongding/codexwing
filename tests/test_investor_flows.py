@@ -51,25 +51,15 @@ def test_kr_investor_flow_falls_back_to_naver_when_pykrx_fails(monkeypatch):
         def get_market_trading_value_by_date(start, end, code):
             raise RuntimeError("krx unavailable")
 
-    class FakeResponse:
-        text = """
-        <html><body>
-          <table class="type2"><tr><td>dummy</td></tr></table>
-          <table class="type2">
-            <tr><td colspan="3">dummy</td></tr>
-            <tr><th>날짜</th><th>순매매량</th><th>순매매량.1</th></tr>
-            <tr><td>2026.05.18</td><td>1,000</td><td>2,000</td></tr>
-            <tr><td>2026.05.15</td><td>-500</td><td>1,500</td></tr>
-          </table>
-        </body></html>
-        """
-
-    def fake_get(*args, **kwargs):
-        return FakeResponse()
+    def fake_frame(code):
+        assert code == '005930'
+        return pd.DataFrame({'날짜': ['2026-05-18', '2026-05-15'],
+                             'Institution': [1000, -500], 'Foreigner': [2000, 1500],
+                             'Retail': [-3000, -1000]}), {}
 
     monkeypatch.setattr(quant_analysis, "HAS_PYKRX", True)
     monkeypatch.setattr(quant_analysis, "stock", BadStock)
-    monkeypatch.setattr("requests.get", fake_get)
+    monkeypatch.setattr("modules.naver_investor_flow.fetch_naver_flow_frame", fake_frame)
 
     flow = QuantStrategy("005930.KS").get_investor_flows()
 

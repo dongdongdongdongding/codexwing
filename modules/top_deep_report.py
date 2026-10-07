@@ -887,6 +887,9 @@ def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[
             "whale_flow_10d": base.get("whale_flow_10d"),
             "flow_window": flow_window or "legacy_unknown",
             "flow_asof": base.get("flow_asof"),
+            "flow_contract": (_nested_dict(base, "flow_contract")
+                              or _nested_dict(base, "leader_metrics", "flow_contract")
+                              or _nested_dict(base, "_leader_metrics", "flow_contract")),
             "whale_trend": base.get("whale_trend") or flow_label.get("whale_trend"),
             "warnings": _list_warnings(base.get("flow_warnings"))
             + ([] if flow_window else ["legacy_flow_window_unknown"])
@@ -952,6 +955,7 @@ def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[
             "whale_flow_10d": payload.get("whale_flow_10d"),
             "flow_window": payload.get("flow_window") or "1d",
             "flow_asof": payload.get("flow_asof"),
+            "flow_contract": _nested_dict(payload, "flow_contract"),
             "whale_trend": payload.get("whale_trend"),
             "warnings": payload_warnings,
         }

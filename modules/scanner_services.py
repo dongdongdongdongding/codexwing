@@ -2984,6 +2984,9 @@ def build_kr_scan_outputs(
         whale_data=whale_data,
     )
     leader_metrics_payload = dict(leader_metrics or {})
+    flow_contract = dict((whale_data or {}).get("flow_contract") or {})
+    if flow_contract:
+        leader_metrics_payload["flow_contract"] = flow_contract
     if kis_sidecar:
         leader_metrics_payload["kis_sidecar"] = kis_sidecar
 
@@ -3025,6 +3028,7 @@ def build_kr_scan_outputs(
         "flow_window": flow_fields["flow_window"],
         "flow_asof": flow_fields["flow_asof"],
         "flow_warnings": flow_fields["flow_warnings"],
+        "flow_contract": flow_contract,
         "추세": real_trend,
         "전일비": f"{prev_pct_change:+.2f}%",
         "연속등락": f"{consec_days}일 연속 상승" if consec_days > 0 else f"{abs(consec_days)}일 연속 하락",
