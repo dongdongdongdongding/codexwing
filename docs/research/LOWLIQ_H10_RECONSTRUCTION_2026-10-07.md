@@ -252,3 +252,9 @@ retain their hashes. See [official evidence, full-panel verification and source
 limitations](KR_ISSUANCE_FACTOR_REPAIR_2026-10-07.md). Other 60 mismatch codes and
 earlier history remain uncertified. This is not a new strategy outcome or a
 replacement of the frozen parent study.
+
+The remaining fixed 60-code cohort now has a [verified official disclosure
+corpus](KR_REMAINING_ACTION_CORPUS_2026-10-07.md): 462 selected query/document
+records and 884 HTML body resources, including supplemental preferred-share
+issuer evidence. This completes the declared collection scope, not economic
+factor certification or strategy qualification.
