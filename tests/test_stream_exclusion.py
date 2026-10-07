@@ -15,6 +15,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from modules import stream_exclusion as se
+from conftest import synthetic_gate_entry
 
 
 def _gate_payload(verdicts: dict, *, generated_at: str | None = None) -> dict:
@@ -22,7 +23,7 @@ def _gate_payload(verdicts: dict, *, generated_at: str | None = None) -> dict:
     return {
         "generated_at": now,
         "results": [
-            {"lane": lane, "verdict": v, "n": 61, "fwd_ev": -1.23, "fwd_win": 48.0}
+            synthetic_gate_entry(lane, v, n=61, fwd_ev=-1.23)
             for lane, v in verdicts.items()
         ],
     }
@@ -36,7 +37,7 @@ def _write_gate(tmp_path, verdicts, *, age_hours: float = 0.0):
 
 
 def _sized_row(**kw):
-    row = {"code": "005930", "size_pct_total": 2.0, "size_note": "총자본 2%/픽"}
+    row = {"market": "KOSPI", "code": "005930", "size_pct_total": 2.0, "size_note": "총자본 2%/픽"}
     row.update(kw)
     return row
 

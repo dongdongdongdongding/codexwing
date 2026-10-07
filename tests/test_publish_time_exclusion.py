@@ -102,7 +102,7 @@ def test_recovered_lane_restores_the_buy_card(tmp_path, monkeypatch):
     row = _row_with_stored_interpretation(
         buy_ready=False, operational_action_level="OBSERVE_ONLY",
         stream_excluded=True, stream_exclusion_reason="degrade",
-        buy_ready_before_exclusion=True)
+        buy_ready_before_exclusion=True, market="KOSPI")
 
     interp = renderers._interpretation_for_render(row)
 

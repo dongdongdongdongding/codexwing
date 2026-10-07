@@ -286,6 +286,48 @@ def exclusion_enabled() -> bool:
     return os.environ.get("AG_DEGRADE_STREAM_EXCLUSION", "1") == "1"
 
 
+# Consumer-owned requirement: old reports cannot opt out by omitting a flag.
+CURRENT_EPOCH_LANES = frozenset({"swing_candidate", "nasdaq_session_tape"})
+
+
+def current_epoch_for_lane(lane_key, state, market=None):
+    """Select matching current evidence, never a pooled or other-market verdict.
+
+    This validates report scope, not the scientific truth of its evidence. A new
+    research epoch still needs its own validated producer and promotion review.
+    """
+    gate_lane = GATE_LANE_MAP.get(lane_key)
+    if gate_lane not in CURRENT_EPOCH_LANES:
+        return None, None
+    fixed_market = {"kospi_swing": "KOSPI", "kosdaq_swing": "KOSDAQ",
+                    "nasdaq_swing": "US"}.get(lane_key)
+    normalized_market = "US" if market in ("NASDAQ", "NYSE", "AMEX", "US") else market
+    if fixed_market and normalized_market and fixed_market != normalized_market:
+        return None, "epoch_scope_mismatch"
+    market = fixed_market or normalized_market
+    lanes = state.get("lanes")
+    gate = lanes.get(gate_lane) if isinstance(lanes, dict) else None
+    epochs = gate.get("current_epochs") if isinstance(gate, dict) else None
+    epoch = epochs.get(market) if isinstance(epochs, dict) else None
+    if not state.get("usable") or not isinstance(epoch, dict):
+        return None, "epoch_evidence_missing"
+    if gate_lane == "swing_candidate":
+        from modules.swing_epoch_evidence import SPECS
+        if market not in SPECS:
+            return None, "epoch_scope_mismatch"
+        expected = {"market": market, **SPECS[market]}
+    else:
+        from modules.nasdaq_epoch_evidence import CURRENT_H, CURRENT_TP
+        expected = {"marker": "xq at issue time", "contract_h": CURRENT_H,
+                    "contract_tp": CURRENT_TP, "entry_reference": "signal_session_close"}
+    scope = epoch.get("scope")
+    if not isinstance(scope, dict) or any(
+        isinstance(scope.get(k), bool) or scope.get(k) != v for k, v in expected.items()
+    ):
+        return None, "epoch_scope_mismatch"
+    return epoch, None
+
+
 def stream_status(lane_key: Any, *, gate_state: Optional[Dict[str, Any]] = None,
                   gate_path: Optional[Path] = None, strict: bool = False,
                   market: Optional[str] = None) -> Dict[str, Any]:
@@ -330,13 +372,17 @@ def stream_status(lane_key: Any, *, gate_state: Optional[Dict[str, Any]] = None,
         }
 
     verdict_row = state["lanes"].get(gate_lane) or {}
-    if verdict_row.get("epoch_scope_required"):
-        market = {"kospi_swing":"KOSPI", "kosdaq_swing":"KOSDAQ", "nasdaq_swing":"US"}.get(key, market)
-        epoch = (verdict_row.get("current_epochs") or {}).get(market)
-        if not isinstance(epoch, dict):
-            return {"gated":True, "excluded":True, "reason":"epoch_evidence_missing",
-                    "gate_lane":gate_lane, "verdict":None}
+    if gate_lane in CURRENT_EPOCH_LANES:
+        epoch, error = current_epoch_for_lane(key, state, market)
+        if error:
+            return {"gated": True, "excluded": True, "reason": error,
+                    "gate_lane": gate_lane, "verdict": None}
         verdict_row = epoch
+        if epoch.get("publication_block") is not True and (
+            epoch.get("publication_block") is not False or epoch.get("confirm_qualified") is not True
+        ):
+            return {"gated": True, "excluded": True, "reason": "epoch_qualification_missing",
+                    "gate_lane": gate_lane, "verdict": epoch.get("verdict")}
     if verdict_row.get("publication_block"):
         return {"gated":True, "excluded":True, "reason":"publication_block",
                 "gate_lane":gate_lane, "verdict":verdict_row.get("verdict"),
@@ -367,7 +413,8 @@ def stream_status(lane_key: Any, *, gate_state: Optional[Dict[str, Any]] = None,
 
 def _size_note(status: Dict[str, Any]) -> str:
     reason = status.get("reason")
-    if reason in {"publication_block", "epoch_evidence_missing"}:
+    if reason in {"publication_block", "epoch_evidence_missing", "epoch_scope_mismatch",
+                  "epoch_qualification_missing"}:
         labels = {"n_below_30":"정산 30건 미달", "unique_dates_below_20":"고유 발행일 20일 미달",
                   "positive_block_ci_not_established":"순수익 신뢰구간 미충족",
                   "matching_research_basis_not_validated":"현행 구성 연구 검증 미완료"}

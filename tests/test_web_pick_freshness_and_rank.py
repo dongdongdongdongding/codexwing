@@ -113,6 +113,13 @@ def _fake_gate(monkeypatch, ev, win=80.0, n=50, lane="nasdaq_session_tape"):
     if hasattr(S._lane_forward_ev, "cache_clear"):
         S._lane_forward_ev.cache_clear()
     monkeypatch.setattr(S, "_lane_forward_ev", lambda: {lane: (ev, win, n)})
+    from conftest import synthetic_gate_entry
+    from modules import stream_exclusion as se
+    gate = synthetic_gate_entry(lane, "CONFIRM", n=n, fwd_ev=ev)
+    for epoch in gate.get("current_epochs", {}).values():
+        epoch["fwd_win"] = win
+    monkeypatch.setattr(se, "load_gate_state", lambda *a, **k: {"usable": True, "lanes": {lane: gate}})
+
 
 
 def test_kill_floor_strips_sizing_even_when_the_gate_says_confirm(monkeypatch):
@@ -157,7 +164,7 @@ def test_unknown_ev_is_fail_closed(monkeypatch):
     """모르는 것을 통과시키면 그게 이 리포가 반복해 온 fail-open 이다."""
     if hasattr(S._lane_forward_ev, "cache_clear"):
         S._lane_forward_ev.cache_clear()
-    monkeypatch.setattr(S, "_lane_forward_ev", lambda: {})
+    _fake_gate(monkeypatch, ev=None)
     row = {"size_pct_total": 2.0}
     S._apply_operator_ev_floor(row, "nasdaq_swing")
     assert row["operator_verdict"] == "UNKNOWN"
@@ -247,7 +254,7 @@ def test_frequent_lane_keeps_sizing(monkeypatch):
                         lambda lane, today=None: {"last_fired": today, "days_since": 0,
                                                   "median_gap": 1, "worst_gap": 3,
                                                   "firing_days": 32, "frequency_ok": True})
-    monkeypatch.setattr(S, "_lane_forward_ev", lambda: {"swing_candidate": (2.4, 84.6, 46)})
+    _fake_gate(monkeypatch, ev=2.4, win=84.6, n=46, lane="swing_candidate")
     row = S._pick_row("000001", "KOSDAQ", "kosdaq_swing", entry=1000.0, prob=0.8,
                       scan_date=today)
     assert row.get("size_pct_total") == 2.0

@@ -13,9 +13,9 @@ from modules.trading_costs import KR_ROUNDTRIP_COST_PCT
 
 SPECS = {
     "KOSPI": {"gate": "FIRE", "gate_kind": "mkt_weakness", "gate_q": .4,
-              "top_k": 3, "contract_h": 10},
+              "top_k": 3, "contract_h": 10, "contract_tp": .05},
     "KOSDAQ": {"gate": "FIRE", "gate_kind": "mkt_weakness", "gate_q": .5,
-               "top_k": 1, "contract_h": 5},
+               "top_k": 1, "contract_h": 5, "contract_tp": .05},
 }
 
 

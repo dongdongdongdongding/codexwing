@@ -375,22 +375,23 @@ def _apply_operator_ev_floor(row, lane_key):
         gate_lane = None
     if gate_lane in {"swing_candidate", "nasdaq_session_tape"}:
         state = load_gate_state()
-        gate = (state.get("lanes") or {}).get(gate_lane) or {}
-        if gate.get("epoch_scope_required"):
-            market = {"kospi_swing":"KOSPI", "kosdaq_swing":"KOSDAQ", "nasdaq_swing":"US"}.get(lane_key, row.get("market"))
-            epoch = (gate.get("current_epochs") or {}).get(market) if state.get("usable") else None
-            row["operator_verdict"] = "OBSERVE" if epoch else "UNKNOWN"
-            if epoch:
-                row.update(forward_ev=epoch.get("fwd_ev"), forward_win=epoch.get("fwd_win"),
-                           forward_n=epoch.get("n"), forward_evidence_scope=epoch.get("scope"),
-                           forward_unique_dates=epoch.get("unique_dates"),
-                           forward_epoch=_forward_epoch(lane_key, market=market))
-            if not epoch or epoch.get("publication_block"):
-                _add_block(row, "epoch_qualification", "현행 구성 관측 중",
-                           f"현행 {market} 구성의 발행 자격 미충족. 과거·타시장 합산 판정은 승계하지 않는다. "
-                           f"정산 {epoch.get('n') if epoch else 0}건 / 고유 {epoch.get('unique_dates') if epoch else 0}일")
+        from modules.stream_exclusion import current_epoch_for_lane, stream_status
+        epoch, error = current_epoch_for_lane(lane_key, state, row.get("market"))
+        status = stream_status(lane_key, gate_state=state, market=row.get("market"))
+        row["operator_verdict"] = "OBSERVE" if epoch else "UNKNOWN"
+        if epoch:
+            row.update(forward_ev=epoch.get("fwd_ev"), forward_win=epoch.get("fwd_win"),
+                       forward_n=epoch.get("n"), forward_evidence_scope=epoch.get("scope"),
+                       forward_unique_dates=epoch.get("unique_dates"),
+                       forward_epoch=_forward_epoch(lane_key, market=row.get("market")))
+        if error or status.get("excluded"):
+            _add_block(row, "epoch_qualification", "현행 구성 관측 중",
+                       "현행 구성의 발행 자격 미충족. 과거·타시장 합산 판정은 승계하지 않는다. "
+                       f"정산 {epoch.get('n') if epoch else 0}건 / 고유 {epoch.get('unique_dates') if epoch else 0}일")
             return row
-    ev, win, n = (_lane_forward_ev().get(gate_lane) or (None, None, None))
+        ev, win, n = epoch.get("fwd_ev"), epoch.get("fwd_win"), epoch.get("n")
+    else:
+        ev, win, n = (_lane_forward_ev().get(gate_lane) or (None, None, None))
     if not isinstance(ev, (int, float)):
         if row.get("size_pct_total") is not None:
             _add_block(row, "unknown", "근거 없음",
@@ -404,7 +405,7 @@ def _apply_operator_ev_floor(row, lane_key):
     # 구성 전환 경계 — 판정은 게이트가 내리고, 여기서는 **그 판정이 무엇을 채점했는지** 덧붙인다.
     ep = _forward_epoch(lane_key, market=row.get("market"))
     epoch_note = ""
-    if ep:
+    if ep and gate_lane not in {"swing_candidate", "nasdaq_session_tape"}:
         row["forward_epoch"] = ep
         cur, prev = ep["current"], ep["previous"]
         if cur["picks"] and cur["resolved"] < 30:

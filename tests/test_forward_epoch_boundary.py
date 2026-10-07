@@ -65,9 +65,8 @@ def test_epoch_splits_by_market_so_one_lane_does_not_carry_the_other(tmp_path, m
     assert kq["ev"] == round(5.0 - S.COST_PCT, 2)
 
 
-def test_kill_note_says_it_is_judging_the_previous_configuration(tmp_path, monkeypatch):
-    """정산 표본이 30건 미만이면 **「아직 판정 표본이 아니다」**를 반드시 붙인다.
-    안 붙이면 사용자가 새 셀의 성적으로 읽는다 — 이 수정의 목적 그 자체다."""
+def test_missing_current_epoch_cannot_use_previous_configuration(tmp_path, monkeypatch):
+    """현행 검증이 없으면 과거 합산 EV를 현행 판정으로 재사용하지 않는다."""
     _rows(tmp_path, monkeypatch, [
         {"date": "2026-07-03", "market": "KOSPI", "policy_ret": -1.0},
         {"date": "2026-08-21", "market": "KOSPI", "policy_ret": None, "gate": "FIRE"},
@@ -75,6 +74,12 @@ def test_kill_note_says_it_is_judging_the_previous_configuration(tmp_path, monke
     monkeypatch.setattr(S, "_lane_forward_ev", lambda: {"swing_candidate": (-0.33, 69.9, 206)})
     row = {"market": "KOSPI", "size_pct_total": 2.0}
     S._apply_operator_ev_floor(row, "kospi_swing")
-    note = " ".join(str(v) for v in row.values())
-    assert "구성 전환 이전" in note and "아직 판정 표본이 아니다" in note
-    assert row["operator_verdict"] == "KILL", "판정 자체는 게이트가 내린다 — 문구만 고친다"
+    # Old pooled evidence cannot supply a current verdict, even if perfectly fresh.
+    from modules import stream_exclusion as se
+    monkeypatch.setattr(se, "load_gate_state", lambda: {"usable": True, "lanes": {
+        "swing_candidate": {"verdict": "CONFIRM", "fwd_ev": -.33, "n": 206}}})
+    row = {"market": "KOSPI", "size_pct_total": 2.0}
+    S._apply_operator_ev_floor(row, "kospi_swing")
+    assert row["operator_verdict"] == "UNKNOWN"
+    assert "size_pct_total" not in row
+    assert "과거·타시장 합산 판정은 승계하지 않는다" in row["size_note"]
