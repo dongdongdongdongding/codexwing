@@ -12,7 +12,9 @@ from multi_agent.tools import us_daily_session_refresh as sr
 
 
 @pytest.fixture
-def source(tmp_path):
+def source(tmp_path,monkeypatch):
+    # Small synthetic panels must not depend on the developer disk's free space.
+    monkeypatch.setattr(__import__('shutil'),'disk_usage',lambda *_:SimpleNamespace(free=100*1024**3))
     paths=bf.BackfillPaths(tmp_path,'NASDAQ');paths.raw_dir.mkdir(parents=True)
     universe=pd.DataFrame({'symbol':['NA'],'name':['Nano Labs']})
     frame=pd.DataFrame({'date':pd.to_datetime(['2026-10-02','2026-10-05','2026-10-06']),

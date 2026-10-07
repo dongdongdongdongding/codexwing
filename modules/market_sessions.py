@@ -15,7 +15,7 @@ def price_source(market):
         raise ValueError(f"unsupported session market: {market}")
     if market in {"US", "NASDAQ"}:
         files = [p for p in (CACHE / "us_daily/NASDAQ").glob("daily_features_*.parquet")
-                 if "_latest_" not in p.name]
+                 if "_latest_" not in p.name and p.is_file()]
         if not files:
             raise FileNotFoundError("NASDAQ session price panel missing")
         return max(files, key=lambda p: p.stat().st_mtime_ns)

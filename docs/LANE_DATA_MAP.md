@@ -193,3 +193,5 @@
 
 
 NASDAQ 가격 계보 검증 보완(2026-10-07, `swing-main-1oll`): `modules/us_symbol_lineage.py`의 `UNVERIFIED_SPLIT_BASIS`는 독립 KIS 원주가/수정주가 대조에서 단위 혼재가 확인된 21개 Yahoo 계열의 공식 병합 효력일 전 구간을 격리한다. 양수 OHLC와 동일 공급자 재조회 일치만으로 정상화하지 않는다. raw/날짜를 보존하고 파생 피처·미래 라벨을 NULL로 만들며 정상 구간에서 rolling 계산을 다시 시작한다. 독립 검증한 교체 이력이 확보되기 전까지 수동 격리 해제가 필요하다. 근거와 앞선 공급자 복구 표현의 정정은 `docs/research/NASDAQ_SOURCE_AUDIT_2026-10-07.md`에 있다.
+
+NASDAQ 불변 패널 보관(`swing-main-azrh`): `archive_us_daily_panels.py`는 `.refresh/archive_storage.json`을 명시적으로 설정한 환경에서만 동작한다. daily ops는 US 원천 갱신 전에 이를 호출하며 DRY_RUN은 보관도 미적용한다. 볼륨 UUID·마운트를 확인하고 최신 3개 로컬 세대는 유지한다. 오래된 패널은 전체 SHA 검증 복사 후 기존 경로/감사 hardlink 별칭을 외장 사본의 symlink로 바꾼다. raw·provenance·원장은 이동하지 않는다. 설정이 있으면 기존 삭제형 prune은 비활성화되며, 중단 재개와 내부 hardlink 복원 CLI를 제공한다. 외장이 분리된 경우 현행 패널 선택은 읽을 수 있는 로컬 파일을 사용하고, 보관 작업의 실패는 daily ops 실패 집계에 남긴다. 상세 운영 근거는 `docs/research/NASDAQ_SOURCE_AUDIT_2026-10-07.md`를 따른다.

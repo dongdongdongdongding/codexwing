@@ -183,7 +183,8 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
 def _latest_panel() -> str:
     """소비자와 **같은 규칙**으로 고른다: `{prefix}_*.parquet` glob → `_latest_` 제외 → mtime 최신.
     `_latest_` 파일로 판정하면 소비자가 절대 안 여는 파일을 보게 된다(seaslug f2639e0 의 교훈)."""
-    fs = [p for p in glob.glob(os.path.join(PANELD, PANEL_PREFIX + "*.parquet")) if "_latest_" not in p]
+    fs = [p for p in glob.glob(os.path.join(PANELD, PANEL_PREFIX + "*.parquet"))
+          if "_latest_" not in p and os.path.isfile(p)]
     if not fs:
         raise FileNotFoundError(f"no daily panel under {PANELD}")
     return max(fs, key=os.path.getmtime)

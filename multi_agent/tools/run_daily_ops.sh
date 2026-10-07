@@ -462,6 +462,14 @@ if [[ "${AG_NASDAQ_SWING_MODEL_ENABLE:-1}" == "1" ]]; then
   #   - stdout 에 JSON 한 줄, 종료코드 0 = already_current|refreshed
   #   - 완료된 US 관측 세션별 원본 갱신·검증 후 패널 생성. 일부 최신 행은 전체 최신의 증거가 아니다.
   if [[ "${AG_US_DAILY_PANEL_REFRESH_ENABLE:-1}" == "1" ]]; then
+    # No-op without an explicit, volume-identity-pinned storage configuration.
+    # Failure remains visible; the existing 15GiB panel guard still applies.
+    US_PANEL_ARCHIVE_ARGS=()
+    if [[ "${DRY_RUN:-0}" != "1" ]]; then
+      US_PANEL_ARCHIVE_ARGS+=(--apply)
+    fi
+    run_optional "archive_us_daily_panels" \
+      python3 multi_agent/tools/archive_us_daily_panels.py ${US_PANEL_ARCHIVE_ARGS[@]+"${US_PANEL_ARCHIVE_ARGS[@]}"}
     US_DAILY_PANEL_ARGS=(--daily-refresh --market NASDAQ)
     if [[ "${AG_US_DAILY_PANEL_FORCE_REFRESH:-0}" == "1" ]]; then
       US_DAILY_PANEL_ARGS+=(--force-refresh)

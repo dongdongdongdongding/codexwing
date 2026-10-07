@@ -314,6 +314,10 @@ def prune_old_panels(paths: BackfillPaths, *, output_prefix: str = "daily_featur
     root = paths.market_root
     if not root.exists():
         return []
+    # Explicit archival storage owns retention, including historical symlinks
+    # and their provenance. Never delete them via the legacy pruning path.
+    if (root / '.refresh/archive_storage.json').exists():
+        return []
     stamped = sorted(
         [p for p in root.glob(f"{output_prefix}_2*.parquet") if "_latest_" not in p.name],
         key=lambda p: p.name,
