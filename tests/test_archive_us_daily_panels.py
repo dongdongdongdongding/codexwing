@@ -154,3 +154,13 @@ def test_volume_uuid_mismatch_is_rejected(tmp_path,monkeypatch):
     monkeypatch.setattr(ar.subprocess,'check_output',lambda *a:plistlib.dumps({'VolumeUUID':'different'}))
     with pytest.raises(OSError,match='identity_mismatch'):
         ar.verify_volume({'mount':str(tmp_path),'volume_uuid':'expected','destination':str(tmp_path/'archive')})
+
+
+def test_readonly_volume_parent_is_rejected_before_plan(tmp_path,monkeypatch):
+    import plistlib
+    monkeypatch.setattr(Path,'is_mount',lambda p:True)
+    monkeypatch.setattr(ar.subprocess,'check_output',lambda *a:plistlib.dumps({'VolumeUUID':'expected'}))
+    monkeypatch.setattr(ar.os,'access',lambda *a:False)
+    with pytest.raises(OSError,match='not_writable'):
+        ar.verify_volume({'mount':str(tmp_path),'volume_uuid':'expected','destination':str(tmp_path/'new/archive')})
+    assert not (tmp_path/'new').exists()

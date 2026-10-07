@@ -34,6 +34,10 @@ def verify_volume(config):
     destination = Path(config['destination']).absolute()
     if not destination.resolve().is_relative_to(mount) or destination == mount:
         raise ValueError('archive_destination_outside_volume')
+    parent=destination
+    while not parent.exists():parent=parent.parent
+    if not os.access(parent,os.W_OK|os.X_OK):
+        raise OSError('archive_destination_not_writable')
     return destination
 
 
