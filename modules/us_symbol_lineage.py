@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 from modules.ohlcv_quality import bar_issues
+from modules.us_split_basis import verified_split_rows
 
 # Effective trading dates, not legal-name-change or announcement dates.
 # Each rule is keyed by the ORIGINAL current-provider symbol: never chain
@@ -125,5 +126,8 @@ def daily_bar_issues(frame: pd.DataFrame, *, require_volume: bool = True) -> pd.
     boundaries = pd.to_datetime(frame['symbol'].map(UNVERIFIED_SPLIT_BASIS))
     uncertain = (frame['source'].eq('yfinance') & boundaries.notna()
                  & pd.to_datetime(frame['date'], errors='coerce').lt(boundaries))
+    # An exact audited numeric row can pass this basis quarantine. This is not
+    # a provider-wide exemption, and structural checks above still take priority.
+    uncertain &= ~verified_split_rows(frame)
     issues.loc[uncertain & issues.eq('')] = 'unverified_mixed_split_basis'
     return issues

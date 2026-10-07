@@ -37,6 +37,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from modules.quant_analysis import QuantStrategy
 from modules.us_symbol_lineage import daily_bar_issues as bar_issues
+from modules.us_split_basis import normalize_known_split_rows
 
 
 FEATURE_VERSION = "us_daily_price_features_v2_quality_segments"
@@ -397,7 +398,7 @@ def _extract_yfinance_frame(payload: pd.DataFrame, symbol: str) -> pd.DataFrame:
     adjusted["adj_factor"] = factor
     adjusted["dollar_volume"] = adjusted["close"] * adjusted["volume"]
     adjusted["source"] = "yfinance"
-    return adjusted.reset_index(drop=True)
+    return normalize_known_split_rows(adjusted.reset_index(drop=True))
 
 
 def _download_batch(symbols: Sequence[str], start: str, end: str, timeout: int) -> pd.DataFrame:
