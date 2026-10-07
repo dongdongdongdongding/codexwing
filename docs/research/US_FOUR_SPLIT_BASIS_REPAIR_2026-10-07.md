@@ -87,3 +87,7 @@ overview and ops-status APIs all return HTTP 200. The application, independent
 verification and replay jobs all terminated successfully. The daily collector's
 parent 97991/97996 and child 10244 are still running; no overall daily success
 is claimed before its terminal receipt.
+
+Subsequent audit: CPOP now has a partial exact-reference repair documented in
+`CPOP_SPLIT_BASIS_REPAIR_2026-10-07.md`; its four unexplained OHLC dates remain
+quarantined. The seven-symbol statement above describes this earlier snapshot.
