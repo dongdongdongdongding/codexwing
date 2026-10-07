@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 from modules.portfolio_exposure import build_portfolio_exposure_summary
 from modules.runtime_artifact_store import persist_run_runtime_artifacts, upsert_runtime_artifact_payload
 from modules.scan_integrity import write_scan_integrity_artifacts
+from modules.scan_fetch_diagnostics import summarize_fetch_rejections
 from multi_agent.contracts.serialization import write_json
 from multi_agent.storage.memory_layers import MemoryManager
 
@@ -154,6 +155,10 @@ def persist_scan_run_artifacts(
     filtered_count = _safe_int(diagnostics.get("filtered_count"), max(total_scans_int - len(result_rows), 0))
     error_count = _safe_int(diagnostics.get("worker_error_count")) + _safe_int(diagnostics.get("executor_exception_count"))
     warning_rows = list(warnings or [])
+    fetch_summary = summarize_fetch_rejections(diagnostics)
+    if fetch_summary['source_failure_count']:
+        warning_rows.append({'code':'SCAN_SOURCE_UNAVAILABLE', 'severity':'warning',
+            'message':f"{fetch_summary['source_failure_count']} symbols have unavailable or unclassified source data."})
     if error_count:
         warning_rows.append(
             {
@@ -223,6 +228,7 @@ def persist_scan_run_artifacts(
         "error_count": error_count,
         "worker_error_count": _safe_int(diagnostics.get("worker_error_count")),
         "executor_exception_count": _safe_int(diagnostics.get("executor_exception_count")),
+        **fetch_summary,
         "warnings": warning_rows,
         "manifest_paths": manifest_paths,
         "artifact_dir": str(artifact_dir),

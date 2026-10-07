@@ -19,6 +19,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from modules.scan_error_diagnostics import record_scan_error
+from modules.scan_fetch_diagnostics import summarize_fetch_rejections
 from modules import quant_analysis
 from modules.kis_openapi import normalize_kr_stock_code
 from modules.live_scan_context import live_mode_enabled, normalize_market_key
@@ -512,6 +513,7 @@ def run_non_ui_scan_pipeline(
         "worker_error_count": int(diagnostics.get("worker_error_count", 0) or 0),
         "executor_exception_count": int(diagnostics.get("executor_exception_count", 0) or 0),
         "reject_reason_counts": diagnostics.get("reject_reason_counts", {}),
+        **summarize_fetch_rejections(diagnostics),
         "gate_config": gate_config,
         "execution_profile": resolved_profile,
         "applied_profile_defaults": applied_profile_defaults,

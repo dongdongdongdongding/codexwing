@@ -109,6 +109,8 @@ def scan_symbol_with_retry(
                     scan_mode=mode,
                 )
                 if not qs.fetch_data(period="60d", interval="1h"):
+                    _reject_detail({'ticker':sym, 'stage':'fetch',
+                        'fetch_diagnostic':getattr(qs, 'fetch_diagnostic', {'status':'unknown'})})
                     _reject("INTRADAY_FETCH_FAIL")
                     return None
                 outputs = evaluate_intraday_candidate(
@@ -143,6 +145,8 @@ def scan_symbol_with_retry(
                 scan_mode=mode,
             )
             if not qs.fetch_data(period="5y"):
+                _reject_detail({'ticker':sym, 'stage':'fetch',
+                    'fetch_diagnostic':getattr(qs, 'fetch_diagnostic', {'status':'unknown'})})
                 _reject("FETCH_DATA_FAIL")
                 return None
 

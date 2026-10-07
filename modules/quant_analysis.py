@@ -48,6 +48,8 @@ from modules.inverted_signal_features import compute_low_prob_high_score_feature
 from modules.loss_risk_features import compute_loss_risk_features
 from modules.live_scan_context import live_mode_enabled
 from modules.market_data import get_history
+from modules.scan_fetch_diagnostics import history_diagnostic
+from modules.scan_error_diagnostics import safe_error_message
 from modules.phase25_governance import phase25_oos_validates, phase25_weak_oos_reasons
 
 # Global Macro Cache to prevent 429 Too Many Requests during Deep Dive
@@ -407,6 +409,7 @@ class QuantStrategy:
         """
         import time
         max_retries = 3
+        self.fetch_diagnostic = {'status': 'not_started', 'period': period, 'interval': interval}
         
         for attempt in range(max_retries):
             try:
@@ -441,7 +444,9 @@ class QuantStrategy:
                         'Open': 'first', 'High': 'max', 'Low': 'min', 'Close': 'last', 'Volume': 'sum'
                     }).dropna()
                 
-                if len(self.df) < 50: # Minimum data required
+                self.fetch_diagnostic = history_diagnostic(
+                    self.df, period=fetch_period, interval=target_interval)
+                if self.fetch_diagnostic['status'] != 'usable':
                     return False
 
                 self.df = self.df[['Open', 'High', 'Low', 'Close', 'Volume']].dropna()
@@ -490,6 +495,8 @@ class QuantStrategy:
                 return True
                 
             except Exception as e:
+                self.fetch_diagnostic = {'status': 'error', 'period': period, 'interval': interval,
+                    'error_type': type(e).__name__, 'message': safe_error_message(e), 'attempts': attempt+1}
                 err_str = str(e).lower()
                 if "too many requests" in err_str or "rate limit" in err_str or "429" in err_str:
                     if attempt < max_retries - 1:
@@ -501,7 +508,7 @@ class QuantStrategy:
                         print(f"❌ Rate Limit for {self.ticker}: Max retries exhausted. Skipping.")
                         return False
                 
-                print(f"Error fetching data for {self.ticker}: {e}")
+                print(f"Error fetching data for {self.ticker}: {safe_error_message(e)}")
                 return False
                 
         return False

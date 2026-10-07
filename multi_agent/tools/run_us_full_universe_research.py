@@ -47,9 +47,16 @@ def summarize_health(summaries, universe_size, batch_count, failure=None):
         if errors != diagnostics:
             mismatches.append(item.get("run_id"))
     scans = sum(int(item.get("total_scans", 0) or 0) for item in summaries)
+    fetch_rejections = sum(int(item.get('fetch_rejection_count',
+        sum(int(item.get('reject_reason_counts', {}).get(k, 0) or 0)
+            for k in ['FETCH_DATA_FAIL', 'INTRADAY_FETCH_FAIL'])) or 0) for item in summaries)
+    short_history = sum(int(item.get('insufficient_history_count', 0) or 0) for item in summaries)
+    source_failures = max(0, fetch_rejections-short_history)
     incomplete = len(summaries) != batch_count or scans != universe_size
-    status = "failed" if failure else ("degraded" if total_errors or incomplete or mismatches else "ok")
+    status = "failed" if failure else ("degraded" if total_errors or source_failures or incomplete or mismatches else "ok")
     return {"status": status, "exit_code": 0 if status == "ok" else 2,
+            "fetch_rejection_count":fetch_rejections, "insufficient_history_count":short_history,
+            "source_failure_count":source_failures, "source_coverage_complete":not (source_failures or incomplete),
             "total_errors": total_errors, "completed_batch_count": len(summaries),
             "scan_coverage_complete": not incomplete, "error_count_mismatch_run_ids": mismatches,
             "batch_failure": failure}
@@ -70,6 +77,9 @@ def _write_md(path: Path, report: Dict[str, Any]) -> None:
         f"- total_results: {report.get('total_results')}",
         f"- total_filtered: {report.get('total_filtered')}",
         f"- total_errors: {report.get('total_errors')}",
+        f"- source_failure_count: {report.get('source_failure_count')}",
+        f"- insufficient_history_count: {report.get('insufficient_history_count')}",
+        f"- source_coverage_complete: {report.get('source_coverage_complete')}",
         "",
         "## Top Reject Reasons",
     ]
