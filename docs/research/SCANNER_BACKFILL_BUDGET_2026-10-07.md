@@ -54,3 +54,26 @@ The new bounded **applying** path must still be observed after the old worker
 terminates. Issue `swing-main-1y4w` remains in progress for that operational proof;
 `swing-main-l64n` tracks the full daily pipeline. No model or issued contract is
 changed by this execution repair, and no edge-lane qualification is implied.
+
+## Historical request window correction
+
+The actual dry run exposed a second cause of repeated missing labels. IDs 2161
+and 2162 (032830.KS / 267250.KS, signal 2026-04-03) lacked H30 even though the
+signals were old. The former 40-day request plus its five-day buffer returned
+31 rows, of which two preceded the signal: only 29 observations from the base.
+
+The default request window is now 90 calendar days plus the existing buffer.
+Both real responses contain 65 rows. All 31 overlapping prices and earlier
+horizons are exactly equal; independent Decimal arithmetic identifies H30 at
+2026-05-19 with returns 41.176471% and 8.163265%. Existing-field consistency
+checks admit only the missing H30 field for these rows. A fresh call using the
+fixed default reproduces both values. No DB writes were performed by these probes.
+
+Regression tests verify holiday headroom and that an immature response still
+leaves H30 missing. The combined suite now has 97 passing tests. This does not
+invent missing sessions or guarantee a horizon for long suspensions.
+
+Evidence: `history_horizon_window_probe.json`, `horizon_independent_check.json`,
+`horizon_fixed_default_probe.json`, and `dry_first_rows.json` in the same audit
+directory. `swing-main-axmi` tracks this request-window bug; actual applying
+verification still follows the existing-worker completion under `swing-main-1y4w`.

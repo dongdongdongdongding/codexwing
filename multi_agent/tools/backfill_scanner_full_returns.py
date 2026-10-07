@@ -73,12 +73,15 @@ HORIZONS_FROM_HISTORY = (1, 2, 3, 5, 7, 14, 30)
 SCANNER_ORIGINS = ("scanner_full", "scanner_partial_legacy", "scanner_archive_outcome")
 
 
-def _fetch_history_close(ticker: str, start_date: str, end_days: int = 40):
-    """Fetch daily OHLCV close prices via yfinance with KR fallback to FDR.
+def _fetch_history_close(ticker: str, start_date: str, end_days: int = 90):
+    """Fetch daily close prices via yfinance.
 
     Returns a DataFrame indexed by trade_date string with 'Close' column,
     or None if unavailable. Used when realized_outcomes.json is missing
     (e.g. shared_working RUN-* dir was rotated out).
+    Calendar days are not trading sessions: the former 40-day window could
+    permanently omit H30 even for old signals. A wider bounded window provides
+    holiday headroom; horizons still require actual observed prices.
     """
     try:
         import pandas as pd

@@ -165,3 +165,28 @@ def test_cli_global_lock_prevents_overlapping_market_writers(setup,tmp_path,monk
         monkeypatch.setattr(m.sys,"argv",["backfill","--market","KOSPI","--max-rows","1"])
         assert m.main()==2
         assert setup["calls"]==[]
+
+
+def test_history_window_reaches_h30_across_observed_kr_holidays(monkeypatch):
+    import sys
+    # Dates from the two captured April-3 signal responses: May 1/5 are absent.
+    dates=pd.bdate_range("2026-04-01","2026-05-20").difference(pd.to_datetime(["2026-05-01","2026-05-05"]))
+    source=pd.DataFrame({"Close":[100.+i for i in range(len(dates))]},index=dates)
+    def history(**kw):
+        assert kw["auto_adjust"] is False and kw["prepost"] is False
+        return source.loc[(source.index>=kw["start"]) & (source.index<kw["end"])].copy()
+    monkeypatch.setitem(sys.modules,"yfinance",SimpleNamespace(Ticker=lambda _:SimpleNamespace(history=history)))
+    short=m._compute_returns_from_history(m._fetch_history_close("032830.KS","2026-04-03",end_days=40),"2026-04-03")
+    fixed=m._compute_returns_from_history(m._fetch_history_close("032830.KS","2026-04-03"),"2026-04-03")
+    assert "return_30d_pct" not in short
+    assert fixed["return_30d_pct"]==round((132./102.-1)*100,6)
+    assert all(fixed[k]==v for k,v in short.items() if k!="latest_return_pct")
+
+
+def test_wider_request_does_not_fabricate_unobserved_future_horizon(monkeypatch):
+    import sys
+    source=pd.DataFrame({"Close":[100.,101.]},index=pd.to_datetime(["2026-10-06","2026-10-07"]))
+    monkeypatch.setitem(sys.modules,"yfinance",SimpleNamespace(Ticker=lambda _:SimpleNamespace(history=lambda **kw:source.copy())))
+    result=m._compute_returns_from_history(m._fetch_history_close("005930.KS","2026-10-06"),"2026-10-06")
+    assert result["return_1d_pct"]==1.0
+    assert "return_30d_pct" not in result and "return_3d_pct" not in result
