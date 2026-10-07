@@ -1,0 +1,193 @@
+"""Build survivorship-free KR daily panel (2018+) from KRX marcap snapshots.
+
+Input : ~/research_cache/marcap/marcap-{2018..2026}.parquet  (raw, unadjusted, incl. delisted)
+Output: ~/research_cache/px_delisted.parquet
+  code(str6), date, market(KOSPI/KOSDAQ), open/high/low/close (raw), volume, amount,
+  marcap, stocks, adj_factor (cumulative split/merge factor), adj_close/open/high/low,
+  delist_date (from krx_delisting.parquet, NaT if listed)
+
+Split/merge detection (no external corporate-action feed):
+  same-day event : stocks ratio r_s outside [1/1.5, 1.5] AND market-cap roughly conserved
+                   |log(r_p * r_s)| < log(1.5)   (r_p = close ratio) -> factor r_s that day
+  lagged event   : bonus-issue pattern - stocks jump r_s >= 1.15 on day u with flat price,
+                   look back <= 25 trading days for the ex-rights price drop day t with
+                   |log(r_p_t * r_s)| < log(1.15) and r_p_t <= 1/1.10 -> factor r_s at day t
+adj_close_t = close_t * cumprod(factor)_t  (forward-adjusted; daily adj returns are correct,
+level scale differs from raw at the start of a code's history after events).
+"""
+import warnings
+warnings.filterwarnings("ignore")
+import numpy as np
+import pandas as pd
+import os
+
+CACHE = os.path.expanduser("~/research_cache")
+OUT = f"{CACHE}/px_delisted.parquet"
+
+# ---------------- load ----------------
+frames = []
+for y in range(2018, 2027):
+    f = pd.read_parquet(
+        f"{CACHE}/marcap/marcap-{y}.parquet",
+        columns=["Code", "Date", "Market", "Open", "High", "Low", "Close",
+                 "Volume", "Amount", "Marcap", "Stocks"],
+    )
+    frames.append(f)
+df = pd.concat(frames, ignore_index=True)
+df["Market"] = df["Market"].replace({"KOSDAQ GLOBAL": "KOSDAQ"})
+df = df[df["Market"].isin(["KOSPI", "KOSDAQ"])].copy()
+df = df.rename(columns={c: c.lower() for c in df.columns})
+df["code"] = df["code"].astype(str).str.zfill(6)
+df = df.drop_duplicates(["code", "date"]).sort_values(["code", "date"]).reset_index(drop=True)
+print(f"panel raw: {len(df):,} rows, {df.code.nunique()} codes, {df.date.min().date()}..{df.date.max().date()}", flush=True)
+
+# ---------------- event detection ----------------
+g = df.groupby("code", sort=False)
+prev_close = g["close"].shift(1)
+prev_stocks = g["stocks"].shift(1)
+r_p = (df["close"] / prev_close).values
+r_s = (df["stocks"] / prev_stocks).values
+with np.errstate(invalid="ignore", divide="ignore"):
+    lg_cap = np.abs(np.log(r_p * r_s))
+    lg_p = np.abs(np.log(r_p))
+
+LOG15 = np.log(1.5)
+same_day = (~np.isnan(r_s)) & ((r_s >= 1.5) | (r_s <= 1 / 1.5)) & (lg_cap < LOG15)
+
+factor = np.ones(len(df))
+factor[same_day] = r_s[same_day]
+
+# administrative base-price reset: price changed on a zero-volume day (no trade -> not a
+# realizable return; KRX halted-stock recaps reset the base price this way). Neutralize.
+vol = df["volume"].values
+admin = (~np.isnan(r_p)) & (vol == 0) & (lg_p > np.log(1.001)) & (factor == 1.0)
+factor[admin] = 1.0 / r_p[admin]
+
+# lagged (bonus-issue ex-date) : stocks jump at u, ex-rights price drop up to W trading
+# days earlier at t with market cap conserved across the pair. Strict cap-conservation
+# gate so genuine crashes are never absorbed; discounted rights issues (cap not
+# conserved) are deliberately left unadjusted (conservative, disclosed).
+codes = df["code"].values
+close = df["close"].values
+n_lag = 0
+first_of_code = np.r_[True, codes[1:] != codes[:-1]]
+code_start = np.maximum.accumulate(np.where(first_of_code, np.arange(len(df)), 0))
+lag_cand = (~np.isnan(r_s)) & (r_s >= 1.15) & ~same_day & ~admin & (lg_p < np.log(1.35))
+for u in np.flatnonzero(lag_cand):
+    rs_u = r_s[u]
+    # big jumps get a wider window; small ones a tighter error gate (noise guard)
+    W, tol = (60, np.log(1.15)) if rs_u >= 1.4 else (25, np.log(1.08))
+    lo = max(code_start[u], u - W)
+    best, best_err = -1, tol
+    for t in range(u, lo, -1):  # ratio at t uses close[t]/close[t-1]
+        if t - 1 < code_start[u]:
+            break
+        if factor[t] != 1.0:
+            continue
+        rp_t = close[t] / close[t - 1] if close[t - 1] else np.nan
+        if not np.isfinite(rp_t) or rp_t > 1 / 1.10:
+            continue
+        err = abs(np.log(rp_t * rs_u))
+        if err < best_err:
+            best, best_err = t, err
+    if best >= 0:
+        factor[best] = rs_u
+        n_lag += 1
+
+# price-limit violation on a trade day: KR daily limit is +/-30%, so a close-to-close move
+# beyond +/-35% on volume>0 must contain an administrative base reset (halt-recap relists,
+# ex-days whose stocks change falls outside the panel). Neutralize - EXCEPT within the last
+# 15 rows of a code (delisting liquidation trading has no price limit; those crashes are real).
+code_end = np.zeros(len(df), dtype=np.int64)
+last_of_code = np.r_[codes[1:] != codes[:-1], True]
+end_idx = np.flatnonzero(last_of_code)
+starts = np.flatnonzero(first_of_code)
+for s, e in zip(starts, end_idx):
+    code_end[s:e + 1] = e
+limit_viol = (~np.isnan(r_p)) & (vol > 0) & ((r_p > 1.35) | (r_p < 0.665)) & (factor == 1.0) \
+             & ((code_end - np.arange(len(df))) > 15)
+factor[limit_viol] = 1.0 / r_p[limit_viol]
+
+n_same, n_admin, n_viol = int(same_day.sum()), int(admin.sum()), int(limit_viol.sum())
+print(f"events: same-day {n_same} (splits/reverse-splits/capital-reduction), "
+      f"admin resets on no-trade days {n_admin}, lagged {n_lag} (bonus ex-date), "
+      f"limit-violation resets {n_viol}", flush=True)
+ev = pd.Series(factor[factor != 1.0])
+print(f"factor dist: n={len(ev)}, split(f>1) {int((ev>1).sum())}, merge(f<1) {int((ev<1).sum())}, "
+      f"median split x{ev[ev>1].median():.1f}, median merge 1/{(1/ev[ev<1]).median():.1f}", flush=True)
+
+df["adj_factor"] = pd.Series(factor).groupby(codes, sort=False).cumprod().values
+for c in ("close", "open", "high", "low"):
+    df[f"adj_{c}"] = df[c] * df["adj_factor"]
+
+# residual extreme daily moves after adjustment (real crash days, closing-auction runs,
+# or missed corporate actions - reported, not suppressed)
+adjret = df.groupby("code", sort=False)["adj_close"].pct_change()
+ext = (adjret.abs() > 0.50) & (df["volume"] > 0)
+print(f"residual |adj ret|>50% trade days: {int(ext.sum())} "
+      f"(of which up {int((adjret[ext]>0).sum())}, down {int((adjret[ext]<0).sum())})", flush=True)
+
+# ---------------- delisting join ----------------
+dl = pd.read_parquet(f"{CACHE}/krx_delisting.parquet")
+dl["Symbol"] = dl["Symbol"].astype(str).str.zfill(6)
+dl = dl[dl["DelistingDate"] >= "2018-01-01"]
+dmap = dl.groupby("Symbol")["DelistingDate"].max()
+df["delist_date"] = df["code"].map(dmap)
+
+last_seen = df.groupby("code")["date"].max()
+dl_kk = dl[dl["Market"].str.contains("KOSPI|KOSDAQ", na=False) & ~dl["Market"].str.contains("KONEX", na=False)]
+dl_eq = dl_kk[dl_kk["SecuGroup"].isin(["주권", "외국주권", "주식예탁증권"])]
+dl_codes = dl_eq["Symbol"].unique()
+in_panel = pd.Index(dl_codes).intersection(last_seen.index)
+gap = (dmap.loc[in_panel] - last_seen.loc[in_panel]).dt.days
+print(f"delisting: 2018+ KOSPI/KOSDAQ delistings total {dl_kk['Symbol'].nunique()} "
+      f"(incl. rights/warrants/fund certs), equity(주권류) {len(dl_codes)}, "
+      f"equities with panel quotes {len(in_panel)} ({len(in_panel)/len(dl_codes)*100:.1f}%)", flush=True)
+print(f"  gap delist_date - last quote (days): median {gap.median():.0f}, p90 {gap.quantile(.9):.0f}, "
+      f"share<=30d {(gap<=30).mean()*100:.0f}%", flush=True)
+
+# codes that vanish from panel before the end without a delisting record
+panel_end = df["date"].max()
+vanished = last_seen[last_seen < panel_end - pd.Timedelta(days=14)]
+no_record = vanished.index.difference(pd.Index(dl["Symbol"].unique()))
+print(f"vanished before panel end: {len(vanished)} codes, of which without delisting record: {len(no_record)}", flush=True)
+
+# ---------------- validation vs px_long (FDR adjusted) ----------------
+px = pd.read_parquet(f"{CACHE}/px_long.parquet", columns=["date", "code", "close"])
+px["date"] = pd.to_datetime(px["date"])
+alive = set(df.loc[df["date"] == panel_end, "code"])
+event_codes = set(codes[factor != 1.0])
+common = sorted((alive & set(px["code"].unique())))
+rng = np.random.default_rng(7)
+ev_common = sorted(set(common) & event_codes)
+pick = ["005930"] + list(rng.choice([c for c in ev_common if c != "005930"], size=min(14, len(ev_common)), replace=False)) \
+       + list(rng.choice([c for c in common if c not in event_codes], size=15, replace=False))
+pick = list(dict.fromkeys(pick))[:30]
+
+mine = df[df["code"].isin(pick)][["code", "date", "adj_close"]]
+theirs = px[px["code"].isin(pick)].rename(columns={"close": "fdr_close"})
+m = mine.merge(theirs, on=["code", "date"], how="inner").sort_values(["code", "date"])
+gm = m.groupby("code")
+m["r_mine"] = gm["adj_close"].pct_change()
+m["r_fdr"] = gm["fdr_close"].pct_change()
+corr = m.dropna().groupby("code").apply(lambda d: d["r_mine"].corr(d["r_fdr"]) if len(d) > 100 else np.nan)
+print(f"validation vs px_long: n={corr.notna().sum()} codes, median corr {corr.median():.5f}, min {corr.min():.5f}", flush=True)
+bad = corr[corr < 0.99]
+if len(bad):
+    print("codes with corr < 0.99:", flush=True)
+    for c, v in bad.items():
+        sub = m[m["code"] == c].dropna()
+        d = (sub["r_mine"] - sub["r_fdr"]).abs()
+        worst = sub.loc[d.idxmax()]
+        print(f"  {c}: corr {v:.4f}, worst-day {worst['date'].date()} mine {worst['r_mine']:+.3f} fdr {worst['r_fdr']:+.3f}", flush=True)
+
+# Samsung 2018-05 split artifact check
+se = m[(m["code"] == "005930") & (m["date"].between("2018-05-02", "2018-05-08"))]
+print("005930 around 2018-05-04 split (adj daily ret mine vs fdr):", flush=True)
+print(se[["date", "r_mine", "r_fdr"]].to_string(index=False), flush=True)
+
+# ---------------- save ----------------
+out_cols = ["code", "date", "market", "open", "high", "low", "close", "volume", "amount",
+            "marcap", "stocks", "adj_factor", "adj_close", "adj_open", "adj_high", "adj_low", "delist_date"]
+df[out_cols].to_parquet(OUT, index=False)
+print(f"saved {OUT}: {len(df):,} rows", flush=True)
