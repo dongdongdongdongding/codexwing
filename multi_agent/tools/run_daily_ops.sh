@@ -122,6 +122,10 @@ fi
 run_optional "refresh_issued_outcomes" python3 multi_agent/tools/refresh_issued_outcomes.py \
   ${ISSUED_OUTCOME_ARGS[@]+"${ISSUED_OUTCOME_ARGS[@]}"}
 
+echo "[STEP] refresh_verified_archive_daily"
+run_optional "refresh_verified_archive_daily" python3 multi_agent/tools/refresh_verified_archive_daily.py \
+  ${ISSUED_OUTCOME_ARGS[@]+"${ISSUED_OUTCOME_ARGS[@]}"}
+
 echo "[STEP] export_scan_archive_learning_dataset"
 run_optional "export_scan_archive_learning_dataset" \
   python3 multi_agent/tools/export_scan_archive_learning_dataset.py --market ALL --quality-tier "${ARCHIVE_LEARNING_QUALITY_TIER:-ALL}"
