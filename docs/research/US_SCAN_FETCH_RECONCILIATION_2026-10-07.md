@@ -65,6 +65,28 @@ not evidence that 427 common stocks were omitted. Instrument classification
 and the complete universe source are tracked in `swing-main-mfa7`; deleting only
 the failed symbols would not resolve the discrepancy consistently.
 
+The installed FDR dispatch uses `NaverStockListing`, not its older Nasdaq class.
+A later capture preserved 68 Naver response pages: 3,996 rows, 3,972 unique
+symbols, 24 duplicated symbols and a terminal empty page. Its unique symbol set
+matches the original attempted set exactly. Some absent symbols retain Naver's
+`tradable` status despite last-trade dates in 2025 or early 2026 (including LNW,
+VERB, BITF and HTBK). That flag is therefore insufficient evidence of current
+Nasdaq membership. The capture is a later observation, not a reconstruction of
+the original responses.
+
+All 427 official-only descriptions contain warrant, right, note, bond or
+debenture terminology. This description check does not establish a complete
+security classification, but there is no basis to label this set as missing
+common stocks. The existing attempted set also contains preferred FBYDP, rights,
+notes and official ETF OBTC. A blanket assumption that it contains only common
+stocks would be incorrect. Raw pages, implementation source, per-page hashes
+and the independent set comparison are in `naver_universe/` under the audit.
+
+Commit `42a46be` was deployed to both branches. The six deployed module hashes
+match the actual worker replay receipt. All 51 focused tests also pass in the
+production checkout; health, picks, overview and ops status endpoints return
+HTTP 200 on port 8800. The pinned KR prospective producer hash is unchanged.
+
 Evidence: production `runtime_state/audit/us_fetch_failures_20261007/`, including
 `cohort.json`, `capture_plan.json`, `responses/`, `capture_result.json`,
 `worker_replay_verification.json`, isolated replay artifacts and official listing
