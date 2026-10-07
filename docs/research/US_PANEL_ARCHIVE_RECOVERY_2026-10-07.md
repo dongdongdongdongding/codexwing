@@ -6,6 +6,16 @@ The independent KR close scan finished with exit code 0 at 07:17:08 UTC, and the
 queued post-close daily worker started automatically at 07:19:06 UTC. These actual
 receipts close scheduling issue `l64n`; they do not certify data completeness.
 
+At 17:15 KST the post-close batch generated the October 7 swing report and both
+existing prospective studies captured their first actual pre-entry observation.
+Both recorded **ABSTAIN**, with 162 KOSPI and 288 KOSDAQ universe members and no
+missing capture date. Their capture times were 08:15:10.815560 and
+08:15:11.164898 UTC. This is a genuine observation, not a qualified pick or a
+performance sample. At 08:15:39.312975 UTC the scheduled US premarket scan also
+started while the daily worker remained active. Its terminal outcome was still
+pending at capture; neither running worker was restarted. Immutable evidence is
+under `runtime_state/audit/prospective_first_capture_20261007/`.
+
 The archive journal held group `693f16f928c347f68256319dd00e366b`. Both original
 hardlink aliases retained the planned device/inode/size/nanosecond-mtime identity.
 The external target did not exist. Source SHA256 matched
