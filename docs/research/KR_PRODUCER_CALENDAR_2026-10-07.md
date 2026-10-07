@@ -5,8 +5,11 @@ The swing producer correctly excluded it and reported October 6 with an ABSTAIN
 gate. The web status consumer compared that date against the raw daily maximum
 and incorrectly called all three KR producers stale.
 
-Readiness times now have one shared definition, used by the existing producers
-and status consumer: swing at 15:40 KST, and the 15:00 intraday snapshot at 15:10.
+The status consumer uses readiness times matching the existing producers:
+swing at 15:40 KST, and the 15:00 intraday snapshot at 15:10.
+The intraday constant is shared; the swing constants remain in the original
+producer file to preserve its preregistered source hash for both H10 studies.
+Boundary parity tests verify the status clock against the actual producers.
 The thresholds and producer scoring behavior are unchanged. Status selects the
 latest observed market date eligible at its lane's readiness time, including
 correct UTC-to-KST conversion and holidays from the observed calendar.

@@ -1,4 +1,9 @@
-"""Shared readiness times for existing KR producers and their status consumer."""
+"""Status readiness times, checked against the existing KR producers.
+
+The swing producer retains its original constant declarations because its full
+source hash is pinned by both prospective H10 studies. Boundary parity tests
+keep these times aligned without invalidating that preregistered source.
+"""
 from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 

@@ -1,5 +1,6 @@
 from copy import deepcopy
 from datetime import datetime
+import hashlib
 import json
 from pathlib import Path
 
@@ -7,6 +8,16 @@ import pandas as pd
 import pytest
 
 from multi_agent.tools.observe_kr_touch10_prospective import capture, evaluate
+
+
+@pytest.mark.parametrize("study", ["prospective", "cadence"])
+def test_deployed_producer_preserves_preregistered_source(study):
+    root = Path(__file__).resolve().parents[1]
+    registered = json.loads((root / f"research/prereg_kr_touch10_{study}_20261007.json").read_text())
+    actual = hashlib.sha256((root / "multi_agent/tools/report_kr_swing_candidate.py").read_bytes()).hexdigest()
+    # The collector enforces this exact hash, including on zero-pick days.
+    # Even a behavior-preserving refactor must not silently disable observation.
+    assert actual == registered["producer_sha256"]
 
 
 def spec():

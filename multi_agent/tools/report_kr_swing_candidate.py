@@ -209,7 +209,10 @@ def _mkt_weakness_decide(ser: pd.Series, latest: pd.Timestamp, q: float = 0.5) -
             "gate_history_days": int(len(hist))}
 
 
-from modules.kr_producer_calendar import KST, KRX_CLOSE, SETTLE_MINUTES
+KST = ZoneInfo("Asia/Seoul")
+KRX_CLOSE = dt.time(15, 30)
+# 종가 확정까지의 여유. 장 종료 직후 몇 분은 데이터가 아직 정리 중이다.
+SETTLE_MINUTES = 10
 
 
 def _drop_unconfirmed_session(px: pd.DataFrame, now=None) -> pd.DataFrame:
