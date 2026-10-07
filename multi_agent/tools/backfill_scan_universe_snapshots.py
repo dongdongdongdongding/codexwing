@@ -25,6 +25,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from modules.scan_universe_admission import _extract_feature_columns as _extract_admission_feature_columns
+from modules.investor_flow_units import flow_metadata_for_values
 
 DEFAULT_ARTIFACT_DIR = PROJECT_ROOT / "runtime_state" / "artifacts"
 DEFAULT_SHARED_DIR = PROJECT_ROOT / "runtime_state" / "shared_working"
@@ -275,10 +276,7 @@ def _feature_quality_payload(row: Dict[str, Any]) -> Dict[str, Any]:
         "retail_dominant": retail_dominant,
         "dominant": dominant,
         "whale_trend": whale_trend,
-        "flow_source": "scan_universe_snapshot" if has_flow else None,
-        "flow_unit": "source_units" if has_flow else None,
-        "flow_asof": row.get("base_trade_date") if has_flow else None,
-        "flow_warnings": [] if has_flow else ["investor_flow_missing_in_scan_archive"],
+        **flow_metadata_for_values(row, row),
     }
 
 

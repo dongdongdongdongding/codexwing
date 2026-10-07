@@ -314,6 +314,8 @@ SELECT_COLUMNS = [
     "dominant",
     "whale_trend",
     "flow_source",
+    "flow_unit",
+    "flow_asof",
     "flow_warnings",
     "primary_theme",
     "theme_source",

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from modules.investor_flow_units import flow_metadata_for_values
+
 import math
 import re
 from functools import lru_cache
@@ -881,6 +883,7 @@ def _extract_feature_columns(row: Dict[str, Any], *, market: str) -> Dict[str, A
     features["whale_flow_1d"] = whale_1d
     features["whale_flow_3d"] = whale_3d
     features["whale_flow_10d"] = whale_10d
+    features.update(flow_metadata_for_values(row, features))
     features.update(flatten_kis_model_features(row))
     features = apply_close_failure_prior_profile_to_features(
         features,

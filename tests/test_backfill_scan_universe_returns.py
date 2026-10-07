@@ -122,7 +122,8 @@ def test_compute_return_payload_marks_actual_flow_asof():
 
     assert payload["has_actual_flow"] is True
     assert payload["flow_source"] == "scan_universe_snapshot"
-    assert payload["flow_asof"] == "2026-05-20"
+    assert payload["flow_asof"] is None
+    assert "flow_value_provenance_unverified" in payload["flow_warnings"]
     assert payload["flow_consensus_buying"] is True
     assert payload["whale_trend"] == "accumulation"
 

@@ -140,7 +140,8 @@ def test_build_snapshot_rows_includes_emitted_and_rejected_symbols(tmp_path):
     assert by_ticker["000001.KS"]["passed_current_model"] is True
     assert by_ticker["000001.KS"]["return_5d_pct"] == 4.0
     assert by_ticker["000001.KS"]["has_actual_flow"] is True
-    assert by_ticker["000001.KS"]["flow_asof"] == "2026-05-20"
+    assert by_ticker["000001.KS"]["flow_asof"] is None
+    assert "flow_value_provenance_unverified" in by_ticker["000001.KS"]["flow_warnings"]
     assert by_ticker["000001.KS"]["flow_consensus_buying"] is True
     assert by_ticker["000001.KS"]["whale_trend"] == "accumulation"
     assert by_ticker["000002.KS"]["passed_current_model"] is False
