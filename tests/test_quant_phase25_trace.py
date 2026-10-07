@@ -80,11 +80,18 @@ class Phase25TraceTests(unittest.TestCase):
 
     @patch("modules.quant_analysis.fdr.StockListing", side_effect=RuntimeError("listing dns failed"))
     def test_nasdaq_ticker_listing_falls_back_to_local_universe(self, _listing_mock):
-        tickers = QuantStrategy.get_market_tickers("NASDAQ")
+        from tempfile import TemporaryDirectory
+        fallback = QuantStrategy._fallback_us_tickers('NASDAQ')
+        official = pd.DataFrame({'symbol': list(fallback), 'security_name': list(fallback.values()),
+                                 'test_issue': False})
+        with TemporaryDirectory() as audit, patch('modules.nasdaq_scan_universe.current_directory',
+                return_value=(official, {'audit_dir': audit, 'membership_verified': True})):
+            tickers = QuantStrategy.get_market_tickers("NASDAQ")
 
         self.assertIn("AAPL", tickers)
         self.assertIn("NVDA", tickers)
         self.assertGreaterEqual(len(tickers), 50)
+        self.assertTrue(tickers.provenance['seed_is_fallback'])
 
 
 if __name__ == "__main__":

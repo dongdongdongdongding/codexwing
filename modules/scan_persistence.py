@@ -156,6 +156,8 @@ def persist_scan_run_artifacts(
     error_count = _safe_int(diagnostics.get("worker_error_count")) + _safe_int(diagnostics.get("executor_exception_count"))
     warning_rows = list(warnings or [])
     fetch_summary = summarize_fetch_rejections(diagnostics)
+    from modules.nasdaq_scan_universe import universe_warnings
+    warning_rows.extend(universe_warnings(diagnostics.get('universe_provenance', {})))
     if fetch_summary['source_failure_count']:
         warning_rows.append({'code':'SCAN_SOURCE_UNAVAILABLE', 'severity':'warning',
             'message':f"{fetch_summary['source_failure_count']} symbols have unavailable or unclassified source data."})
@@ -229,6 +231,7 @@ def persist_scan_run_artifacts(
         "worker_error_count": _safe_int(diagnostics.get("worker_error_count")),
         "executor_exception_count": _safe_int(diagnostics.get("executor_exception_count")),
         **fetch_summary,
+        "universe_provenance": diagnostics.get('universe_provenance', {}),
         "warnings": warning_rows,
         "manifest_paths": manifest_paths,
         "artifact_dir": str(artifact_dir),

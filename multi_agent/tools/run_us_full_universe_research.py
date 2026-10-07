@@ -52,11 +52,12 @@ def summarize_health(summaries, universe_size, batch_count, failure=None):
             for k in ['FETCH_DATA_FAIL', 'INTRADAY_FETCH_FAIL'])) or 0) for item in summaries)
     short_history = sum(int(item.get('insufficient_history_count', 0) or 0) for item in summaries)
     source_failures = max(0, fetch_rejections-short_history)
-    incomplete = len(summaries) != batch_count or scans != universe_size
+    incomplete = (len(summaries) != batch_count or scans != universe_size
+                  or bool(failure and failure.get('stage') == 'universe'))
     status = "failed" if failure else ("degraded" if total_errors or source_failures or incomplete or mismatches else "ok")
     return {"status": status, "exit_code": 0 if status == "ok" else 2,
             "fetch_rejection_count":fetch_rejections, "insufficient_history_count":short_history,
-            "source_failure_count":source_failures, "source_coverage_complete":not (source_failures or incomplete),
+            "source_failure_count":source_failures, "source_coverage_complete":not (source_failures or incomplete or failure),
             "total_errors": total_errors, "completed_batch_count": len(summaries),
             "scan_coverage_complete": not incomplete, "error_count_mismatch_run_ids": mismatches,
             "batch_failure": failure}
@@ -80,6 +81,9 @@ def _write_md(path: Path, report: Dict[str, Any]) -> None:
         f"- source_failure_count: {report.get('source_failure_count')}",
         f"- insufficient_history_count: {report.get('insufficient_history_count')}",
         f"- source_coverage_complete: {report.get('source_coverage_complete')}",
+        f"- universe_seed_complete: {report.get('universe_seed_complete')}",
+        f"- universe_selection: {report.get('universe_provenance', {}).get('selection')}",
+        f"- membership_source_observed_at: {report.get('universe_provenance', {}).get('observed_at_utc')}",
         "",
         "## Top Reject Reasons",
     ]
@@ -110,12 +114,18 @@ def main() -> int:
     parser.add_argument("--output-dir", default="runtime_state/reports/us_research")
     args = parser.parse_args()
 
-    ticker_map = quant_analysis.QuantStrategy.get_market_tickers(args.market)
+    failure = None
+    try:
+        ticker_map = quant_analysis.QuantStrategy.get_market_tickers(args.market)
+    except Exception as exc:
+        ticker_map = {}
+        failure = {'stage': 'universe', 'error_type': type(exc).__name__}
+    provenance = getattr(ticker_map, 'provenance', {})
     tickers = list(ticker_map.keys())
     if args.limit_tickers and args.limit_tickers > 0:
         tickers = tickers[: int(args.limit_tickers)]
-    if not tickers:
-        raise SystemExit(f"No tickers fetched for market={args.market}")
+    if not tickers and failure is None:
+        failure = {'stage': 'universe', 'error_type': 'EmptyUniverse'}
 
     batch_size = max(1, int(args.batch_size))
     batches = _chunk(tickers, batch_size)
@@ -124,11 +134,12 @@ def main() -> int:
     total_scans = 0
     total_results = 0
     total_filtered = 0
-    failure = None
 
     for idx, batch in enumerate(batches, start=1):
         print(f"[BATCH {idx}/{len(batches)}] market={args.market} tickers={len(batch)}")
         try:
+            from modules.nasdaq_scan_universe import NasdaqUniverse
+            universe_args = {'ticker_universe': ticker_map} if isinstance(ticker_map, NasdaqUniverse) else {}
             summary = run_non_ui_scan_pipeline(
                 market=args.market,
                 profile=str(args.profile),
@@ -142,6 +153,7 @@ def main() -> int:
                 model_version=str(args.model_version),
                 code_version=str(args.code_version),
                 scan_mode=str(args.scan_mode).upper(),
+                **universe_args,
             )
         except Exception as exc:
             failure = {"batch_index": idx, "ticker_count": len(batch), "error_type": type(exc).__name__}
@@ -155,6 +167,10 @@ def main() -> int:
 
     strategy_family = resolve_strategy_family(args.market, is_amex=(args.market == "AMEX"))
     output_dir = Path(args.output_dir)
+    health = summarize_health(summaries, len(tickers), len(batches), failure)
+    seed_incomplete = provenance.get('seed_is_fallback', False)
+    if seed_incomplete and health['status'] == 'ok':
+        health.update(status='degraded', exit_code=2)
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "market": str(args.market),
@@ -167,7 +183,9 @@ def main() -> int:
         "total_scans": total_scans,
         "total_results": total_results,
         "total_filtered": total_filtered,
-        **summarize_health(summaries, len(tickers), len(batches), failure),
+        **health,
+        "universe_provenance": provenance,
+        "universe_seed_complete": bool(provenance) and not seed_incomplete,
         "reject_reason_counts": reject_reason_counts,
         "run_ids": [str(item.get("run_id")) for item in summaries if item.get("run_id")],
         "batch_summaries": summaries,

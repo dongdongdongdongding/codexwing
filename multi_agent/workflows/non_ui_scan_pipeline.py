@@ -112,6 +112,10 @@ def _parse_ticker_list(raw: str | None) -> List[str]:
 def _normalize_manual_ticker_map(market: str, manual_tickers: List[str]) -> Dict[str, str]:
     market_key = str(market or "").upper()
     market_map = quant_analysis.QuantStrategy.get_market_tickers(market_key) or {}
+    if market_key == 'NASDAQ':
+        from modules.nasdaq_scan_universe import NasdaqUniverse
+        if isinstance(market_map, NasdaqUniverse):
+            return market_map.select(manual_tickers)
     if market_key not in {"KOSPI", "KOSDAQ"}:
         return {ticker: market_map.get(ticker, ticker) for ticker in manual_tickers}
 
@@ -259,6 +263,7 @@ def run_non_ui_scan_pipeline(
     model_version: str,
     code_version: str,
     scan_mode: str = "SWING",
+    ticker_universe=None,
 ) -> Dict[str, Any]:
     resolved_profile, applied_profile_defaults = apply_scan_gate_profile(profile)
     run_id = f"RUN-{uuid4().hex[:8].upper()}"
@@ -273,7 +278,13 @@ def run_non_ui_scan_pipeline(
     )
     memory = MemoryManager()
 
-    ticker_map = _resolve_ticker_map(market=market, tickers_raw=tickers)
+    if ticker_universe is not None:
+        from modules.nasdaq_scan_universe import NasdaqUniverse
+        if str(market).upper() != 'NASDAQ' or not isinstance(ticker_universe, NasdaqUniverse):
+            raise ValueError('ticker_universe_requires_verified_nasdaq_membership')
+        ticker_map = ticker_universe.select(_parse_ticker_list(tickers))
+    else:
+        ticker_map = _resolve_ticker_map(market=market, tickers_raw=tickers)
     ticker_list = list(ticker_map.keys())
     if not ticker_list and max_scan > 0:
         raise RuntimeError(f"No tickers available for market={market}.")
@@ -307,6 +318,7 @@ def run_non_ui_scan_pipeline(
     backoff_state = SharedBackoffState()
     diag_lock = threading.Lock()
     diagnostics: Dict[str, Any] = {
+        "universe_provenance": getattr(ticker_map, 'provenance', {}),
         "filtered_count": 0,
         "worker_error_count": 0,
         "executor_exception_count": 0,
@@ -398,6 +410,9 @@ def run_non_ui_scan_pipeline(
         macro_ctx=macro_ctx,
         market_gate=market_gate,
     )
+
+    from modules.nasdaq_scan_universe import universe_warnings
+    run_warnings.extend(universe_warnings(diagnostics.get('universe_provenance', {})))
 
     local_input_dir = memory.local_short_term("scanner_agent", run_id)
     scanner_input_path = local_input_dir / "legacy_scan_results.json"
@@ -513,6 +528,7 @@ def run_non_ui_scan_pipeline(
         "worker_error_count": int(diagnostics.get("worker_error_count", 0) or 0),
         "executor_exception_count": int(diagnostics.get("executor_exception_count", 0) or 0),
         "reject_reason_counts": diagnostics.get("reject_reason_counts", {}),
+        "universe_provenance": diagnostics.get('universe_provenance', {}),
         **summarize_fetch_rejections(diagnostics),
         "gate_config": gate_config,
         "execution_profile": resolved_profile,

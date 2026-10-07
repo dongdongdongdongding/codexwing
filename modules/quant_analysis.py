@@ -198,6 +198,21 @@ class QuantStrategy:
         Fetch ticker list for major markets.
         Returns a DICT: { 'Ticker': 'Name' }
         """
+        if str(market_type).upper() == 'NASDAQ':
+            from modules.nasdaq_scan_universe import reconcile_seed
+            fallback = False
+            try:
+                listing = fdr.StockListing('NASDAQ')
+                seed = dict(zip(listing['Symbol'], listing['Name']))
+            except Exception:
+                seed = {}
+            if not seed:
+                fallback = True
+                seed = QuantStrategy._fallback_us_tickers('NASDAQ')
+            # Deliberately outside the legacy exception/fallback path: an
+            # unavailable official directory must not admit unverified names.
+            return reconcile_seed(seed, seed_source='local_fallback' if fallback else 'FinanceDataReader.StockListing',
+                                  seed_is_fallback=fallback)
         try:
             result = {}
             
