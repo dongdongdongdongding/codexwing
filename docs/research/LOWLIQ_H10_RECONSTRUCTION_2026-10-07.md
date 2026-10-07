@@ -310,3 +310,7 @@ has large Q3 basis contradictions; residuals remain up to one KRW plus numeric
 precision. See `KR_SUSPENDED_REFERENCE_REPAIR_V7_2026-10-07.md`. Earlier lookbacks,
 execution/valuation and mature H10 qualification remain open; parent study and
 live lane are unchanged.
+
+### Complete historical price-verification footprint
+
+The Q3 1,310-code comparison is insufficient for the two-year training history and broad-market features. The new [historical scope](LOWLIQ_HISTORY_SCOPE_2026-10-07.md) freezes 1,857,109 source rows / 2,949 codes, covering 410,384 training-eligibility/test-universe keys and conservative lookbacks. Both KIS price bases require 65,796 bounded, resumable requests. The first 10 live requests were captured successfully; the larger collection is in progress under `swing-main-d277`. No old study/model input was replaced and no test outcome was evaluated.
