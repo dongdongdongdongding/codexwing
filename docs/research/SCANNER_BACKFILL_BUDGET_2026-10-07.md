@@ -2,7 +2,9 @@
 
 The daily worker was still executing `backfill_scanner_full_returns.py` after
 70 minutes. A one-second native process sample showed curl network polling;
-it did not establish a deadlock. The existing worker is preserved.
+it did not establish a deadlock. That worker was allowed to finish and was
+confirmed terminal around 13:00 KST, with ten committed patches. The parent
+daily pipeline continued into admission optimization.
 
 A read-only current DB census found 30,190 eligible missing-return rows but
 22,148 distinct ticker/local-signal-date combinations. Another 211 rows belong
@@ -50,10 +52,31 @@ Production audit directory: `runtime_state/audit/scanner_backfill_budget_2026100
   `partial`, exit 2, zero writes and no cursor advance. DB-page and final receipts
   are in `actual_dry_progress.json`; stdout is `actual_dry_cli.log`.
 
-The new bounded **applying** path must still be observed after the old worker
-terminates. Issue `swing-main-1y4w` remains in progress for that operational proof;
-`swing-main-l64n` tracks the full daily pipeline. No model or issued contract is
-changed by this execution repair, and no edge-lane qualification is implied.
+## Applied production pilot and resume
+
+After the old writer terminated, the bounded KOSPI applying call attempted two
+rows using two history requests in 19.361 seconds. Both missing H30 returns were
+committed and independently read through the Management API: ID 2161 received
+41.176471%, and ID 2162 received 8.163265%. Full before/after rows differ only in
+`return_30d_pct` and the update timestamp. The cursor advanced to 2162 only after
+successful audited application. The CLI correctly returned partial/exit 2 with
+8,466 rows unvisited.
+
+A second call resumed from that cursor, attempted one row with one request in
+8.904 seconds, and advanced to 2168 after applying -35.202864% to that row's H30.
+Independent API readback and fresh-history Decimal calculation agree; all captured
+unpatched fields are exact. It returned partial/exit 2 with 8,465 rows unvisited.
+These pilots use a separate audit cursor, not the daily ALL-market cursor.
+
+Receipts: `old_worker_terminal.json`, `apply_pilot_before.json`,
+`apply_pilot_independent_readback.json`, `apply_resume_independent_readback.json`,
+`apply_pilot_progress.json`, `apply_resume_progress.json`, and
+`apply_pilot_cursor.json`. The global apply journals retain immutable plans and
+before/after checks.
+
+This completes the applying/resume proof for `swing-main-1y4w`.
+`swing-main-l64n` still tracks the unfinished daily pipeline. Historical coverage
+remains partial; no model, issued contract or edge-lane qualification is changed.
 
 ## Historical request window correction
 
@@ -75,5 +98,5 @@ invent missing sessions or guarantee a horizon for long suspensions.
 
 Evidence: `history_horizon_window_probe.json`, `horizon_independent_check.json`,
 `horizon_fixed_default_probe.json`, and `dry_first_rows.json` in the same audit
-directory. `swing-main-axmi` tracks this request-window bug; actual applying
-verification still follows the existing-worker completion under `swing-main-1y4w`.
+directory. `swing-main-axmi` tracks this request-window bug; the applying pilots
+above subsequently verified the actual database updates.

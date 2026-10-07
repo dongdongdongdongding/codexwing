@@ -26,6 +26,9 @@ row's proposed score and contract and supplies a later creation time. The prior
 producer changes all 12 rows; the corrected producer records zero new rows and
 preserves the copy byte-for-byte. The actual production ledger remains unchanged.
 `replay.json` records original hashes and each changed field under the prior code.
+After deployment of `28e441e`, importing the production module and repeating the
+copy-only check again records zero rows and preserves both copy and source bytes.
+`deployed_readback.json` records the module path, commit and original SHA256.
 
 Fifteen tests pass across the freeze, VWAP-guard and consumer contract suites.
 They cover rescore preservation, changed-ticker quota bypass, duplicates, malformed
@@ -36,6 +39,6 @@ The overwrite mechanism explains how late timestamps can arise, but this replay
 does not prove which historical rows were overwritten or reconstruct their lost
 values. No historical score, contract, timestamp or settled result was guessed.
 No production scorer or message route was executed for this validation.
-`swing-main-g37h` tracks the repair; `swing-main-379m` retains the unresolved
+`swing-main-g37h` is closed after deployed verification; `swing-main-379m` retains the unresolved
 historical provenance/contract audit. No new edge or calibrated probability is
 claimed.
