@@ -19,10 +19,13 @@ It records both liquidity lanes:
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
+import fcntl
 import json
 import os
 import sys
 import time
+import tempfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional
@@ -381,25 +384,54 @@ def _ledger_rows() -> List[Dict[str, Any]]:
     for line in LEDGER.read_text(encoding="utf-8").splitlines():
         if not line.strip():
             continue
-        try:
-            item = json.loads(line)
-            if isinstance(item, dict):
-                rows.append(item)
-        except Exception:
-            continue
+        item = json.loads(line)
+        if not isinstance(item, dict):
+            raise ValueError("invalid VWAP ledger row")
+        rows.append(item)
     return rows
+
+
+@contextmanager
+def _ledger_lock():
+    LEDGER.parent.mkdir(parents=True, exist_ok=True)
+    with LEDGER.with_suffix(".lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        yield
 
 
 def _write_ledger_rows(rows: Iterable[Mapping[str, Any]]) -> None:
     LEDGER.parent.mkdir(parents=True, exist_ok=True)
     clean = [dict(row) for row in rows if isinstance(row, Mapping)]
-    LEDGER.write_text("\n".join(json.dumps(row, ensure_ascii=False, sort_keys=True) for row in clean) + ("\n" if clean else ""), encoding="utf-8")
+    raw = "\n".join(json.dumps(row, ensure_ascii=False, sort_keys=True, allow_nan=False) for row in clean) + ("\n" if clean else "")
+    with tempfile.NamedTemporaryFile(mode="w", dir=LEDGER.parent, encoding="utf-8", delete=False) as stream:
+        temp = Path(stream.name)
+        try:
+            stream.write(raw)
+            stream.flush()
+            os.fsync(stream.fileno())
+            os.replace(temp, LEDGER)
+        finally:
+            temp.unlink(missing_ok=True)
+
+
+def frozen_day_picks(trade_date: str) -> List[Dict[str, Any]]:
+    """First recorded selections, including their original scores/contracts."""
+    with _ledger_lock():
+        return [r for r in _ledger_rows() if str(r.get("trade_date")) == str(trade_date)
+                and r.get("candidate_id") == CANDIDATE_ID]
 
 
 def record_picks(picks: Iterable[Mapping[str, Any]], *, generated_at: str) -> int:
+    with _ledger_lock():
+        return _record_picks_locked(picks, generated_at=generated_at)
+
+
+def _record_picks_locked(picks: Iterable[Mapping[str, Any]], *, generated_at: str) -> int:
     existing = _ledger_rows()
     incoming = []
-    keys = set()
+    frozen_days = {(str(row.get("trade_date")), row.get("candidate_id")) for row in existing}
+    keys, day_counts = set(), {}
+    cap = max(0, int(os.getenv("AG_KOSDAQ_INTRADAY_TOP_N", "1")))
     for pick in picks:
         item = {
             "date": _iso_trade_date(str(pick.get("base_trade_date") or "")),
@@ -414,14 +446,27 @@ def record_picks(picks: Iterable[Mapping[str, Any]], *, generated_at: str) -> in
             **dict(pick),
         }
         key = (item.get("trade_date"), item.get("ticker"), item.get("candidate_id"))
+        day = (str(item.get("trade_date")), item.get("candidate_id"))
+        if not item.get("trade_date") or not item.get("ticker"):
+            raise ValueError("missing VWAP pick identity")
+        # A rescore cannot replace prior picks or append different tickers to
+        # an already-recorded day and thereby evade the original daily quota.
+        if day in frozen_days or key in keys or day_counts.get(day, 0) >= cap:
+            continue
         keys.add(key)
+        day_counts[day] = day_counts.get(day, 0) + 1
         incoming.append(item)
-    kept = [row for row in existing if (row.get("trade_date"), row.get("ticker"), row.get("candidate_id")) not in keys]
-    _write_ledger_rows([*kept, *incoming])
+    if incoming:
+        _write_ledger_rows([*existing, *incoming])
     return len(incoming)
 
 
 def resolve_pending(client: Any, *, today_trade_date: str) -> Dict[str, Any]:
+    with _ledger_lock():
+        return _resolve_pending_locked(client, today_trade_date=today_trade_date)
+
+
+def _resolve_pending_locked(client: Any, *, today_trade_date: str) -> Dict[str, Any]:
     rows = _ledger_rows()
     if not rows:
         return {"resolved": 0, "touch3d_t5_pct": None, "ret3d_avg": None, "mfe3_avg": None, "mae3_avg": None}
@@ -518,13 +563,15 @@ def route_live_intraday(picks: List[Dict[str, Any]], *, run_id: str, recommended
     ordered = sorted(picks, key=lambda row: -float(row.get("p") or 0.0))
     written = 0
     for rank, pick in enumerate(ordered, start=1):
+        pick_recorded_at = str(pick.get("generated_at") or recommended_at)
+        rank = int(pick.get("priority_rank") or rank)
         src = {
             **pick,
             "run_id": run_id,
             "priority_rank": rank,
             "market_type": "KOSDAQ",
             "scan_mode": "INTRADAY",
-            "recommended_at": recommended_at,
+            "recommended_at": pick_recorded_at,
             # 모듈이 선언한 승격 계약(§7-E: TP+10%/H5)을 따라간다. "3D" 는 구 계약의 잔재였다.
             "horizon": f"{int(pick.get('hold_days') or 5)}D",
             "scanner_timeframe_profile": "INTRADAY_1500",
@@ -540,9 +587,9 @@ def route_live_intraday(picks: List[Dict[str, Any]], *, run_id: str, recommended
             src,
             overrides={
                 "market": "KOSDAQ",
-                "recommended_at": recommended_at,
+                "recommended_at": pick_recorded_at,
                 "feature_origin": "kosdaq_intraday_1500_vwap_guard",
-                "created_at": recommended_at,
+                "created_at": pick_recorded_at,
             },
         )
         payload["allow_incomplete_scan_result"] = True
@@ -551,6 +598,8 @@ def route_live_intraday(picks: List[Dict[str, Any]], *, run_id: str, recommended
 
     deep_rows = []
     for rank, pick in enumerate(ordered, start=1):
+        pick_recorded_at = str(pick.get("generated_at") or recommended_at)
+        rank = int(pick.get("priority_rank") or rank)
         row = {
             "report_id": f"{run_id}-{pick['ticker']}",
             "report_version": 1,
@@ -567,7 +616,7 @@ def route_live_intraday(picks: List[Dict[str, Any]], *, run_id: str, recommended
             "analysis_section": "Top5",
             "analysis_section_rank": rank,
             "buy_score": pick["p"],
-            "generated_at": recommended_at,
+            "generated_at": pick_recorded_at,
             "entry_reference_price": pick.get("entry_reference_price"),
             "selection_alignment": {"analysis_section": "Top5", "analysis_section_rank": rank},
             # 🔴 2026-08-21: `trade_plan` 이 없어서 카드가 폴백(TP5/H3)으로 나가고 있었다.
@@ -675,6 +724,10 @@ def main() -> int:
     picks = [{**p, **mkt_state} for p in picks]
     recorded = record_picks(picks, generated_at=generated_at)
     forward_summary = resolve_pending(client, today_trade_date=trade_date)
+    score_result["rescored_picks"] = picks
+    picks = frozen_day_picks(trade_date)
+    score_result["picks"] = picks
+    score_result["picks_source"] = "first_recorded_day"
     production = os.getenv("AG_KOSDAQ_INTRADAY_PRODUCTION", "1").strip() not in {"0", "", "false", "False"}
     if args.dry_run:
         production = False
