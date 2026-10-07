@@ -264,3 +264,10 @@ adds eight supported event repairs (338 rows), including a mixed 5-for-1 split
 that the heuristic treated as 9.519035-fold holder entitlement. All other rows
 and raw fields remain exact. The cumulative 13 event repairs do not certify
 complete security histories or qualify a replacement lane.
+
+The [official ex-right reference audit](KR_EXRIGHTS_PRICE_BASIS_2026-10-07.md)
+separates price continuity, shareholder entitlements and provider rounding for
+18 notices/17 securities. All 16 in-window percentages agree with rounded KRX
+reference ratios, but two-decimal percentages alone do not reproduce all 4,420
+prices. Source normalization must use an explicit convention; event-spanning
+portfolio returns require separate execution/valuation evidence.
