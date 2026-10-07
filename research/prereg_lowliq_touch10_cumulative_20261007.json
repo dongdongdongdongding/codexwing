@@ -2,8 +2,8 @@
   "id": "lowliq_touch10_cumulative_cadence_20261007",
   "beads": "swing-main-3h1h",
   "registered_at": "2026-10-07T07:39:57.688892+00:00",
-  "purpose": "Fixed retrospective source-date-causal screen of repaired low-liquidity ranker for the user TP5/H10 and cadence target. Necessary research evidence only; never automatic promotion.",
-  "prior_evidence": "Inherited H5 SURVIVED report inadmissible after h4zv. Current adjustment as-of instability audited in xi1c. Old scores/models/picks are not reused. No corrected-candidate test scores or outcomes have been inspected.",
+  "purpose": "Preregistered deterministic cumulative cadence boundary amendment to the parent retrospective screen. No automatic promotion.",
+  "prior_evidence": "Inherited H5 SURVIVED inadmissible (h4zv); as-of instability audited (xi1c). Original six fixed models fitted and20/62 date score/universe receipts seen before this amendment. No corrected-candidate test outcomes, returns or touch statistics computed or inspected. Parent selections remain preserved.",
   "fit_cutoff": "2026-06-30",
   "train_signal_start": "2024-07-01",
   "test_signal_start": "2026-07-01",
@@ -153,6 +153,8 @@
     "evidence_seen": "Model fitting receipts and20/62Q3 universe/score records; no corrected-candidate test labels, touch rates, returns, or outcome-derived selection. The boundary issue is combinatorial, independent of prices/labels.",
     "frozen_models": "Reuse all six original fitted models and immutable full-universe scores after original reconstruction completes; verify original manifest and per-model/per-date hashes. Never refit or use model scores to choose calendar phase.",
     "interpretation": "Frequency primary is 5*firing_dates/total_test_calendar_sessions, including abstention dates; additional rolling5 maximum3 still applies. Early prefixes may have fewer than2per5; lower2 bound assessed only on complete fixed test window.",
-    "reuse_disclosure": "Same historical window and models as parent, with pre-outcome deterministic timing amendment. Neither arm is genuine unseen forward evidence."
+    "reuse_disclosure": "Same historical window and models as parent, with pre-outcome deterministic timing amendment. Neither arm is genuine unseen forward evidence.",
+    "wording_clarified_at": "2026-10-07T07:42:49.285643+00:00",
+    "wording_clarification": "Correct copied parent prior_evidence wording to agree with evidence_seen already in initial3295087 amendment registration. No parameter, source, selection or evaluation changes."
   }
 }
