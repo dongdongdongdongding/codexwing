@@ -5,6 +5,7 @@ from modules.kis_operational_prefilter import (
     build_kis_operational_prefilter,
     selected_ticker_arg,
     selected_ticker_symbols,
+    _flow_score_components,
 )
 
 
@@ -89,6 +90,31 @@ class FakeKISClient:
             "institution_10d": 200,
             "retail_10d": -500,
         }
+
+
+def test_invalid_or_unverified_flow_never_affects_candidate_score():
+    assert _flow_score_components({"valid": False, "whale_score": 90}) == {}
+    assert _flow_score_components({"whale_score": 90}) == {}
+    assert _flow_score_components({"valid": True, "whale_score": 90}) == {"whale_score": 18.0}
+
+
+def test_current_day_missing_values_remain_diagnostic_without_scoring():
+    class MissingLatestFlow(FakeKISClient):
+        def investor_flow_snapshot(self, symbol, **kwargs):
+            flow = super().investor_flow_snapshot(symbol, **kwargs)
+            flow.update(foreigner_1d=None, institution_1d=None, retail_1d=None)
+            return flow
+
+    report = build_kis_operational_prefilter(MissingLatestFlow(), KISOperationalPrefilterConfig(
+        markets=("KOSPI",), max_candidates_per_market=2, fetch_flow=True,
+        flow_limit_per_market=2, sleep_sec=0, trade_date="20261007"))
+    selected = report["markets"]["KOSPI"]["selected"]
+    assert len(selected) == 2
+    for row in selected:
+        assert row["flow_ok"] is False
+        assert row["flow"]["whale_score"] is not None
+        assert "whale_score" not in row["score_components"]
+        assert "whale_score" not in row
 
 
 def test_kis_prefilter_unions_rank_sources_and_excludes_blocked_status():

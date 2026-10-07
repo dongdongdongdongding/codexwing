@@ -164,6 +164,8 @@ def _quote_score_components(quote: Mapping[str, Any]) -> Dict[str, float]:
 
 
 def _flow_score_components(flow: Mapping[str, Any]) -> Dict[str, float]:
+    if flow.get("valid") is not True:
+        return {}
     whale_score = _to_float(flow.get("whale_score"))
     if whale_score is None:
         return {}
@@ -332,7 +334,7 @@ def _flow_candidate(client: Any, candidate: MutableMapping[str, Any], *, trade_d
         normalized = normalize_kis_flow_for_whale_contract(flow)
         candidate["flow"] = normalized
         candidate["flow_ok"] = bool(normalized.get("valid"))
-        if normalized.get("whale_score") is not None:
+        if candidate["flow_ok"] and normalized.get("whale_score") is not None:
             candidate["whale_score"] = normalized.get("whale_score")
     except Exception as exc:
         candidate["flow_ok"] = False
