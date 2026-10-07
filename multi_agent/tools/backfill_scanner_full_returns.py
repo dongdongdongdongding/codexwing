@@ -39,10 +39,13 @@ Safety
 from __future__ import annotations
 
 import argparse
+import fcntl
 import json
 import math
+import os
 import re
 import sys
+import time
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -239,6 +242,7 @@ def _fetch_scanner_rows_missing_returns(
     *,
     page_size: int = 1000,
     market_filter: Optional[str] = None,
+    progress_callback=None,
 ) -> List[Dict[str, Any]]:
     """Fetch market_scan_results rows where feature_origin is backfillable
     and at least one of the return columns we want to set is NULL."""
@@ -268,6 +272,7 @@ def _fetch_scanner_rows_missing_returns(
         return []
     upper = newest[0]["id"]
     last_id = None
+    scanned = 0
     page_size = max(1, min(page_size, 500))
     while True:
         query = scoped(select_cols).lte("id", upper).order("id").limit(page_size)
@@ -283,6 +288,10 @@ def _fetch_scanner_rows_missing_returns(
             if any(row.get(col) is None for col in missing_cols):
                 rows_by_id[row["id"]] = row
         last_id = ids[-1]
+        scanned += len(batch)
+        if progress_callback:
+            progress_callback(fetch_rows_scanned=scanned, fetch_rows_eligible=len(rows_by_id),
+                              fetch_last_id=last_id, fetch_upper_id=upper)
         if len(batch) < page_size or last_id >= upper:
             break
     return list(rows_by_id.values())
@@ -360,23 +369,82 @@ def run_backfill(
     dry_run: bool,
     market_filter: Optional[str],
     allow_history_fallback: bool = True,
+    max_rows: int = 0,
+    max_history_requests: int = 0,
+    max_planning_seconds: float = 0,
+    resume_path: Optional[Path] = None,
+    progress_path: Optional[Path] = None,
 ) -> Dict[str, Any]:
+    from multi_agent.tools.repair_flow_snapshot_metadata import write_json
     from modules.db_manager import DBManager
 
+    if min(max_rows, max_history_requests, max_planning_seconds) < 0:
+        raise ValueError("backfill bounds must be nonnegative")
+    scope = {"version": 1, "market": market_filter, "shared_dir": str(shared_dir.resolve())}
+    cursor = 0
+    if resume_path and resume_path.exists():
+        state = json.loads(resume_path.read_text())
+        if state.get("scope") != scope or type(state.get("last_id")) is not int or state["last_id"] < 0:
+            raise ValueError("incompatible or invalid backfill cursor")
+        cursor = state["last_id"]
+    started = time.monotonic()
+    processed = 0
+    history_requests = 0
+    history_cache_hits = 0
+    history_cache = {}
+    last_id = cursor
+    last_progress = -float("inf")
+
+    def progress(phase, force=False, **extra):
+        nonlocal last_progress
+        now = time.monotonic()
+        if progress_path and (force or now - last_progress >= 5):
+            write_json(progress_path, {"scope": scope, "pid": os.getpid(), "phase": phase,
+                "dry_run": dry_run, "processed": processed, "last_id": last_id,
+                "history_requests": history_requests, "history_cache_hits": history_cache_hits,
+                "elapsed_seconds": round(now-started, 3),
+                "checked_at": datetime.now(timezone.utc).isoformat(), **extra})
+            last_progress = now
+
+    class BudgetExhausted(Exception):
+        pass
+
+    def history(ticker, scan_date):
+        nonlocal history_requests, history_cache_hits
+        key = (ticker, scan_date)
+        if key in history_cache:
+            history_cache_hits += 1
+            return history_cache[key]
+        if max_history_requests and history_requests >= max_history_requests:
+            raise BudgetExhausted("history_request_limit")
+        history_requests += 1
+        progress("fetching_history", force=True, ticker=ticker, signal_date=scan_date)
+        captured = _fetch_history_close(ticker, scan_date)
+        # Reuse even an unavailable response only within this invocation.
+        # Later invocations request fresh data as prices/labels mature.
+        history_cache[key] = captured
+        return captured
+
+    progress("fetching_rows", force=True)
     db = DBManager()
     if not getattr(db, "client", None):
-        raise SystemExit("Supabase client unavailable.")
+        raise RuntimeError("Supabase client unavailable.")
 
     index = _build_outcome_index(shared_dir, limit_runs)
-    if not index:
-        return {
+    if not index and not allow_history_fallback:
+        result = {
             "status": "skip",
             "reason": "empty_outcome_index",
             "rows_seen": 0,
             "rows_updated": 0,
         }
+        progress("finished", force=True, summary=result)
+        return result
 
-    scanner_rows = _fetch_scanner_rows_missing_returns(db, market_filter=market_filter)
+    scanner_rows = sorted(_fetch_scanner_rows_missing_returns(db, market_filter=market_filter,
+        progress_callback=lambda **data: progress("fetching_rows", force=True, **data)), key=lambda r: r["id"])
+    scanner_rows = [r for r in scanner_rows if r["id"] > cursor] + [r for r in scanner_rows if r["id"] <= cursor]
+    planning_started = time.monotonic()
     print(f"[INFO] fetched {len(scanner_rows)} scanner rows missing return_3d/14d/30d_pct")
 
     rows_seen = len(scanner_rows)
@@ -391,12 +459,29 @@ def run_backfill(
     by_origin: Dict[str, int] = defaultdict(int)
     sample_updates: List[Dict[str, Any]] = []
     plan = []
+    skipped_dedicated = 0
+    budget_reason = None
 
     for row in scanner_rows:
+        if max_rows and processed >= max_rows:
+            budget_reason = "row_limit"
+            break
+        if max_planning_seconds and time.monotonic() - planning_started >= max_planning_seconds:
+            budget_reason = "planning_time_limit"
+            break
+        # This dedicated lane is never patched here; skip before external IO.
+        if str(row.get("run_id") or "").startswith("SWING-CAND-"):
+            skipped_dedicated += 1
+            processed += 1
+            last_id = row["id"]
+            progress("planning")
+            continue
         ticker = str(row.get("ticker") or "").strip()
         scan_date = _row_scan_date(row)
         if not ticker or not scan_date:
             skipped_no_match += 1
+            processed += 1
+            last_id = row["id"]
             continue
 
         source = None
@@ -405,7 +490,11 @@ def run_backfill(
             matched_index += 1
             source = "outcome_index"
         elif allow_history_fallback:
-            hist = _fetch_history_close(ticker, scan_date)
+            try:
+                hist = history(ticker, scan_date)
+            except BudgetExhausted as exc:
+                budget_reason = str(exc)
+                break
             computed = _compute_returns_from_history(hist, scan_date) if hist is not None else {}
             if computed:
                 outcome = computed
@@ -414,9 +503,13 @@ def run_backfill(
             else:
                 history_failed += 1
                 skipped_no_match += 1
+                processed += 1
+                last_id = row["id"]
                 continue
         else:
             skipped_no_match += 1
+            processed += 1
+            last_id = row["id"]
             continue
 
         payload = _build_update_payload(row, outcome)
@@ -425,7 +518,12 @@ def run_backfill(
         # outcome_sync ran on a still-PENDING row. Without this second pass, those
         # rows remain unfilled forever even though prices are available.
         if not payload and source == "outcome_index" and allow_history_fallback:
-            hist = _fetch_history_close(ticker, scan_date)
+            try:
+                hist = history(ticker, scan_date)
+            except BudgetExhausted as exc:
+                matched_index -= 1
+                budget_reason = str(exc)
+                break
             computed = _compute_returns_from_history(hist, scan_date) if hist is not None else {}
             if computed:
                 outcome = computed
@@ -436,6 +534,9 @@ def run_backfill(
             else:
                 history_failed += 1
 
+        processed += 1
+        last_id = row["id"]
+        progress("planning", eligible_updates=eligible_updates)
         if not payload:
             conflict = _conflicting_daily_field(row, outcome)
             if conflict:
@@ -461,6 +562,7 @@ def run_backfill(
                      "source":source,"source_values":outcome})
 
     audit_result = None
+    progress("applying" if not dry_run else "auditing", force=True, eligible_updates=eligible_updates)
     if plan:
         from multi_agent.tools.repair_issued_outcomes import audit_and_apply
         audit_result = audit_and_apply(plan,PROJECT_ROOT/"runtime_state/audit/scanner_full_return_backfill",
@@ -470,13 +572,30 @@ def run_backfill(
         if not dry_run:
             updated = audit_result["changes"]
 
+    # Only advance after the complete selected plan has passed CAS/readback.
+    # A crash or conflict leaves the prior cursor; replay re-reads current rows.
+    if resume_path and not dry_run and processed:
+        write_json(resume_path, {"scope": scope, "last_id": last_id,
+            "checked_at": datetime.now(timezone.utc).isoformat()})
+
     matched_total = matched_index + matched_history
     fill_rate_after_estimate = (
         100.0 * eligible_updates / max(rows_seen, 1)
     )
 
     summary = {
-        "status": "ok",
+        "status": "partial" if budget_reason else "degraded" if history_failed or conflicting_fields else "ok",
+        "degraded_reasons": (["history_unavailable"] if history_failed else []) +
+                            (["incompatible_daily_basis"] if conflicting_fields else []),
+        "coverage_complete": processed == rows_seen,
+        "coverage_scope": "current eligible rows attempted, not every horizon filled",
+        "budget_reason": budget_reason,
+        "rows_processed": processed,
+        "rows_unvisited": rows_seen - processed,
+        "skipped_dedicated_refresh": skipped_dedicated,
+        "history_requests": history_requests,
+        "history_cache_hits": history_cache_hits,
+        "resume_last_id": last_id,
         "dry_run": bool(dry_run),
         "shared_dir": str(shared_dir),
         "limit_runs": int(limit_runs),
@@ -500,6 +619,7 @@ def run_backfill(
         "audit": audit_result,
         "completed_at": datetime.now(timezone.utc).isoformat(),
     }
+    progress("finished", force=True, summary=summary)
     return summary
 
 
@@ -519,6 +639,12 @@ def main() -> int:
         help="Filter scanner rows by market_type or KR ticker suffix (default ALL).",
     )
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--max-rows", type=int, default=0, help="Rows attempted per invocation; 0 is unlimited.")
+    parser.add_argument("--max-history-requests", type=int, default=0, help="Unique external price requests; 0 is unlimited.")
+    parser.add_argument("--max-planning-seconds", type=float, default=0,
+                        help="Planning budget after DB fetch; final audited writes may take longer. 0 is unlimited.")
+    parser.add_argument("--resume-path", type=Path, help="Cursor path; bounded runs default to a market-specific cursor.")
+    parser.add_argument("--progress-path", type=Path, help="Atomic progress receipt (default: unique ops receipt).")
     parser.add_argument(
         "--no-history-fallback",
         action="store_true",
@@ -526,15 +652,38 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    summary = run_backfill(
-        shared_dir=Path(args.shared_dir),
-        limit_runs=int(args.limit_runs),
-        dry_run=bool(args.dry_run),
-        market_filter=None if args.market == "ALL" else args.market,
-        allow_history_fallback=not bool(args.no_history_fallback),
-    )
+    from multi_agent.tools.repair_flow_snapshot_metadata import write_json
+    ops = PROJECT_ROOT / "runtime_state/long_term/ops"
+    progress_path = args.progress_path or ops / "scanner_returns" / (
+        datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%f") + f"_{os.getpid()}.json")
+    resume_path = args.resume_path
+    if not resume_path and any((args.max_rows, args.max_history_requests, args.max_planning_seconds)):
+        resume_path = ops / f"scanner_return_backfill_cursor_{args.market}.json"
+    lock_path = ops / "scanner_return_backfill.lock"
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            write_json(progress_path, {"phase": "busy", "pid": os.getpid()})
+            return 2
+        try:
+            summary = run_backfill(
+                shared_dir=Path(args.shared_dir),
+                limit_runs=int(args.limit_runs),
+                dry_run=bool(args.dry_run),
+                market_filter=None if args.market == "ALL" else args.market,
+                allow_history_fallback=not bool(args.no_history_fallback),
+                max_rows=args.max_rows, max_history_requests=args.max_history_requests,
+                max_planning_seconds=args.max_planning_seconds,
+                resume_path=resume_path, progress_path=progress_path,
+            )
+        except Exception as exc:
+            receipt = json.loads(progress_path.read_text()) if progress_path.exists() else {}
+            write_json(progress_path, {**receipt, "phase": "failed", "error_type": type(exc).__name__})
+            raise
     print(json.dumps(summary, ensure_ascii=False, indent=2))
-    return 0
+    return 2 if summary["status"] in {"partial", "degraded"} else 0
 
 
 if __name__ == "__main__":

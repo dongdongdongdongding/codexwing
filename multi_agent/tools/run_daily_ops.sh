@@ -110,7 +110,10 @@ run_optional "update_outcome_return_metrics" \
 
 echo "[STEP] backfill_scanner_full_returns"
 run_optional "backfill_scanner_full_returns" \
-  python3 multi_agent/tools/backfill_scanner_full_returns.py --limit-runs "${BACKFILL_RETURN_LIMIT_RUNS:-1000}"
+  python3 multi_agent/tools/backfill_scanner_full_returns.py --limit-runs "${BACKFILL_RETURN_LIMIT_RUNS:-1000}" \
+    --max-rows "${BACKFILL_RETURN_MAX_ROWS:-500}" \
+    --max-history-requests "${BACKFILL_RETURN_MAX_HISTORY_REQUESTS:-100}" \
+    --max-planning-seconds "${BACKFILL_RETURN_MAX_PLANNING_SECONDS:-300}"
 
 # Current issued contracts use adjusted daily labels. Run after both price and
 # calendar refresh, before exporting the archive and before the long intraday job.
