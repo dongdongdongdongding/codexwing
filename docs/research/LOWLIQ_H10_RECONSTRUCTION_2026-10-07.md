@@ -271,3 +271,9 @@ separates price continuity, shareholder entitlements and provider rounding for
 reference ratios, but two-decimal percentages alone do not reproduce all 4,420
 prices. Source normalization must use an explicit convention; event-spanning
 portfolio returns require separate execution/valuation evidence.
+
+The separate [v4 official ex-reference source](KR_EX_REFERENCE_REPAIR_V4_2026-10-07.md)
+applies 16 price-reference events and removes two mistimed paid-issue factors:
+17 codes, 700 rows, whole-panel raw/unaffected fields exact. It preserves earlier
+uncertified bases and does not certify event-spanning portfolio returns. The
+cumulative 31 event corrections remain partial source work, not lane promotion.
