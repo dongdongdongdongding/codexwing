@@ -53,9 +53,9 @@ SESSION_SPECS: tuple[SessionSpec, ...] = (
         scan_scope="kr_premarket_refresh_plus_primary_daily_ops",
         actions=("kr_confirmed_scan", "primary_daily_ops"),
         rationale=(
-            "매일 개장 직후 전 데이터(일봉 px_long·분봉·수급 flow) 갱신 후 KR 스캔/픽 생성. "
-            "KIS 투자자수급 API는 00:00~15:40만 호출 가능 → 15:40/20:05 마감세션은 수급을 못 받으므로 "
-            "수급 갱신은 이 아침 세션이 담당(직전 거래일 확정치 반영)."
+            "개장 직후 KR 스캔과 데이터 갱신을 독립 작업으로 요청. "
+            "연구용 수급 캐시는 종목별 완료 거래일을 요청하며 당일 미확정 값은 제외한다. "
+            "당일 요청의 시간 제한을 API 전체의 이용 가능 시간으로 해석하지 않는다."
         ),
     ),
     SessionSpec(
