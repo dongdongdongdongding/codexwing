@@ -136,6 +136,53 @@ nonfinite values, preservation and nontrading conventions. Source comparison
 task `swing-main-ivuh` is complete; economic-factor reconciliation, earlier
 feature history, final H10 prices and strategy qualification remain separate.
 
+### Confirmed input errors: qualification rejected pending reconstruction
+
+`trace_lowliq_adjustment_events.py` reproduced all five adjusted fields on all
+119,834 historical rows of the 65 positive-volume mismatch codes. The comparison
+window contains 57 algorithm events: 37 same-day share-count rules, 15 lag rules
+and five limit rules. An observer injected into the hash-pinned builder records
+which later share-count observation caused each lagged assignment; it does not
+change that algorithm or the frozen panel. Twelve focused tests passed and the
+actual trace replay reproduced the same result.
+
+Two event errors are now supported by official documents:
+
+- **005440, July 20:** the lag rule assigns a factor of 1.1763447052047653 from
+  a 27,492,898-share increase. The [KRX additional-listing notice](https://kind.krx.co.kr/external/2026/07/14/000152/20260714000196/68154.htm)
+  identifies this as a share exchange, and the [exchange filing](https://kind.krx.co.kr/external/2026/02/12/000133/20260212000353/10084.htm)
+  explains that Hyundai Home Shopping holders receive the new shares. Therefore
+  this increase is not a proportional share entitlement for existing 005440
+  holders. KIS adjusted and nominal OHLC agree throughout the captured window.
+- **008830:** the August 24 share-count increase causes the lag rule to place
+  its 1.3 factor on August 7. The [official July 31 ex-rights notice](https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260731901116)
+  specifies August 3 and a 7,000 KRW reference price. The [offering document](https://kind.krx.co.kr/external/2026/06/10/000744/20260610002005/10601.htm)
+  gives the 30% bonus allocation. The heuristic chose a date four observed
+  trading sessions too late; KIS marks the adjustment on August 3.
+
+Direct HTTP captures preserved all five official HTML documents and extracted
+text with request/receipt times and SHA hashes. The DART main page links document
+11505343; its separately captured viewer contains the actual ex-date table.
+The first trace attempt stopped at a Parquet index round-trip assertion before
+producing a verdict. Its plan is preserved; the corrected index serialization
+uses `trace_plan_v2.json` with a new code hash.
+
+An independent two-event reconstruction compared 260 OHLC cells per code over
+June 30–October 2. Using event factor 1 for 005440 removes all differences;
+placing the 1.3 factor on August 3 for 008830 reduces the maximum difference to
+0.923077 KRW. Cells over one KRW fall from 52 and 16, respectively, to zero.
+Sub-KRW provider differences are retained; this diagnostic is not a blanket
+certification threshold. No source file, model, score, universe or live consumer
+was changed. No strategy outcome was computed.
+
+The immutable `lowliq_corporate_actions_20261007/source_verdict.json` records
+`INPUT_REJECTED_FOR_QUALIFICATION`. This rejects the current input basis, not the
+strategy's alpha; waiting for H10 maturity alone cannot make it admissible.
+Remaining codes and earlier feature history still require reconciliation under
+`swing-main-5pfa`. Any corrected study must use an explicit new source epoch and
+preserve the original preregistration, scores and evidence rather than silently
+replacing their inputs.
+
 The next-open contract is TP5/H10, with entry day included, no stop, and 1.0%
 round-trip primary cost; 0.30% and 0.215% are sensitivities. Unfilled entries stay
 in the selected denominator with zero touch and zero return. Missing or suspended
