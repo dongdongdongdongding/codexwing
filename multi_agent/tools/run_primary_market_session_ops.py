@@ -18,6 +18,8 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
 from zoneinfo import ZoneInfo
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 DEFAULT_STATE_PATH = PROJECT_ROOT / "runtime_state" / "long_term" / "ops" / "primary_market_session_state.json"
 DEFAULT_REPORT_DIR = PROJECT_ROOT / "runtime_state" / "reports" / "ops"
 PRIMARY_MARKETS = ("KOSPI", "KOSDAQ", "NASDAQ")
@@ -492,6 +494,8 @@ def main() -> int:
     parser.add_argument("--now", default=None, help="ISO timestamp for tests/replays. Defaults to current UTC.")
     parser.add_argument("--state-path", default=str(DEFAULT_STATE_PATH))
     parser.add_argument("--report-dir", default=str(DEFAULT_REPORT_DIR))
+    parser.add_argument("--dispatch-queue", default=None,
+                        help="Override durable queue directory (isolated verification).")
     args = parser.parse_args()
 
     now_utc = _parse_now(args.now)
@@ -518,7 +522,8 @@ def main() -> int:
             payload = dispatch(now_utc, state_path=state_path, report_dir=report_dir,
                                include_weekends=bool(args.include_weekends),
                                catch_up=not args.no_catch_up,
-                               due_window_minutes=int(args.due_window_minutes))
+                               due_window_minutes=int(args.due_window_minutes),
+                               **({"queue": Path(args.dispatch_queue)} if args.dispatch_queue else {}))
             print(json.dumps(payload, ensure_ascii=False, indent=2))
             return 0
         state = _load_state(state_path)

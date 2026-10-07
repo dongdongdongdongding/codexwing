@@ -147,3 +147,16 @@ def test_legacy_probe_detects_actual_program_not_search_arguments(monkeypatch):
     assert d.legacy_pids("daily_ops") == [456]
     assert d.legacy_pids("us_scan") == [123]
     assert d.legacy_pids("kr_scan") == []
+
+
+def test_actual_poller_script_imports_and_exits_without_executing_jobs(tmp_path):
+    import subprocess
+    import sys
+    command = [sys.executable, str(d.ROOT / "multi_agent/tools/run_primary_market_session_ops.py"),
+               "--run-due", "--now", NOW.isoformat(), "--state-path", str(tmp_path / "state.json"),
+               "--report-dir", str(tmp_path / "reports"), "--dispatch-queue", str(tmp_path / "queue")]
+    result = subprocess.run(command, cwd=tmp_path, capture_output=True, text=True, timeout=10)
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)["queued_count"] == 2
+    assert len(list((tmp_path / "queue/requests").glob("*.json"))) == 2
+    assert not list((tmp_path / "queue/results").glob("*/*.json"))
