@@ -33,3 +33,13 @@ both source versions and `source_check.json`: exact registration-time bytes,
 both unchanged preregistration hashes, and zero existing snapshots. This is a
 source-integrity repair, not an H10 outcome or successful future capture. The
 fixed 60/120-session windows and promotion restrictions remain in effect.
+
+Commit `6c2d4ef` was deployed and pushed to both branches. At 13:55 KST, both
+actual production observer commands exited 0 with `capture_error: null`,
+`PENDING_FIXED_WINDOW`, zero sessions/snapshots and publication disabled.
+`deployed_check.json` verifies the deployed source hash and byte-identical
+preregistrations, producer report and ledger before/after these calls.
+This daytime run does not exercise an eligible future capture; source integrity
+was checked separately. Health, picks, overview and ops-status APIs returned
+HTTP 200 (`api_after.json`). The daily worker 97991/97996 and collector 10244
+were still alive; neither was restarted.
