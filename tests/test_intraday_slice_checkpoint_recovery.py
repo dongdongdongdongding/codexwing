@@ -114,3 +114,15 @@ def test_active_operational_writer_blocks_before_planning(tmp_path,monkeypatch,c
         assert m.main()==2
     assert json.loads(capsys.readouterr().out)['status']=='BUSY'
     assert not (tmp_path/'runtime_state').exists()
+
+
+def test_reused_plan_must_belong_to_the_locked_cache(tmp_path):
+    cache=tmp_path/'locked'
+    plan={'proposals':[{'cache_path':str(cache/'000001.parquet'),
+                        'state_path':str(cache/'.backfill/000001.json')}]}
+    m.validate_cache_binding(plan,cache)
+    with pytest.raises(ValueError,match='outside_locked_cache'):
+        m.validate_cache_binding(plan,tmp_path/'different')
+    plan['proposals'][0]['state_path']=str(tmp_path/'unlocked/000001.json')
+    with pytest.raises(ValueError,match='outside_locked_cache'):
+        m.validate_cache_binding(plan,cache)

@@ -147,6 +147,14 @@ def apply(plan,out):
     return result
 
 
+def validate_cache_binding(plan,cache):
+    expected_cache=cache.resolve();expected_state=(cache/'.backfill').resolve()
+    for row in plan['proposals']:
+        if (Path(row['cache_path']).resolve().parent!=expected_cache
+            or Path(row['state_path']).resolve().parent!=expected_state):
+            raise ValueError('plan_outside_locked_cache')
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--root',type=Path,required=True)
     parser.add_argument('--cache',type=Path,default=Path.home()/'research_cache/intraday')
@@ -160,6 +168,7 @@ def main():
             return 2
         if legacy_writers(args.cache):raise ValueError('legacy_intraday_writer_active')
         plan=prepare(capture,args.cache,out)
+        validate_cache_binding(plan,args.cache)
         result=apply(plan,out) if args.apply else {'status':'PLANNED','state_files':len(plan['proposals']),
             'accepted_requests':plan['accepted_requests'],'rejected_requests':len(plan['rejected']),
             'matched_cache_rows':plan['matched_cache_rows'],'price_bars_modified':False}
