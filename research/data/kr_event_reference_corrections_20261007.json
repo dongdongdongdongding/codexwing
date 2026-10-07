@@ -1,0 +1,265 @@
+{
+  "builder_implementation_sha256": "da3ceb595898d01899588b6192218b8699b830915f8058d614c6104b3640a783",
+  "chunk_implementation_sha256": "6128ab7ce1d3394da5097e87f604762975201b121ded97376f9c92ac0716d306",
+  "contracts": {
+    "00088K": {
+      "before_factor": 1.0,
+      "body": "000880_20260824000466_20260824001209_body_0",
+      "date": "2026-08-25",
+      "first_close": 36200,
+      "old_event_factor": 1.0,
+      "prior_close": 29250,
+      "reference_price": 29450
+    },
+    "002630": {
+      "before_factor": 0.2594130243555711,
+      "body": "002630_20260921000340_20260921001012_body_0",
+      "date": "2026-09-22",
+      "first_close": 1855,
+      "old_event_factor": 0.12970651217778556,
+      "prior_close": 913,
+      "reference_price": 1936
+    },
+    "004870": {
+      "before_factor": 1.4130515672809307,
+      "body": "004870_20260723000583_20260723001304_body_0",
+      "date": "2026-07-24",
+      "first_close": 979,
+      "old_event_factor": 0.2826103034667345,
+      "prior_close": 247,
+      "reference_price": 1175
+    },
+    "006490": {
+      "before_factor": 0.2317747508249857,
+      "body": "006490_20260909000413_20260909001131_body_0",
+      "date": "2026-09-10",
+      "first_close": 1840,
+      "old_event_factor": 0.139064844225985,
+      "prior_close": 898,
+      "reference_price": 1416
+    },
+    "083660": {
+      "before_factor": 1.0,
+      "body": "083660_20260730000577_20260730001346_body_0",
+      "date": "2026-08-04",
+      "first_close": 3045,
+      "old_event_factor": 0.06666666166536865,
+      "prior_close": 230,
+      "reference_price": 3400
+    },
+    "101000": {
+      "before_factor": 0.1270161290322581,
+      "body": "101000_20260812000546_20260812001412_body_0",
+      "date": "2026-08-18",
+      "first_close": 697,
+      "old_event_factor": 0.056674341648539836,
+      "prior_close": 311,
+      "reference_price": 851
+    },
+    "148780": {
+      "before_factor": 3.8486312399355875,
+      "body": "148780_20260730000739_20260730001692_body_0",
+      "date": "2026-08-04",
+      "first_close": 2990,
+      "old_event_factor": 0.7697262479871175,
+      "prior_close": 457,
+      "reference_price": 2300
+    },
+    "348080": {
+      "before_factor": 1.0,
+      "body": "348080_20260716000637_20260716001560_body_0",
+      "date": "2026-07-22",
+      "first_close": 2080,
+      "old_event_factor": 0.11111110726143343,
+      "prior_close": 309,
+      "reference_price": 2700
+    },
+    "354200": {
+      "before_factor": 1.4367294091546055,
+      "body": "354200_20260708000562_20260708001349_body_0",
+      "date": "2026-07-13",
+      "first_close": 1525,
+      "old_event_factor": 0.47890978518826516,
+      "prior_close": 737,
+      "reference_price": 2150
+    },
+    "417310": {
+      "before_factor": 1.0,
+      "body": "417310_20260827000392_20260827000870_body_0",
+      "date": "2026-08-28",
+      "first_close": 2335,
+      "old_event_factor": 4.680942184154175,
+      "prior_close": 10930,
+      "reference_price": 2290
+    }
+  },
+  "economics_sha256": "c325cb267cb7d9a25c141c49ab70663505dacd10dfac48835a833e8ee4d005b1",
+  "evidence_verifier_sha256": "89832272b0b5a01149024dce52b4ea05a5e1b1ef9a1d60ebda0c758ac6782e1e",
+  "limitations": "Quote-implied price continuity is not shareholder wealth. Five KOSDAQ notices prove changed-listing dates but do not spell out the auction method. Current captured quotes are not historical PIT observations. Earlier histories remain unaudited. Two later events explain an external adjusted scale; no later event is inserted into the as-of source.",
+  "overlay_sha256": "6551d948be378bfd53c84a1346814b107ede9b50b57cc1ef2e29c5e2262dfda6",
+  "portfolio_return_certified": false,
+  "price_convention": "KRX_QUOTE_IMPLIED_REFERENCE_OVERLAY_V1",
+  "publication_allowed": false,
+  "quote_verifier_sha256": "1039eb424b945972aa5444666f5e3e1da8c8673472ae8654d50328dea665d62b",
+  "receipts_sha256": "063231b15c568c38d65739c524fc4b7c3c0f66becbd1158f2f8c110494729787",
+  "rules": [
+    {
+      "code": "00088K",
+      "end": "2026-10-02",
+      "evidence": "000880_20260824000466_20260824001209_body_0",
+      "expected_stocks": 14676613,
+      "new_factor": 0.9932088285229203,
+      "old_factor": 1.0,
+      "reason": "Quote-implied reference corroborated by independent nominal open and official listing or reference-method notice; preserve unrelated relative transitions.",
+      "rows": 27,
+      "start": "2026-08-25"
+    },
+    {
+      "code": "002630",
+      "end": "2026-10-02",
+      "evidence": "002630_20260921000340_20260921001012_body_0",
+      "expected_stocks": 29645751,
+      "new_factor": 0.12233682398586591,
+      "old_factor": 0.12970651217778556,
+      "reason": "Quote-implied reference corroborated by independent nominal open and official listing or reference-method notice; preserve unrelated relative transitions.",
+      "rows": 7,
+      "start": "2026-09-22"
+    },
+    {
+      "code": "004870",
+      "end": "2026-10-02",
+      "evidence": "004870_20260723000583_20260723001304_body_0",
+      "expected_stocks": 22632698,
+      "new_factor": 0.2970414783986297,
+      "old_factor": 0.2826103034667345,
+      "reason": "Quote-implied reference corroborated by independent nominal open and official listing or reference-method notice; preserve unrelated relative transitions.",
+      "rows": 48,
+      "start": "2026-07-24"
+    },
+    {
+      "code": "006490",
+      "end": "2026-10-02",
+      "evidence": "006490_20260909000413_20260909001131_body_0",
+      "expected_stocks": 17746333,
+      "new_factor": 0.1469870948028511,
+      "old_factor": 0.139064844225985,
+      "reason": "Quote-implied reference corroborated by independent nominal open and official listing or reference-method notice; preserve unrelated relative transitions.",
+      "rows": 15,
+      "start": "2026-09-10"
+    },
+    {
+      "code": "083660",
+      "end": "2026-08-25",
+      "evidence": "083660_20260730000577_20260730001346_body_0",
+      "expected_stocks": 7109265,
+      "new_factor": 0.06764705882352941,
+      "old_factor": 0.06666666166536865,
+      "reason": "Quote-implied reference corroborated by independent nominal open and official listing or reference-method notice; preserve unrelated relative transitions.",
+      "rows": 15,
+      "start": "2026-08-04"
+    },
+    {
+      "code": "083660",
+      "end": "2026-09-15",
+      "evidence": "083660_20260730000577_20260730001346_body_0",
+      "expected_stocks": 14218530,
+      "new_factor": 0.13529411764705881,
+      "old_factor": 0.1333333233307373,
+      "reason": "Quote-implied reference corroborated by independent nominal open and official listing or reference-method notice; preserve unrelated relative transitions.",
+      "rows": 15,
+      "start": "2026-08-26"
+    },
+    {
+      "code": "083660",
+      "end": "2026-10-02",
+      "evidence": "083660_20260730000577_20260730001346_body_0",
+      "expected_stocks": 17424159,
+      "new_factor": 0.13529411764705881,
+      "old_factor": 0.1333333233307373,
+      "reason": "Quote-implied reference corroborated by independent nominal open and official listing or reference-method notice; preserve unrelated relative transitions.",
+      "rows": 11,
+      "start": "2026-09-16"
+    },
+    {
+      "code": "101000",
+      "end": "2026-10-02",
+      "evidence": "101000_20260812000546_20260812001412_body_0",
+      "expected_stocks": 9910487,
+      "new_factor": 0.046418350327887506,
+      "old_factor": 0.056674341648539836,
+      "reason": "Quote-implied reference corroborated by independent nominal open and official listing or reference-method notice; preserve unrelated relative transitions.",
+      "rows": 32,
+      "start": "2026-08-18"
+    },
+    {
+      "code": "148780",
+      "end": "2026-10-02",
+      "evidence": "148780_20260730000739_20260730001692_body_0",
+      "expected_stocks": 6289145,
+      "new_factor": 0.7647062941958972,
+      "old_factor": 0.7697262479871175,
+      "reason": "Quote-implied reference corroborated by independent nominal open and official listing or reference-method notice; preserve unrelated relative transitions.",
+      "rows": 41,
+      "start": "2026-08-04"
+    },
+    {
+      "code": "348080",
+      "end": "2026-10-02",
+      "evidence": "348080_20260716000637_20260716001560_body_0",
+      "expected_stocks": 12827753,
+      "new_factor": 0.11444444444444445,
+      "old_factor": 0.11111110726143343,
+      "reason": "Quote-implied reference corroborated by independent nominal open and official listing or reference-method notice; preserve unrelated relative transitions.",
+      "rows": 50,
+      "start": "2026-07-22"
+    },
+    {
+      "code": "354200",
+      "end": "2026-07-20",
+      "evidence": "354200_20260708000562_20260708001349_body_0",
+      "expected_stocks": 8936583,
+      "new_factor": 0.49249747653346243,
+      "old_factor": 0.47890978518826516,
+      "reason": "Quote-implied reference corroborated by independent nominal open and official listing or reference-method notice; preserve unrelated relative transitions.",
+      "rows": 5,
+      "start": "2026-07-13"
+    },
+    {
+      "code": "354200",
+      "end": "2026-09-30",
+      "evidence": "354200_20260708000562_20260708001349_body_0",
+      "expected_stocks": 8936583,
+      "new_factor": 0.5854546213207612,
+      "old_factor": 0.5693023016233721,
+      "reason": "Quote-implied reference corroborated by independent nominal open and official listing or reference-method notice; preserve unrelated relative transitions.",
+      "rows": 49,
+      "start": "2026-07-21"
+    },
+    {
+      "code": "354200",
+      "end": "2026-10-02",
+      "evidence": "354200_20260708000562_20260708001349_body_0",
+      "expected_stocks": 16086583,
+      "new_factor": 0.5854546213207612,
+      "old_factor": 0.5693023016233721,
+      "reason": "Quote-implied reference corroborated by independent nominal open and official listing or reference-method notice; preserve unrelated relative transitions.",
+      "rows": 2,
+      "start": "2026-10-01"
+    },
+    {
+      "code": "417310",
+      "end": "2026-10-02",
+      "evidence": "417310_20260827000392_20260827000870_body_0",
+      "expected_stocks": 40400000,
+      "new_factor": 4.77292576419214,
+      "old_factor": 4.680942184154175,
+      "reason": "Quote-implied reference corroborated by independent nominal open and official listing or reference-method notice; preserve unrelated relative transitions.",
+      "rows": 24,
+      "start": "2026-08-28"
+    }
+  ],
+  "source_certified": false,
+  "source_rows": 5360785,
+  "source_sha256": "85bf1a928bdf9a9dd356a97d6dae9df8235cde49fdea3ef9ecd030cd38dcc122",
+  "version": "verified_event_reference_v6"
+}

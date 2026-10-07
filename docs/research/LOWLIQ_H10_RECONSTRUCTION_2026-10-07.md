@@ -284,3 +284,13 @@ changing 737 rows while retaining later unrelated factors. Direct comparison
 against the original source confirms 55 codes/1,765 cumulative changed rows;
 complete-history, auction-reference and event-spanning return certification
 remain unresolved.
+### Quote-reference source extension v6
+
+`swing-main-s4m7` adds ten reference events / 341 rows to the separate v5 research
+panel. Full independent comparison preserves every raw field and all unaffected
+rows; cumulative original-to-v6 scope is 63 codes / 2,040 rows. Two remaining
+original mismatch codes have October 7 actions outside the frozen source and
+constant provider-scale compatibility across all 520 OHLC cells; no future
+action is inserted. See `KR_EVENT_REFERENCE_REPAIR_V6_2026-10-07.md` for evidence
+and limitations. All certification and publication gates remain false; no parent
+study replacement, model change or test outcome calculation was performed.
