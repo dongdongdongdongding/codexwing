@@ -285,9 +285,16 @@ if [[ "${AG_VINTAGE_MANIFEST:-1}" == "1" ]]; then
 fi
 # 경량 증분 업데이터 (수급/신용/공시) — 2026-07-08: 분봉 백필이 KIS 스로틀링으로 5h+ 걸리며
 # 뒤 스텝들을 며칠씩 굶기던 문제(수급 7/6, 신용 7/3 정지) → 무거운 백필 "앞"으로 이동.
-if [[ "${AG_FLOW_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/flow_update.py" ]]; then
+if [[ "${AG_FLOW_REFRESH:-1}" == "1" ]]; then
   echo "[STEP] flow_update (외국인/기관 수급 증분)"
-  run_optional "flow_update" python3 "${HOME}/research_cache/flow_update.py"
+  FLOW_ARGS=()
+  if [[ "${DRY_RUN}" != "1" ]]; then
+    FLOW_ARGS+=(--apply)
+  fi
+  # Research/shadow input: continue other steps, but failed/partial refresh makes
+  # the batch nonzero via report_optional_failures. Each run keeps a full receipt.
+  run_optional "flow_update" python3 multi_agent/tools/update_flow_cache.py \
+    ${FLOW_ARGS[@]+"${FLOW_ARGS[@]}"}
 fi
 if [[ "${AG_CREDIT_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/credit_update.py" ]]; then
   echo "[STEP] credit_update (신용/대주 잔고 증분)"

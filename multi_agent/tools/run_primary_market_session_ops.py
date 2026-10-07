@@ -7,6 +7,7 @@ US daylight-saving changes without changing launchd/cron entries.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import subprocess
@@ -353,6 +354,11 @@ def _run_command(command: Mapping[str, Any], *, dry_run: bool) -> Dict[str, Any]
 
     env = os.environ.copy()
     env.update(env_delta)
+    flow_receipt = None
+    if command.get("name") == "primary_daily_ops":
+        flow_receipt = PROJECT_ROOT / "runtime_state/long_term/ops/flow_batches" / (
+            datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%f") + ".json")
+        env["FLOW_RECEIPT_PATH"] = str(flow_receipt)
     proc = subprocess.run(
         argv,
         cwd=str(PROJECT_ROOT),
@@ -362,7 +368,7 @@ def _run_command(command: Mapping[str, Any], *, dry_run: bool) -> Dict[str, Any]
         stderr=subprocess.PIPE,
         check=False,
     )
-    return {
+    result = {
         "name": command.get("name"),
         "argv": argv,
         "env": _redacted_env(env_delta),
@@ -374,6 +380,18 @@ def _run_command(command: Mapping[str, Any], *, dry_run: bool) -> Dict[str, Any]
         "started_at": started_at,
         "finished_at": datetime.now(timezone.utc).isoformat(),
     }
+    if flow_receipt is not None:
+        result["step_artifacts"] = {"flow_update": {"path": str(flow_receipt), "status": "not_observed"}}
+        if flow_receipt.exists():
+            try:
+                raw = flow_receipt.read_bytes()
+                receipt = json.loads(raw)
+                result["step_artifacts"]["flow_update"].update(
+                    {k: v for k, v in receipt.items() if k != "symbols"},
+                    sha256=hashlib.sha256(raw).hexdigest())
+            except (ValueError, OSError):
+                result["step_artifacts"]["flow_update"]["status"] = "unreadable"
+    return result
 
 
 def run_session(
