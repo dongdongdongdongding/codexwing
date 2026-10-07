@@ -75,6 +75,9 @@ def plan(root):
             'request': {'start_date': '20260630', 'end_date': '20261002',
                         'market_div': 'J', 'period': 'D'},
             'bases': ['adjusted','nominal'], 'code_sha256': digest(Path(__file__)),
+            'dependency_sha256': {path: digest(ROOT/path) for path in [
+                'modules/kis_openapi.py', 'research/audit_kr_touch10_price_source.py',
+                'multi_agent/tools/backfill_kr_intraday.py']},
             'publication_allowed': False,
             'scope': 'All frozen test-universe codes, both KRX bases, no selected-only filtering. '
                      'JSON provider payloads, not raw HTTP bytes. No outcomes or source certification. '
