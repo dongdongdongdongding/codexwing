@@ -350,6 +350,14 @@ def flatten_kis_model_features(row: Mapping[str, Any]) -> Dict[str, Any]:
         out[f"kis_sidecar_coverage_{key}"] = _flag(coverage.get(key))
     for key in KIS_SIDECAR_MODEL_NUMERIC_FEATURES:
         out[key] = _safe_float(model_features.get(key))
+    # Older persisted sidecars may still contain numeric diagnostics despite
+    # explicitly invalid coverage. Do not mutate the source snapshot. Missing
+    # validity in a legacy schema is unknown, rather than an explicit failure.
+    sidecar_flow = _json_dict(sidecar.get("flow_contract"))
+    if coverage.get("investor_flow") is False or sidecar_flow.get("valid") is False:
+        for key in ("kis_whale_score", "kis_foreigner_1d", "kis_institution_1d",
+                    "kis_retail_1d", "kis_whale_flow_3d", "kis_whale_flow_10d"):
+            out[key] = None
     for key in KIS_SIDECAR_CATEGORICAL_FEATURES:
         if key not in out:
             out[key] = _text(model_features.get(key))
@@ -410,6 +418,13 @@ def flatten_kis_model_features(row: Mapping[str, Any]) -> Dict[str, Any]:
     out["kis_prefilter_flow_source"] = _text(flow.get("flow_source"))
     out["kis_prefilter_flow_source_status"] = _text(flow.get("source_status"))
     out["kis_prefilter_flow_unit"] = _text(canonical_flow_unit(flow))
+
+    if prefilter.get("flow_ok") is False or flow.get("valid") is False:
+        for key in ("whale_score", "foreigner_1d", "institution_1d", "retail_1d",
+                    "foreigner_3d", "institution_3d", "retail_3d",
+                    "foreigner_10d", "institution_10d", "retail_10d"):
+            out[f"kis_prefilter_flow_{key}"] = None
+        out["kis_prefilter_score_whale_score"] = None
 
     theme_news = build_kis_theme_news_evidence(row)
     theme_payload = _json_dict(theme_news.get("theme"))

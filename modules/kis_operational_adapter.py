@@ -593,6 +593,9 @@ def build_kis_sidecar_snapshot(
 ) -> Dict[str, Any]:
     quote_fields = normalize_kis_quote_for_operational_fields(quote_snapshot or {}) if quote_snapshot else {}
     flow_fields = normalize_kis_flow_for_whale_contract(investor_flow or {}) if investor_flow else {}
+    # Keep the diagnostic contract, but do not turn unpublished/invalid flow
+    # into numeric model evidence (including the neutral-looking score).
+    usable_flow = flow_fields if flow_fields.get("valid") is True else {}
     daily = daily_bars if isinstance(daily_bars, pd.DataFrame) else pd.DataFrame()
     minute = minute_bars if isinstance(minute_bars, pd.DataFrame) else pd.DataFrame()
     rank = dict(rank_membership or {})
@@ -672,12 +675,12 @@ def build_kis_sidecar_snapshot(
         "kis_pbr": quote_fields.get("pbr"),
         "kis_high_250d_gap_pct": quote_fields.get("high_250d_gap_pct"),
         "kis_low_250d_gap_pct": quote_fields.get("low_250d_gap_pct"),
-        "kis_whale_score": flow_fields.get("whale_score"),
-        "kis_foreigner_1d": flow_fields.get("foreigner_1d"),
-        "kis_institution_1d": flow_fields.get("institution_1d"),
-        "kis_retail_1d": flow_fields.get("retail_1d"),
-        "kis_whale_flow_3d": flow_fields.get("whale_flow_3d"),
-        "kis_whale_flow_10d": flow_fields.get("whale_flow_10d"),
+        "kis_whale_score": usable_flow.get("whale_score"),
+        "kis_foreigner_1d": usable_flow.get("foreigner_1d"),
+        "kis_institution_1d": usable_flow.get("institution_1d"),
+        "kis_retail_1d": usable_flow.get("retail_1d"),
+        "kis_whale_flow_3d": usable_flow.get("whale_flow_3d"),
+        "kis_whale_flow_10d": usable_flow.get("whale_flow_10d"),
         "kis_daily_bar_count": int(len(daily)) if not daily.empty else 0,
         "kis_daily_return_5d_pct": _return_pct(daily, 5),
         "kis_daily_return_20d_pct": _return_pct(daily, 20),
