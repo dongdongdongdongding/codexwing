@@ -39,5 +39,12 @@ boundary times, preserve the existing swing settlement and ledger-freeze cases,
 and cover holidays/weekends, UTC boundaries, missing evidence and premature
 reports. The web wrapper test rejects accidental use of the raw freshness maximum.
 
-`swing-main-vmjq` tracks this status repair. It does not establish a qualified
+Commit `7a81448` is deployed to both branches. The managed web backend reloaded
+from PID 16179 to 22964. `api_before.json` and `api_after.json` show picks,
+overview and ops-status endpoints changing from three stale results to
+abstain/abstain/no-candidates; all three and health return HTTP 200. Both producer
+report hashes remain unchanged. The daily worker and intraday collector stayed
+running, with their separate live observation in `daily_batch_watch.json`.
+
+`swing-main-vmjq` is closed after this deployed verification. It does not establish a qualified
 edge lane or fix the still-running daily batch's remaining data coverage.
