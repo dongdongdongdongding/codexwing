@@ -42,12 +42,13 @@ def test_empty_run_is_distinct_from_missing_or_stale_run(tmp_path):
         "as_of": "2026-10-06", "picks": [], "gate": {"KOSPI": {
             "gate": "ABSTAIN", "fire": False, "gate_kind": "mkt_weakness",
             "gate_mkt_ret5": 2.4999, "gate_threshold": 0.5071}}})
-    status = kr_producer_status(tmp_path, lane="kospi_swing", daily_date="2026-10-06")[0]
+    now = datetime(2026, 10, 7, 4, 0, tzinfo=timezone.utc)
+    status = kr_producer_status(tmp_path, lane="kospi_swing", sessions=["2026-10-06"], now=now)[0]
     assert status["status"] == "abstain" and "2.4999" in status["reason"]
-    assert kr_producer_status(tmp_path, lane="kospi_swing", daily_date="2026-10-07")[0]["status"] == "stale"
+    assert kr_producer_status(tmp_path, lane="kospi_swing", sessions=["2026-10-06", "2026-10-07"], now=datetime(2026, 10, 7, 7, 0, tzinfo=timezone.utc))[0]["status"] == "stale"
     write(tmp_path, "reports/experimental/kosdaq_intraday_1500_3d_t5_vwap_guard_latest.json",
           {"trade_date": "20261006", "scored_rows": 216, "picks": []})
-    status = kr_producer_status(tmp_path, lane="kosdaq_intraday", daily_date="2026-10-06")[0]
+    status = kr_producer_status(tmp_path, lane="kosdaq_intraday", sessions=["2026-10-06"], now=now)[0]
     assert status["status"] == "no_candidates" and status["scored_rows"] == 216
 
 

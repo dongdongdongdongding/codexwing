@@ -4,6 +4,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from modules.kr_producer_calendar import eligible_session, kst_now, observed_sessions, ready_time
+
 
 def read_object(path):
     try:
@@ -50,11 +52,24 @@ def session_status(repo):
     return {"sessions": rows, "session_error": None}
 
 
-def kr_producer_status(repo, *, daily_date=None, lane=None):
+def kr_producer_status(repo, *, lane=None, now=None, sessions=None):
     """A zero-pick run is visible even though it cannot add a row to the pick ledger."""
     exp = Path(repo) / "runtime_state/reports/experimental"
     swing, swing_error = read_object(exp / "kr_swing_candidate_latest.json")
     intraday, intraday_error = read_object(exp / "kosdaq_intraday_1500_3d_t5_vwap_guard_latest.json")
+    now = kst_now(now)
+    calendar_error, calendar_source = None, None
+    try:
+        if sessions is None:
+            sessions, calendar_source = observed_sessions(now=now)
+        if not sessions:
+            raise ValueError("observed KR price calendar is empty")
+        # Validate even when the selected producer has no report.
+        references = {key: eligible_session(sessions, key, now=now)
+                      for key in ("kospi_swing", "kosdaq_swing", "kosdaq_intraday")}
+    except (OSError, ValueError, RuntimeError) as exc:
+        references = {}
+        calendar_error = f"{type(exc).__name__}: {exc}"
     output = []
     for key, market, label, report, error in (
         ("kospi_swing", "KOSPI", "코스피 스윙", swing, swing_error),
@@ -66,6 +81,7 @@ def kr_producer_status(repo, *, daily_date=None, lane=None):
         asof = str(report.get("as_of") or report.get("trade_date") or "")
         if len(asof) == 8 and asof.isdigit():
             asof = f"{asof[:4]}-{asof[4:6]}-{asof[6:]}"
+        expected = references.get(key)
         count = sum(1 for p in report.get("picks", []) if p.get("market") == market)
         gate = (report.get("gate") or {}).get(market, {})
         status, reason = "picks", f"최근 실행 후보 {count}건"
@@ -73,7 +89,11 @@ def kr_producer_status(repo, *, daily_date=None, lane=None):
             status, reason = "error", "후보 계산 후 DB 저장에 실패했습니다"
         elif error or report.get("error"):
             status, reason = "error", "생산자 실행 결과를 확인할 수 없습니다"
-        elif not asof or (daily_date and asof < str(daily_date)[:10]):
+        elif calendar_error or not expected:
+            status, reason = "error", "생산자 기준 거래일을 확인할 수 없습니다"
+        elif asof and asof > expected:
+            status, reason = "blocked", "아직 확정되지 않은 거래일의 생산자 결과입니다"
+        elif not asof or asof < expected:
             status, reason = "stale", "최신 데이터에 대한 생산자 실행 결과가 아직 없습니다"
         elif not count and gate.get("gate") == "ABSTAIN":
             status, reason = "abstain", "시장 조건에 따라 진입을 보류했습니다"
@@ -88,6 +108,9 @@ def kr_producer_status(repo, *, daily_date=None, lane=None):
             status, reason = "no_candidates", "계산을 완료했으나 선별 조건을 통과한 종목이 없습니다"
         output.append({"lane": key, "label": label, "market": market, "status": status,
                        "reason": reason, "as_of": asof or None,
+                       "expected_as_of": expected, "ready_time_kst": ready_time(key).strftime("%H:%M"),
+                       "calendar_source": calendar_source, "calendar_error": calendar_error,
+                       "reference_time": now.isoformat(),
                        "generated_at": report.get("generated_at"), "pick_count": count,
                        "scored_rows": report.get("scored_rows"), "gate": gate,
                        "diagnostics": report.get("diagnostics", {}), "error": error or report.get("error")})

@@ -1797,7 +1797,7 @@ def ops_status():
 
 def lane_status(lane=None):
     from modules.pipeline_status import kr_producer_status
-    return kr_producer_status(REPO, daily_date=freshness().get("daily"), lane=lane)
+    return kr_producer_status(REPO, lane=lane)
 
 
 def pick_blockers(p):

@@ -47,6 +47,7 @@ except Exception:
     pass
 os.environ.setdefault("KIS_ENABLE_LIVE_CALLS", "1")
 
+from modules.kr_producer_calendar import INTRADAY_READY
 from modules.kis_operational_adapter import normalize_kis_daily_bars, normalize_kis_minute_bars  # noqa: E402
 from modules.kosdaq_intraday_vwap_guard import (  # noqa: E402
     CANDIDATE_ID,
@@ -90,7 +91,7 @@ def _trade_date_arg(value: str | None) -> str:
     # 15:10 KST 이전엔 당일 15:00 스냅샷이 없음 → 직전 영업일 스코어링 (아침 ops가
     # 당일을 빈 데이터로 스코어링해 무의미한 0픽 리포트를 내던 버그 수정, 2026-07-06)
     d = now
-    if now.strftime("%H%M") < "1510":
+    if now.time() < INTRADAY_READY:
         d = d - pd.Timedelta(days=1)
     while d.weekday() >= 5:
         d = d - pd.Timedelta(days=1)
