@@ -23,6 +23,9 @@ from multi_agent.tools.update_flow_cache import (
     FIELDS, legacy_writers, request_deadline, sha, validate_old, write_json,
 )
 
+POLICIES = ("stable_repeat_plus_current_flow_plus_unadjusted_J_price_exact_v1",
+            "stable_repeat_current_flow_turnover_and_explicit_price_basis_v2")
+
 
 def number(value):
     if isinstance(value, bool) or not isinstance(value, (str, int)):
@@ -52,7 +55,7 @@ def keyed(payload, output):
     return rows
 
 
-def verify_row(raw, repeated, current, price):
+def verify_row(raw, repeated, current, price, price_adjusted=None):
     """Every cached field needs corroboration; no tolerances or date shifting."""
     if any(x is None for x in (repeated, current, price)):
         raise ValueError("control_date_missing")
@@ -64,9 +67,18 @@ def verify_row(raw, repeated, current, price):
         raise ValueError("repeat_flow_changed")
     if any(number(current[s]) != values[f] for f, s in FIELDS.items() if f != "acml_val"):
         raise ValueError("current_flow_disagrees")
-    for field in ("acml_tr_pbmn", "acml_vol", "stck_clpr"):
-        if number(price[field]) != number(raw[field]):
-            raise ValueError("price_control_disagrees_" + field)
+    if number(price["acml_tr_pbmn"]) != values["acml_val"]:
+        raise ValueError("price_control_disagrees_acml_tr_pbmn")
+    basis = "unadjusted_J"
+    if any(number(price[f]) != number(raw[f]) for f in ("acml_vol", "stck_clpr")):
+        # Investor endpoints can return adjusted auxiliary price/volume even with
+        # FID_ORG_ADJ_PRC=1. Match an explicit adjusted chart; never scale net flow.
+        if price_adjusted is None or price_adjusted.get("stck_bsop_date") != day:
+            raise ValueError("price_control_disagrees_acml_vol_or_close")
+        for field in ("acml_tr_pbmn", "acml_vol", "stck_clpr"):
+            if number(price_adjusted[field]) != number(raw[field]):
+                raise ValueError("adjusted_price_control_disagrees_" + field)
+        basis = "adjusted_J_auxiliary_price_volume_only"
     if values["acml_val"] < 0 or number(raw["acml_vol"]) < 0:
         raise ValueError("negative_activity")
     if sum(number(raw[side + "_ntby_qty"]) for side in ("frgn", "orgn", "prsn", "etc")):
@@ -74,20 +86,33 @@ def verify_row(raw, repeated, current, price):
     for side in ("frgn", "orgn", "prsn"):
         if number(raw[side + "_shnu_vol"]) - number(raw[side + "_seln_vol"]) != number(raw[side + "_ntby_qty"]):
             raise ValueError("buy_sell_quantity_disagrees")
-    return values
+    for direction in ("shnu", "seln"):
+        quantities = [number(raw[side + "_" + direction + "_vol"])
+                      for side in ("frgn", "orgn", "prsn", "etc")]
+        if any(x < 0 for x in quantities) or sum(quantities) != number(price["acml_vol"]):
+            raise ValueError("investor_total_not_nominal_traded_volume")
+    return values, basis
 
 
 def initialize(receipt, audit):
     baseline = json.loads(receipt.read_text())
+    codes = [x["code"] for x in baseline["symbols"]]
+    if not codes or len(set(codes)) != len(codes):
+        raise ValueError("invalid_source_cohort")
     plan = {"receipt_path": str(receipt.resolve()), "receipt_sha256": sha(receipt),
             "cache_before_sha256": baseline["cache_after_sha256"],
             "source_dir": baseline["audit_dir"], "excluded_on_or_after": baseline["excluded_on_or_after"],
-            "codes": [x["code"] for x in baseline["symbols"]],
-            "policy": "stable_repeat_plus_current_flow_plus_unadjusted_J_price_exact_v1"}
+            "codes": codes,
+            "policy": POLICIES[-1]}
     audit.mkdir(parents=True, exist_ok=True)
     dest = audit / "capture_plan.json"
-    if dest.exists() and json.loads(dest.read_text()) != plan:
-        raise ValueError("capture_plan_changed")
+    if dest.exists():
+        existing = json.loads(dest.read_text())
+        if existing.get("policy") not in POLICIES:
+            raise ValueError("unknown_capture_policy")
+        plan["policy"] = existing["policy"]
+        if existing != plan:
+            raise ValueError("capture_plan_changed")
     if not dest.exists():
         write_json(dest, plan)
     return plan, baseline
@@ -109,7 +134,8 @@ def capture(receipt, audit, client):
         end = symbol["request_trade_date"]
         # Current price date is a rollover witness only; never inserted into flow.
         price_end = plan["excluded_on_or_after"].replace("-", "")
-        for endpoint in ("repeat", "current", "price"):
+        endpoints = ("repeat", "current", "price") + (("price_adjusted",) if plan["policy"] == POLICIES[-1] else ())
+        for endpoint in endpoints:
             name = code + "_" + endpoint + ".json"
             dest = audit / name
             if name in manifest:
@@ -123,7 +149,8 @@ def capture(receipt, audit, client):
                     elif endpoint == "current":
                         response = client.investor_trading_current(code)
                     else:
-                        response = client.daily_bars(code, start_date=start, end_date=price_end, adjusted=False)
+                        response = client.daily_bars(code, start_date=start, end_date=price_end,
+                                                     adjusted=endpoint == "price_adjusted")
                 keyed(response, "output" if endpoint == "current" else "output2")
                 write_json(dest, response)
                 manifest[name] = {"sha256": sha(dest), "captured_at": datetime.now(timezone.utc).isoformat(),
@@ -133,7 +160,7 @@ def capture(receipt, audit, client):
                 failures.append({"code": code, "endpoint": endpoint, "error_type": type(exc).__name__})
         if index % 100 == 0:
             print(f"controls {index}/{len(plan['codes'])}, failures={len(failures)}", flush=True)
-    summary = {"captured": len(manifest), "expected": 3 * len(plan["codes"]), "failures": failures,
+    summary = {"captured": len(manifest), "expected": len(endpoints) * len(plan["codes"]), "failures": failures,
                "finished_at": datetime.now(timezone.utc).isoformat()}
     write_json(audit / "capture_result.json", summary)
     return summary
@@ -158,7 +185,8 @@ def build_plan(receipt, audit, cache):
             raise ValueError("initial_capture_changed")
         original = keyed(json.loads(origin.read_text()), "output2")
         controls = {}
-        for endpoint in ("repeat", "current", "price"):
+        endpoints = ("repeat", "current", "price") + (("price_adjusted",) if plan["policy"] == POLICIES[-1] else ())
+        for endpoint in endpoints:
             name = code + "_" + endpoint + ".json"
             if name not in manifest:
                 controls[endpoint] = {}
@@ -177,13 +205,15 @@ def build_plan(receipt, audit, cache):
             if before == after:
                 continue
             try:
-                verified = verify_row(raw, *(controls[e].get(day) for e in ("repeat", "current", "price")))
+                verified, basis = verify_row(raw, *(controls[e].get(day) for e in ("repeat", "current", "price")),
+                                             controls.get("price_adjusted", {}).get(day))
                 assert verified == after
             except (ValueError, KeyError) as exc:
                 deferred.append({"code": code, "date": str(date.date()), "reason": str(exc)})
                 continue
             checked += 1
-            replacements.append({"code": code, "date": str(date.date()), "before": before, "after": after})
+            replacements.append({"code": code, "date": str(date.date()), "before": before, "after": after,
+                                 "auxiliary_price_basis": basis})
     result = {**plan, "capture_manifest_sha256": sha(audit / "captures.json"),
               "verified_conflict_rows": checked, "deferred_conflict_rows": len(deferred),
               "replacements": replacements, "deferred": deferred,

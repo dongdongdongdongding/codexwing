@@ -13,7 +13,8 @@ def row():
             "prsn_ntby_qty": "2", "etc_ntby_qty": "0", "frgn_ntby_tr_pbmn": "-30",
             "orgn_ntby_tr_pbmn": "10", "acml_tr_pbmn": "1000", "acml_vol": "100",
             "stck_clpr": "10", "frgn_shnu_vol": "2", "frgn_seln_vol": "5",
-            "orgn_shnu_vol": "3", "orgn_seln_vol": "2", "prsn_shnu_vol": "4", "prsn_seln_vol": "2"}
+            "orgn_shnu_vol": "3", "orgn_seln_vol": "2", "prsn_shnu_vol": "4", "prsn_seln_vol": "2",
+            "etc_shnu_vol": "91", "etc_seln_vol": "91"}
 
 
 def fixture(tmp_path):
@@ -156,3 +157,34 @@ def test_duplicate_dates_and_failed_envelopes_rejected():
         norm.keyed({"rt_cd": "0", "output2": [row(), row()]}, "output2")
     with pytest.raises(ValueError, match="provider_failure"):
         norm.keyed({"rt_cd": "1", "output2": []}, "output2")
+
+
+def test_explicit_adjusted_auxiliary_basis_preserves_all_net_flow_values():
+    raw = row()
+    raw.update(etc_shnu_vol="41", etc_seln_vol="41")
+    price = dict(raw, acml_vol="50", stck_clpr="20")
+    values, basis = norm.verify_row(raw, raw, raw, price, raw)
+    assert values == {f: int(raw[s]) for f, s in FIELDS.items()}
+    assert basis == "adjusted_J_auxiliary_price_volume_only"
+
+
+@pytest.mark.parametrize("field,value", [("acml_vol", "101"), ("stck_clpr", "11"), ("acml_tr_pbmn", "1001")])
+def test_adjusted_auxiliary_control_still_requires_exact_match(field, value):
+    raw = row()
+    price = dict(raw, acml_vol="50", stck_clpr="20")
+    adjusted = dict(raw)
+    adjusted[field] = value
+    with pytest.raises(ValueError, match="adjusted_price_control_disagrees"):
+        norm.verify_row(raw, raw, raw, price, adjusted)
+
+
+def test_adjusted_control_cannot_override_cash_turnover_mismatch():
+    raw = row()
+    with pytest.raises(ValueError, match="price_control_disagrees_acml_tr_pbmn"):
+        norm.verify_row(raw, raw, raw, dict(raw, acml_tr_pbmn="999"), raw)
+
+
+def test_nominal_investor_total_must_equal_unadjusted_traded_volume():
+    raw = dict(row(), etc_shnu_vol="90", etc_seln_vol="90")
+    with pytest.raises(ValueError, match="investor_total_not_nominal_traded_volume"):
+        norm.verify_row(raw, raw, raw, raw)
