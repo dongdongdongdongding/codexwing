@@ -96,3 +96,27 @@ Evidence is in `recovery/independent_live_verification.json`, immutable backups,
 the applied plan and `shadow_rehearsal/independent_verification.json`. Four repaired
 dates now have all requested slices; one remains partial. All retain unknown
 whole-session completeness. No strategy was retrained, evaluated or promoted.
+
+## Derived-panel consumer check
+
+The already-running builder PID 34932 terminated and published a 92,096-row,
+300-code `intraday_3d_panel.parquet` at 23:22 KST, SHA
+`8e27d0862dad320cb80c0918baac98374086e2e829d4f4627c2efeecd1157429`.
+The consumer's `_train()` reads that exact path. Both repaired price codes,
+011230 and 220260, are absent from the builder's 300-code `ohlc_daily` source and
+the resulting panel. No current training row requires regeneration for these two
+repairs. A comparison over zero stored rows is explicitly **not** evidence that
+their features were incorporated or that the entire panel is healthy.
+
+Recomputing raw-cache features identifies two counterfactual changes for 011230
+and sixteen for 220260, including later volume-history and next-session gap
+effects; none is a row in this current training panel. The panel and source
+universes match exactly at 300 codes. Evidence is in production
+`runtime_state/audit/intraday_derived_repair_check_20261007/scope_resolution.json`.
+This closes the scoped consumer check `swing-main-6bkk` without a rebuild.
+
+Broader findings are tracked in `swing-main-g59e`: the builder does not validate
+all input OHLCV rows, and its H3 label currently accepts fewer than three future
+sessions. The intended 300-code scope and these source/target contracts need
+review before a new training epoch. They are separate from the requested H10
+replacement criterion; this check does not qualify the legacy H3 lane.
