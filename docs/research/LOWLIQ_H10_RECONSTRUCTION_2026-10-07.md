@@ -258,3 +258,9 @@ corpus](KR_REMAINING_ACTION_CORPUS_2026-10-07.md): 462 selected query/document
 records and 884 HTML body resources, including supplemental preferred-share
 issuer evidence. This completes the declared collection scope, not economic
 factor certification or strategy qualification.
+
+The separate [v3 issuance correction](KR_ISSUANCE_FACTOR_REPAIR_V3_2026-10-07.md)
+adds eight supported event repairs (338 rows), including a mixed 5-for-1 split
+that the heuristic treated as 9.519035-fold holder entitlement. All other rows
+and raw fields remain exact. The cumulative 13 event repairs do not certify
+complete security histories or qualify a replacement lane.
