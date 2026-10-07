@@ -18,6 +18,8 @@ def enqueue(name, args, now=NOW):
 
 
 def success(command, **kwargs):
+    assert command["env"]["DISCORD_DRY_RUN"] == "1"
+    assert command["env"]["AG_DRIFT_ALERT_DRY_RUN"] == "1"
     return {"name": command["name"], "returncode": 0, "started_at": d.stamp(),
             "finished_at": d.stamp()}
 

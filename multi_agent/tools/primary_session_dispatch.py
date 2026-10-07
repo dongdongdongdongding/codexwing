@@ -219,7 +219,11 @@ def worker(role, *, queue=DEFAULT_QUEUE, state_path=ops.DEFAULT_STATE_PATH,
                 "started_at": started, "worker_pid": os.getpid(), "served_by": request["id"]})
             materialize(item, queue, state_path, report_dir)
         try:
-            result = ops._run_command(command, dry_run=False)
+            # Restoring computation does not authorize messaging other people.
+            execution = {**command, "env": {**command.get("env", {}),
+                "DISCORD_DRY_RUN": "1", "AG_STALE_FALLBACK_ALERT_DRY_RUN": "1",
+                "AG_DRIFT_ALERT_DRY_RUN": "1"}}
+            result = ops._run_command(execution, dry_run=False)
         except Exception as exc:
             result = {"returncode": 1, "started_at": started, "finished_at": stamp(),
                       "error": type(exc).__name__}
