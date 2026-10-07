@@ -1,0 +1,17 @@
+{
+  "version": "verified_issuance_events_v2",
+  "source_sha256": "803fa406aa946f1a35ef0eb928f7a2f9ff3928f779cbedfe6f570e448bb7d862",
+  "source_rows": 5360785,
+  "receipts_sha256": "e19d43aed64cfcfc70334e86ea450402aa542838fec847903a458c761e89eb30",
+  "economics_sha256": "43b027409d4639b1a135747fb1a30e66d24b0fb40b4e816e8d100bcde10b0a76",
+  "chunk_implementation_sha256": "6128ab7ce1d3394da5097e87f604762975201b121ded97376f9c92ac0716d306",
+  "source_certified": false,
+  "publication_allowed": false,
+  "rules": [
+    {"code":"291810","start":"2026-09-22","end":"2026-10-02","rows":7,"old_factor":1.233730786741717,"new_factor":1.0,"expected_stocks":14025930,"evidence":"291810_20260917000472_20260917001223_body0","reason":"General offering gives no proportional share entitlement to existing holders."},
+    {"code":"270520","start":"2026-09-28","end":"2026-10-02","rows":5,"old_factor":0.6486154522996799,"new_factor":0.3752782310142468,"expected_stocks":40026914,"evidence":"270520_20260921000413_20260921001172_body0","reason":"Convertible bond conversion gives shares to converting bondholders, not proportionally to existing shareholders."},
+    {"code":"071950","start":"2026-07-21","end":"2026-08-04","rows":11,"old_factor":0.11605236971942107,"new_factor":0.09999997265036971,"expected_stocks":12459195,"evidence":"071950_20260804000352_20260804000871_body0","reason":"Remove future third-party placement factor incorrectly assigned back to July21; preserve the preexisting constant basis."},
+    {"code":"071950","start":"2026-08-05","end":"2026-10-02","rows":40,"old_factor":0.11605236971942107,"new_factor":0.09999997265036971,"expected_stocks":14459195,"evidence":"071950_20260804000352_20260804000871_body0","reason":"Listed placement shares belong to the named allottee, not proportionally to existing shareholders."}
+  ],
+  "limitations":"Adds three verified corrections to the separate two-event v1 source. Other60 mismatch codes and earlier history remain uncertified. Do not replace live cache, parent study, models, scores, universe or issued contracts. Preserve nominal volume/amount and nontrading zero OHL. No strategy outcomes computed."
+}

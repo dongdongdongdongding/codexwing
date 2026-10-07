@@ -242,3 +242,13 @@ category-specific admission and verified consumer wiring before replacement.
 Neither model scores nor training touch counts are calibrated H10 probabilities.
 
 Tracking: `swing-main-jm3e` (study), `swing-main-3h1h` (boundary amendment).
+
+## Additional official issuance corrections
+
+The separate v2 research source adds three verified corrections for 291810,
+270520 and 071950 to the earlier two-event v1 source. Exactly 63 additional rows
+change, all raw fields and other 5,360,722 rows remain exact, and six parent models
+retain their hashes. See [official evidence, full-panel verification and source
+limitations](KR_ISSUANCE_FACTOR_REPAIR_2026-10-07.md). Other 60 mismatch codes and
+earlier history remain uncertified. This is not a new strategy outcome or a
+replacement of the frozen parent study.
