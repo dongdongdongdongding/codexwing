@@ -6,6 +6,7 @@ A pending journal resumes interrupted relocation before planning another group.
 """
 from __future__ import annotations
 import argparse
+from datetime import datetime, timezone
 import fcntl
 import json
 import os
@@ -14,6 +15,7 @@ import plistlib
 import shutil
 import subprocess
 import sys
+import traceback
 import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -172,15 +174,54 @@ def _restore_group(group,record):
     return {'status':'RESTORED','aliases':len(aliases)}
 
 
+def run_cli(args):
+    """Keep a local receipt even when a long batch truncates the traceback.
+
+    This observes the journal without changing it. A failed resume must remain
+    failed, and a failure to save diagnostics must not hide the original error.
+    """
+    market_root = Path(args.market_root)
+    record = {'started_at': datetime.now(timezone.utc).isoformat(),
+              'operation': 'restore' if args.restore else 'archive',
+              'apply': bool(args.apply), 'market_root': str(market_root)}
+    try:
+        if args.restore:
+            # A restore record owns its market root, regardless of CLI default.
+            market_root = Path(json.loads(args.restore.read_text())['market_root'])
+            record['market_root'] = str(market_root)
+            result = restore(args.restore)
+        else:
+            config_path = market_root/'.refresh/archive_storage.json'
+            result = ({'status': 'DISABLED', 'reason': 'no_explicit_archive_configuration'}
+                      if not config_path.exists() else
+                      archive(market_root, json.loads(config_path.read_text()), apply=args.apply))
+        record.update(status='SUCCEEDED', result=result)
+        return result
+    except Exception as exc:
+        record.update(status='FAILED', error_type=type(exc).__name__,
+                      error=str(exc), traceback=traceback.format_exc())
+        raise
+    finally:
+        record['finished_at'] = datetime.now(timezone.utc).isoformat()
+        try:
+            pending = market_root/'.refresh/panel_archive/pending.json'
+            if pending.exists():
+                record['observed_pending'] = {'sha256': file_sha(pending),
+                                              'content': json.loads(pending.read_text())}
+            receipt = market_root/'.refresh/panel_archive/runs'/(uuid.uuid4().hex+'.json')
+            save_json(receipt, record)
+            print(json.dumps({'archive_run_receipt': str(receipt),
+                              'status': record['status']}), file=sys.stderr, flush=True)
+        except Exception as diagnostic_error:
+            print('archive_receipt_write_failed: '+repr(diagnostic_error), file=sys.stderr, flush=True)
+
+
 def main():
     ap=argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--market-root',type=Path,default=Path.home()/'research_cache/us_daily/NASDAQ')
     ap.add_argument('--apply',action='store_true');ap.add_argument('--restore',type=Path)
     args=ap.parse_args()
-    if args.restore:print(json.dumps(restore(args.restore)));return
-    config_path=args.market_root/'.refresh/archive_storage.json'
-    if not config_path.exists():print(json.dumps({'status':'DISABLED','reason':'no_explicit_archive_configuration'}));return
-    print(json.dumps(archive(args.market_root,json.loads(config_path.read_text()),apply=args.apply)))
+    print(json.dumps(run_cli(args)))
 
 
 if __name__=='__main__':main()

@@ -164,3 +164,42 @@ def test_readonly_volume_parent_is_rejected_before_plan(tmp_path,monkeypatch):
     with pytest.raises(OSError,match='not_writable'):
         ar.verify_volume({'mount':str(tmp_path),'volume_uuid':'expected','destination':str(tmp_path/'new/archive')})
     assert not (tmp_path/'new').exists()
+
+
+def test_cli_preserves_failed_journal_traceback_and_resumes(setup,monkeypatch):
+    root,ps,alias,c=setup
+    (root/'.refresh').mkdir()
+    (root/'.refresh/archive_storage.json').write_text(json.dumps(c))
+    args=SimpleNamespace(market_root=root,apply=True,restore=None)
+    copy=ar._copy_verified
+    def fail(*args):raise OSError('specific_external_copy_failure')
+    monkeypatch.setattr(ar,'_copy_verified',fail)
+    before=ar.file_sha(ps[0])
+    with pytest.raises(OSError,match='specific_external_copy_failure'):ar.run_cli(args)
+    audit=root/'.refresh/panel_archive'
+    pending=(audit/'pending.json').read_bytes()
+    records=[json.loads(p.read_text()) for p in (audit/'runs').glob('*.json')]
+    assert len(records)==1 and records[0]['status']=='FAILED'
+    assert 'specific_external_copy_failure' in records[0]['traceback']
+    assert records[0]['observed_pending']['content']==json.loads(pending)
+    assert not ps[0].is_symlink() and ar.file_sha(alias)==before
+    monkeypatch.setattr(ar,'_copy_verified',copy)
+    assert ar.run_cli(args)['completed']==1
+    assert ar.run_cli(args)['completed']==0
+    assert ar.file_sha(ps[0])==before and not (audit/'pending.json').exists()
+    records=[json.loads(p.read_text()) for p in (audit/'runs').glob('*.json')]
+    assert sorted(r['status'] for r in records)==['FAILED','SUCCEEDED','SUCCEEDED']
+
+
+def test_cli_diagnostic_failure_does_not_mask_original_error(setup,monkeypatch,capsys):
+    root,ps,alias,c=setup
+    (root/'.refresh').mkdir()
+    (root/'.refresh/archive_storage.json').write_text(json.dumps(c))
+    def fail(*args):raise OSError('volume_unavailable')
+    def fail_receipt(*args):raise PermissionError('diagnostics_unwritable')
+    monkeypatch.setattr(ar,'verify_volume',fail)
+    monkeypatch.setattr(ar,'save_json',fail_receipt)
+    with pytest.raises(OSError,match='volume_unavailable'):
+        ar.run_cli(SimpleNamespace(market_root=root,apply=True,restore=None))
+    assert 'diagnostics_unwritable' in capsys.readouterr().err
+    assert not ps[0].is_symlink() and not alias.is_symlink()
