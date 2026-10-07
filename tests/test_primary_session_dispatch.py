@@ -160,3 +160,12 @@ def test_actual_poller_script_imports_and_exits_without_executing_jobs(tmp_path)
     assert json.loads(result.stdout)["queued_count"] == 2
     assert len(list((tmp_path / "queue/requests").glob("*.json"))) == 2
     assert not list((tmp_path / "queue/results").glob("*/*.json"))
+
+
+def test_installer_separates_short_poller_and_resource_workers(tmp_path):
+    from scripts.install_primary_session_workers import poller_plist, worker_plist, ROLES
+    poller = poller_plist(tmp_path)
+    assert poller["ProgramArguments"][-2:] == ["multi_agent/tools/run_primary_market_session_ops.py", "--run-due"]
+    assert poller["ProgramArguments"][1] == "/usr/bin/python3"
+    assert poller["StartInterval"] == 60
+    assert len({worker_plist(role, tmp_path)["Label"] for role in ROLES}) == 3

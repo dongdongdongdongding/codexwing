@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install the three independent primary session launchd workers on this Mac."""
+"""Install a short poller and three independent session workers on this Mac."""
 import argparse
 import json
 import os
@@ -24,12 +24,21 @@ def worker_plist(role, home):
     }
 
 
+def poller_plist(home):
+    data = worker_plist("dispatch", home)
+    data["Label"] = "com.codex.swing.primary-dispatch"
+    data["ProgramArguments"][-3:] = ["multi_agent/tools/run_primary_market_session_ops.py", "--run-due"]
+    for key in ("StandardOutPath", "StandardErrorPath"):
+        data[key] = data[key].replace("primary-worker-dispatch", "primary-dispatch")
+    return data
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--install", action="store_true")
     args = parser.parse_args()
     home = Path.home()
-    plists = [worker_plist(role, home) for role in ROLES]
+    plists = [worker_plist(role, home) for role in ROLES] + [poller_plist(home)]
     if not args.install:
         print(json.dumps(plists, indent=2))
         return
