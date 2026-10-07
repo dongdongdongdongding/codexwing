@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import threading
 import time
-import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Optional
 
 import pandas as pd
 
+from modules.scan_error_diagnostics import scan_error_detail
 from modules import db_manager, quant_analysis
 from modules.scanner_services import (
     compute_exhaustion_context,
@@ -247,7 +247,7 @@ def scan_symbol_with_retry(
                 print(f"Web Scan DB Error: {e}")
             return outputs["res_data"]
 
-        except quant_analysis.RateLimitError:
+        except quant_analysis.RateLimitError as exc:
             if worker_attempt < max_retries:
                 wait_secs = 25 + (worker_attempt * 10)
                 print(
@@ -259,11 +259,12 @@ def scan_symbol_with_retry(
                 continue
             print(f"❌ {sym}: Rate Limit max retries exhausted. Skipping.")
             _reject("RATE_LIMIT_EXHAUSTED")
-            return {"error": "RATE_LIMIT_EXHAUSTED", "ticker": sym}
+            return {"error": "RATE_LIMIT_EXHAUSTED", "ticker": sym,
+                    "error_detail": scan_error_detail(exc, attempts=worker_attempt + 1)}
         except Exception as e:
-            tb = traceback.format_exc()
-            print(f"Error {sym}: {tb}")
-            return {"error": f"{str(e)} \nDETAIL: {tb}", "ticker": sym}
+            detail = scan_error_detail(e, attempts=worker_attempt + 1)
+            print(f"Error {sym}: {detail['error_type']}: {detail['message']}")
+            return {"error": detail["message"], "error_detail": detail, "ticker": sym}
 
     return None
 

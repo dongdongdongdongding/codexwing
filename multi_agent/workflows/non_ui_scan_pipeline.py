@@ -18,6 +18,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from modules.scan_error_diagnostics import record_scan_error
 from modules import quant_analysis
 from modules.kis_openapi import normalize_kr_stock_code
 from modules.live_scan_context import live_mode_enabled, normalize_market_key
@@ -354,9 +355,8 @@ def run_non_ui_scan_pipeline(
 
     def on_item(i: int, total: int, sym: str, data: Dict[str, Any] | None, exc: Exception | None) -> None:
         if exc is not None:
-            diagnostics["executor_exception_count"] += 1
-            diagnostics["exception_symbols"].append(sym)
-            print(f"[{i+1}/{total}] {sym}: ERROR {exc}")
+            detail = record_scan_error(diagnostics, sym, exc=exc)
+            print(f"[{i+1}/{total}] {sym}: ERROR {detail['error_type']}: {detail['message']}")
             return
         if data is None:
             diagnostics["filtered_count"] += 1
@@ -364,9 +364,8 @@ def run_non_ui_scan_pipeline(
             print(f"[{i+1}/{total}] {sym}: filtered")
             return
         if "error" in data:
-            diagnostics["worker_error_count"] += 1
-            diagnostics["error_symbols"].append(sym)
-            print(f"[{i+1}/{total}] {sym}: worker_error")
+            detail = record_scan_error(diagnostics, sym, data=data)
+            print(f"[{i+1}/{total}] {sym}: worker_error {detail['error_type']}: {detail['message']}")
             return
         print(f"[{i+1}/{total}] {sym}: pass")
 
