@@ -75,6 +75,7 @@ Two June 30 archive-only identities are recorded after the declared entry and
 do not add valid forward samples. The twelve matched DB entry timestamps are
 nine hours later than their naive Korean ledger bar times; a DB-only comparison
 would falsely increase before-entry counts from one to seven across the fourteen
-identities. `swing-main-pncm` tracks that normalization. No original earlier
+identities. `swing-main-pncm` subsequently corrected those reference times without changing
+recommendation timestamps, scores, contracts or outcomes. No original earlier
 score/model-input evidence was recovered in the explicitly searched sources,
 so this follow-up adds zero verified calibration samples and performs no refit.

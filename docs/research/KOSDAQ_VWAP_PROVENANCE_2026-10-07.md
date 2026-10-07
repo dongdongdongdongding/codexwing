@@ -32,7 +32,9 @@ The source path is visible in code: `compute_pre_entry_features` emits the local
 index with `isoformat()`, `live_pick_payload` copies it to `ordered_entry_at`, and
 `db_schema` passes it through unchanged. This census identifies that mismatch;
 `swing-main-pncm` tracks serialization and guarded historical normalization.
-It has not been fixed by this read-only audit.
+This read-only audit did not change the field. The subsequent
+[KST serialization repair](KOSDAQ_ENTRY_TIMEZONE_REPAIR_2026-10-07.md) corrects
+the fourteen stored references and prevents recurrence on the known producer path.
 
 Comparing recommendation time against the stored DB instant would mark **7/14**
 records as before entry. Comparing against the documented Korean entry clock
