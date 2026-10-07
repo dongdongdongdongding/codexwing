@@ -91,3 +91,14 @@ def test_selection_and_live_pick_keep_intraday_liquidity_lanes():
     assert picks[0]["target_tp_pct"] == 10.0
     assert picks[0]["hold_days"] == 5
 
+
+
+def test_pick_entry_timestamp_has_known_korean_timezone_without_changing_aware_instant():
+    from modules.kosdaq_intraday_vwap_guard import kst_entry_timestamp
+    assert kst_entry_timestamp("2026-06-24T15:00:00")=="2026-06-24T15:00:00+09:00"
+    assert kst_entry_timestamp("2026-06-24T06:00:00+00:00")=="2026-06-24T06:00:00+00:00"
+    assert kst_entry_timestamp(None) is None
+    row={"code":"111111","p_cal":.9,"entry_bar_at":"2026-06-24T14:59:00"}
+    pick=live_pick_payload(row,rank=1,trade_date="20260624",run_id="RUN")
+    assert pick["ordered_entry_at"]=="2026-06-24T14:59:00+09:00"
+    assert row["entry_bar_at"]=="2026-06-24T14:59:00"

@@ -109,8 +109,11 @@ def test_route_preserves_per_pick_original_timestamp_and_rank(monkeypatch):
     def deep(rows):reports.extend(rows);return {"rows_upserted":len(rows)}
     monkeypatch.setattr(top_deep_report,"upsert_reports_to_supabase",deep)
     original="2026-06-26T06:00:00+00:00"
-    p={**pick(),"generated_at":original,"priority_rank":2}
+    p={**pick(),"generated_at":original,"priority_rank":2,"ordered_entry_at":"2026-06-26T14:59:00"}
     assert m.route_live_intraday([p],run_id="R",recommended_at="2026-10-07T00:00:00+00:00")==1
     assert payloads[0]["recommended_at"]==payloads[0]["created_at"]==original
     assert reports[0]["generated_at"]==original and reports[0]["rank"]==2
     assert reports[0]["trade_plan"]["hold_days"]==3
+
+    assert payloads[0]["ordered_entry_at"]=="2026-06-26T14:59:00+09:00"
+    assert p["ordered_entry_at"]=="2026-06-26T14:59:00"

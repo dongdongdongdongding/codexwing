@@ -60,6 +60,7 @@ from modules.kosdaq_intraday_vwap_guard import (  # noqa: E402
     compute_daily_prev_context,
     compute_index_prev_context,
     live_pick_payload,
+    kst_entry_timestamp,
     normalize_kr_code,
     safe_float,
     score_feature_rows,
@@ -568,6 +569,7 @@ def route_live_intraday(picks: List[Dict[str, Any]], *, run_id: str, recommended
         rank = int(pick.get("priority_rank") or rank)
         src = {
             **pick,
+            "ordered_entry_at": kst_entry_timestamp(pick.get("ordered_entry_at")),
             "run_id": run_id,
             "priority_rank": rank,
             "market_type": "KOSDAQ",

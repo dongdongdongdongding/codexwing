@@ -310,6 +310,18 @@ def select_vwap_guard_candidates(
     return selected[: max(int(top_n), 0)]
 
 
+def kst_entry_timestamp(value):
+    """Attach the known Korean bar timezone; preserve already-aware instants."""
+    if value is None:
+        return None
+    stamp = pd.Timestamp(value)
+    if pd.isna(stamp):
+        raise ValueError("invalid_Korean_entry_timestamp")
+    if stamp.tzinfo is None:
+        stamp = stamp.tz_localize("Asia/Seoul")
+    return stamp.isoformat()
+
+
 def live_pick_payload(row: Mapping[str, Any], *, rank: int, trade_date: str, run_id: str) -> Dict[str, Any]:
     p_cal = float(row.get("p_cal") or 0.0)
     liq_prev_eok = safe_float(row.get("liq_prev_eok"))
@@ -335,7 +347,7 @@ def live_pick_payload(row: Mapping[str, Any], *, rank: int, trade_date: str, run
         "pre_value_vs_liq_prev_pct": round(float(row.get("pre_value_vs_liq_prev_pct") or 0.0), 4),
         "entry_reference_price": safe_float(row.get("entry_reference_price")),
         "scan_entry_reference_price": safe_float(row.get("entry_reference_price")),
-        "ordered_entry_at": row.get("entry_bar_at"),
+        "ordered_entry_at": kst_entry_timestamp(row.get("entry_bar_at")),
         "ordered_entry_price": safe_float(row.get("entry_reference_price")),
         "base_trade_date": trade_date,
         # promoted contract (2026-07-03, RESEARCH_LOG §7-E): +10% touch take-profit within
