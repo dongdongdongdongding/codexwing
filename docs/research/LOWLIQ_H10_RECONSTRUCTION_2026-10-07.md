@@ -183,6 +183,36 @@ Remaining codes and earlier feature history still require reconciliation under
 preserve the original preregistration, scores and evidence rather than silently
 replacing their inputs.
 
+### Separate partial source correction
+
+`normalize_verified_kr_events.py` and its reviewed JSON rules now create a
+separate source epoch, `runtime_state/audit/kr_verified_events_v1_20261007/`.
+The exact frozen parent hash, official captures, old factors, share counts and
+row counts are guarded. The writer streams bounded batches, verifies all raw
+columns and unaffected rows, and publishes the output by atomic create-only
+link. Revisions or overlapping rules fail; the original study and live caches
+are never replaced by this command.
+
+The actual output contains the same 5,360,785 rows and schema metadata. Only
+56 rows change: 005440's 52 rows from July 20 through October 2 remove the false
+issuance factor; 008830's four August 3–6 rows receive the correctly dated bonus
+factor. Each changes only `adj_factor` and four adjusted OHLC fields. Independent
+full-file verification proved every column of the other 5,360,729 rows exact and
+all raw columns exact across the whole panel, including nominal volume/amount.
+The original panel SHA remains unchanged. The corrected panel SHA is
+`803fa406aa946f1a35ef0eb928f7a2f9ff3928f779cbedfe6f570e448bb7d862`.
+
+Independent KIS comparison on the two corrected histories checks 520 OHLC cells;
+maximum scale-adjusted errors are 2.27e-12 KRW for 005440 and 0.923077 KRW for
+008830. An actual repeat returns `REUSED`, with the manifest, panel and receipt
+mtime/size unchanged. Sixteen focused tests pass, including wrong-source share
+counts, altered adjusted fields, overlapping rules and double-adjustment refusal.
+
+This is a **partial corrected source**, not a qualified model input or deployed
+lane. `source_certified` and `publication_allowed` remain false. Other mismatch
+codes and earlier history still need reconciliation. The parent input rejection,
+fixed scores and preregistration remain intact. Tracking: `swing-main-hov1`.
+
 The next-open contract is TP5/H10, with entry day included, no stop, and 1.0%
 round-trip primary cost; 0.30% and 0.215% are sensitivities. Unfilled entries stay
 in the selected denominator with zero touch and zero return. Missing or suspended

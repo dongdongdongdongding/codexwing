@@ -1,0 +1,34 @@
+{
+  "version": "verified_two_events_v1",
+  "source_sha256": "8c6fba2daf8d995be66441d873094928f347618c3a41f208c9286509f4fb1981",
+  "source_rows": 5360785,
+  "official_receipts_sha256": "c59b77f4f7e4d6dd2fa0b079793104aef451ed30b0b1bab790ca33cfa56d3d12",
+  "confirmed_examples_sha256": "b36873a6e58d9c7056d88753a74158a7eb8ed4259f45ca51fa2b5b8f03bdbc38",
+  "source_certified": false,
+  "publication_allowed": false,
+  "rules": [
+    {
+      "code": "005440",
+      "start": "2026-07-20",
+      "end": "2026-10-02",
+      "rows": 52,
+      "old_factor": 1.971907309302786,
+      "new_factor": 1.6763005780346822,
+      "expected_stocks": 183397199,
+      "reason": "Remove the share-exchange issuance factor; new shares belong to Home Shopping holders, not pro-rata to existing 005440 holders.",
+      "evidence": ["hyundai_listing", "hyundai_exchange"]
+    },
+    {
+      "code": "008830",
+      "start": "2026-08-03",
+      "end": "2026-08-06",
+      "rows": 4,
+      "old_factor": 10.0,
+      "new_factor": 13.0,
+      "expected_stocks": 8987520,
+      "reason": "Apply the 30% bonus on official August3 ex-date. The original factor already applies from August7, so later rows remain unchanged.",
+      "evidence": ["daedong_exdate", "daedong_offering"]
+    }
+  ],
+  "limitations": "Partial source correction only. Other 63 mismatch codes and earlier history remain uncertified. Fixed parent models/scores/preregistration and live caches must remain unchanged. A corrected study needs explicit new source provenance and source qualification. Nominal volume and amount are preserved; they are not adjusted-volume fields."
+}
