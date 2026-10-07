@@ -126,10 +126,13 @@ def collect(cache, audit, client, *, now, universe=600, apply=False):
     additions, evidence = [], []
     for code in codes:
         record = {"code": code, "expected_latest": str(expected[code].date()),
+                  "request_trade_date": expected[code].strftime("%Y%m%d"),
                   "status": "error", "added_rows": 0, "overlap_conflicts": 0}
         try:
             with request_deadline(30):
-                payload = client.investor_trading_daily(code, trade_date=today.strftime("%Y%m%d"))
+                # KIS rejects an unfinished date before its daily flow is available.
+                # Request the observed completed price date; do not wait for today's flow.
+                payload = client.investor_trading_daily(code, trade_date=record["request_trade_date"])
             capture = audit / (code + ".json")
             write_json(capture, payload)
             record["capture_sha256"] = sha(capture)
@@ -147,6 +150,9 @@ def collect(cache, audit, client, *, now, universe=600, apply=False):
         except Exception as exc:
             # Provider exception messages can contain request details: store the class only.
             record["error_type"] = type(exc).__name__
+            match = re.match(r"KIS API error ([A-Z0-9]{1,32}):", str(exc))
+            if match:
+                record["provider_error_code"] = match.group(1)
         evidence.append(record)
         if len(evidence) % 100 == 0:
             print(f"flow collected {len(evidence)}/{len(codes)}", flush=True)

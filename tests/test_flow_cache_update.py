@@ -35,6 +35,7 @@ class Client:
         self.responses = responses
 
     def investor_trading_daily(self, code, **kwargs):
+        assert kwargs["trade_date"] == "20261006"  # never request the unfinalized current date
         response = self.responses[code]
         if isinstance(response, Exception):
             raise response
