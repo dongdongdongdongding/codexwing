@@ -294,3 +294,10 @@ constant provider-scale compatibility across all 520 OHLC cells; no future
 action is inserted. See `KR_EVENT_REFERENCE_REPAIR_V6_2026-10-07.md` for evidence
 and limitations. All certification and publication gates remain false; no parent
 study replacement, model change or test outcome calculation was performed.
+### Full fixed-cohort v6 recheck
+
+`swing-main-iti8` rechecked all 1,310 codes / 85,104 dates and found six additional
+nontrading-history reference contradictions outside the earlier 65 traded-row
+mismatch codes. `swing-main-5yeb` captured their 32 relevant primary documents;
+`swing-main-6hsa` tracks their guarded correction. Source certification remains
+false. See `KR_V6_FULL_COHORT_RECHECK_2026-10-07.md` for complete scope and evidence.
