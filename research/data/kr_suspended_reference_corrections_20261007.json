@@ -1,0 +1,174 @@
+{
+  "builder_implementation_sha256": "da3ceb595898d01899588b6192218b8699b830915f8058d614c6104b3640a783",
+  "chunk_implementation_sha256": "6128ab7ce1d3394da5097e87f604762975201b121ded97376f9c92ac0716d306",
+  "contracts": {
+    "002210": {
+      "before_factor": 2.857142857142857,
+      "body": "002210_20260729001038_20260729002730_body_0",
+      "date": "2026-07-30",
+      "first_close": 1800,
+      "old_event_factor": 1.5444444444444445,
+      "prior_close": 973,
+      "reference_price": 1946
+    },
+    "051360": {
+      "before_factor": 1.0,
+      "body": "051360_20260722000833_20260722002023_body_0",
+      "date": "2026-07-27",
+      "first_close": 9010,
+      "old_event_factor": 1.785793562708102,
+      "prior_close": 16090,
+      "reference_price": 10010
+    },
+    "079190": {
+      "before_factor": 0.5,
+      "body": "079190_20260720000643_20260720001574_body_0",
+      "date": "2026-07-23",
+      "first_close": 1100,
+      "old_event_factor": 0.24999998696406467,
+      "prior_close": 571,
+      "reference_price": 1102
+    },
+    "175250": {
+      "before_factor": 2.3757034034340685,
+      "body": "175250_20260902000653_20260902001700_body_0",
+      "date": "2026-09-03",
+      "first_close": 2110,
+      "old_event_factor": 2.3757034034340685,
+      "prior_close": 2170,
+      "reference_price": 2870
+    },
+    "210120": {
+      "before_factor": 7.499373531216907,
+      "body": "210120_20260819000372_20260819001054_body_0",
+      "date": "2026-08-20",
+      "first_close": 1992,
+      "old_event_factor": 2.999749350604305,
+      "prior_close": 930,
+      "reference_price": 1991
+    },
+    "214330": {
+      "before_factor": 0.23941299790356396,
+      "body": "214330_20260707000454_20260707001144_body_0",
+      "date": "2026-07-08",
+      "first_close": 9030,
+      "old_event_factor": 0.06774088700372159,
+      "prior_close": 2555,
+      "reference_price": 6950
+    }
+  },
+  "economics_sha256": "792e988a183c91698dc80eb8b5b90a952f5ffa47066238de6e584d0681bd411e",
+  "evidence_verifier_sha256": "89832272b0b5a01149024dce52b4ea05a5e1b1ef9a1d60ebda0c758ac6782e1e",
+  "limitations": "Six event boundaries only. Current evidence is not historical PIT. Continuity is not shareholder wealth across spin-offs/capital reductions; earlier histories remain unaudited.",
+  "overlay_sha256": "6551d948be378bfd53c84a1346814b107ede9b50b57cc1ef2e29c5e2262dfda6",
+  "portfolio_return_certified": false,
+  "price_convention": "KRX_QUOTE_IMPLIED_REFERENCE_OVERLAY_V1",
+  "publication_allowed": false,
+  "quote_verifier_sha256": "1039eb424b945972aa5444666f5e3e1da8c8673472ae8654d50328dea665d62b",
+  "receipts_sha256": "125ee884cec50754136012071e61918d1d9fe0e804b63d7961c3799aa84478e4",
+  "rules": [
+    {
+      "code": "002210",
+      "end": "2026-10-02",
+      "evidence": "002210_20260729001038_20260729002730_body_0",
+      "expected_stocks": 96619507,
+      "new_factor": 1.4285714285714286,
+      "old_factor": 1.5444444444444445,
+      "reason": "Corroborated quote reference on official changed-listing/resumption date; preserve all raw nontrading rows and unrelated relative events.",
+      "rows": 44,
+      "start": "2026-07-30"
+    },
+    {
+      "code": "051360",
+      "end": "2026-09-22",
+      "evidence": "051360_20260722000833_20260722002023_body_0",
+      "expected_stocks": 9641668,
+      "new_factor": 1.6073926073926075,
+      "old_factor": 1.785793562708102,
+      "reason": "Corroborated quote reference on official changed-listing/resumption date; preserve all raw nontrading rows and unrelated relative events.",
+      "rows": 41,
+      "start": "2026-07-27"
+    },
+    {
+      "code": "051360",
+      "end": "2026-10-02",
+      "evidence": "051360_20260722000833_20260722002023_body_0",
+      "expected_stocks": 9360612,
+      "new_factor": 1.6073926073926075,
+      "old_factor": 1.785793562708102,
+      "reason": "Corroborated quote reference on official changed-listing/resumption date; preserve all raw nontrading rows and unrelated relative events.",
+      "rows": 6,
+      "start": "2026-09-23"
+    },
+    {
+      "code": "079190",
+      "end": "2026-09-28",
+      "evidence": "079190_20260720000643_20260720001574_body_0",
+      "expected_stocks": 9588878,
+      "new_factor": 0.2590744101633394,
+      "old_factor": 0.24999998696406467,
+      "reason": "Corroborated quote reference on official changed-listing/resumption date; preserve all raw nontrading rows and unrelated relative events.",
+      "rows": 45,
+      "start": "2026-07-23"
+    },
+    {
+      "code": "079190",
+      "end": "2026-10-02",
+      "evidence": "079190_20260720000643_20260720001574_body_0",
+      "expected_stocks": 20341566,
+      "new_factor": 0.2590744101633394,
+      "old_factor": 0.24999998696406467,
+      "reason": "Corroborated quote reference on official changed-listing/resumption date; preserve all raw nontrading rows and unrelated relative events.",
+      "rows": 4,
+      "start": "2026-09-29"
+    },
+    {
+      "code": "175250",
+      "end": "2026-09-09",
+      "evidence": "175250_20260902000653_20260902001700_body_0",
+      "expected_stocks": 37558368,
+      "new_factor": 1.7962635489379541,
+      "old_factor": 2.3757034034340685,
+      "reason": "Corroborated quote reference on official changed-listing/resumption date; preserve all raw nontrading rows and unrelated relative events.",
+      "rows": 5,
+      "start": "2026-09-03"
+    },
+    {
+      "code": "175250",
+      "end": "2026-10-02",
+      "evidence": "175250_20260902000653_20260902001700_body_0",
+      "expected_stocks": 61736317,
+      "new_factor": 1.7962635489379541,
+      "old_factor": 2.3757034034340685,
+      "reason": "Corroborated quote reference on official changed-listing/resumption date; preserve all raw nontrading rows and unrelated relative events.",
+      "rows": 15,
+      "start": "2026-09-10"
+    },
+    {
+      "code": "210120",
+      "end": "2026-10-02",
+      "evidence": "210120_20260819000372_20260819001054_body_0",
+      "expected_stocks": 9694991,
+      "new_factor": 3.502972066314276,
+      "old_factor": 2.999749350604305,
+      "reason": "Corroborated quote reference on official changed-listing/resumption date; preserve all raw nontrading rows and unrelated relative events.",
+      "rows": 30,
+      "start": "2026-08-20"
+    },
+    {
+      "code": "214330",
+      "end": "2026-10-02",
+      "evidence": "214330_20260707000454_20260707001144_body_0",
+      "expected_stocks": 10456929,
+      "new_factor": 0.08801441865375624,
+      "old_factor": 0.06774088700372159,
+      "reason": "Corroborated quote reference on official changed-listing/resumption date; preserve all raw nontrading rows and unrelated relative events.",
+      "rows": 59,
+      "start": "2026-07-08"
+    }
+  ],
+  "source_certified": false,
+  "source_rows": 5360785,
+  "source_sha256": "1e39df38d4d21e5262f0513e4be8dd3f76133ae39004a59c63a5653a337de472",
+  "version": "verified_suspended_reference_v7"
+}

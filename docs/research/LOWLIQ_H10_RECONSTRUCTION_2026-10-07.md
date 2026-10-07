@@ -301,3 +301,12 @@ nontrading-history reference contradictions outside the earlier 65 traded-row
 mismatch codes. `swing-main-5yeb` captured their 32 relevant primary documents;
 `swing-main-6hsa` tracks their guarded correction. Source certification remains
 false. See `KR_V6_FULL_COHORT_RECHECK_2026-10-07.md` for complete scope and evidence.
+### Suspended-reference source extension v7
+
+`swing-main-6hsa` corrects six additional boundaries / 249 rows. Direct original
+comparison gives 69 codes / 2,289 cumulative changed rows, with all raw fields
+preserved. The complete 1,310-code / 85,104-date provider comparison no longer
+has large Q3 basis contradictions; residuals remain up to one KRW plus numeric
+precision. See `KR_SUSPENDED_REFERENCE_REPAIR_V7_2026-10-07.md`. Earlier lookbacks,
+execution/valuation and mature H10 qualification remain open; parent study and
+live lane are unchanged.
