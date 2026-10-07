@@ -1,7 +1,7 @@
 """Restore verified flow provenance only; dry-run by default.
 
 Each batch keeps immutable full-row backups. Three metadata fields are updated
-by a typed full-row compare-and-swap in one SQL statement, then independently
+by typed full-row compare-and-swap statements bounded by request size, then independently
 read back. No labels, values, timestamps, schema or model fields are assigned.
 """
 from __future__ import annotations
@@ -25,6 +25,7 @@ from modules.investor_flow_units import FLOW_VALUE_FIELDS, flow_metadata_for_val
 
 META = ("flow_source", "flow_unit", "flow_asof")
 TABLE = "public.scan_universe_snapshots"
+MAX_QUERY_BYTES = 1_000_000
 
 
 def digest(raw):
@@ -90,6 +91,31 @@ def cas_sql(updates):
             " FROM p WHERE t.id=(p.b).id AND to_jsonb(t)=to_jsonb(p.b) RETURNING t.id")
 
 
+def bounded_cas_statements(updates, max_bytes=MAX_QUERY_BYTES):
+    """Plan every statement before mutating; a large single row fails closed."""
+    statements, batch = [], []
+    for update in updates:
+        candidate = cas_sql(batch + [update])
+        if len(candidate.encode()) > max_bytes:
+            if not batch:
+                raise ValueError("single row exceeds query size bound")
+            statements.append(cas_sql(batch))
+            batch = [update]
+            if len(cas_sql(batch).encode()) > max_bytes:
+                raise ValueError("single row exceeds query size bound")
+        else:
+            batch.append(update)
+    if batch:
+        statements.append(cas_sql(batch))
+    return statements
+
+
+class DatabaseHTTPError(RuntimeError):
+    def __init__(self, status):
+        self.status = status
+        super().__init__(f"Database HTTP {status}")
+
+
 class Database:
     def __init__(self):
         import requests
@@ -104,7 +130,7 @@ class Database:
     def query(self, sql):
         response = self.session.post(self.endpoint, json={"query": sql}, timeout=60)
         if response.status_code not in (200, 201):
-            raise RuntimeError(f"Database HTTP {response.status_code}")
+            raise DatabaseHTTPError(response.status_code)
         result = response.json()
         if not isinstance(result, list):
             raise RuntimeError("Unexpected database response")
@@ -114,7 +140,11 @@ class Database:
         return self.query(read_sql(ids))
 
     def cas(self, updates):
-        return self.query(cas_sql(updates))
+        statements = bounded_cas_statements(updates)
+        result = []
+        for statement in statements:
+            result.extend(self.query(statement))
+        return result
 
 
 def matches_evidence(entry, captured):
@@ -170,6 +200,7 @@ def process_batch(entries, db, directory, plan_sha, *, apply=False):
         else:
             statuses[i] = "eligible"
     error = None
+    http_status = None
     if updates:
         try:
             db.cas(updates)
@@ -177,6 +208,7 @@ def process_batch(entries, db, directory, plan_sha, *, apply=False):
             # The server may have committed even if its response was lost.
             # Re-read and reconcile; never retry an unconditional mutation.
             error = type(exc).__name__
+            http_status = getattr(exc, "status", None)
         after = {x["row"]["id"]: x["row"] for x in db.read([x["before"]["id"] for x in updates])}
         for u in updates:
             i = u["before"]["id"]
@@ -192,6 +224,7 @@ def process_batch(entries, db, directory, plan_sha, *, apply=False):
     ok = all(s in {"applied_verified", "already_correct", "eligible"} for s in statuses.values())
     receipt = {"plan_sha256": plan_sha, "apply": apply, "status": "ok" if ok else "degraded",
                "counts": counts, "row_status": statuses, "transport_error": error,
+               "transport_http_status": http_status,
                "backup_sha256": digest(backup_path.read_bytes()),
                "recorded_at": datetime.now(timezone.utc).isoformat()}
     event = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%f")

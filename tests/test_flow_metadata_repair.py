@@ -1,4 +1,5 @@
 from copy import deepcopy
+import base64
 import json
 
 import pytest
@@ -141,3 +142,29 @@ def test_plan_duplicate_and_missing_guard_are_rejected():
     e["expected_flow_values"].pop("retail_10d")
     with pytest.raises(ValueError, match="incomplete"):
         repair.validate_plan({"rows": 1, "updates": [e]})
+
+
+def test_large_rows_split_under_request_bound_without_losing_any_guard():
+    e, captured = fixture()
+    updates = [{"before": {**captured["row"], "id": i, "large_json": "x" * 1000},
+                "after": e["after"]} for i in range(1, 8)]
+    limit = len(repair.cas_sql(updates[:2]).encode())
+    statements = repair.bounded_cas_statements(updates, limit)
+    assert len(statements) == 4
+    assert all(len(s.encode()) <= limit for s in statements)
+    decoded = []
+    for statement in statements:
+        encoded = statement.split("decode('", 1)[1].split("'", 1)[0]
+        decoded.extend(json.loads(base64.b64decode(encoded)))
+    assert decoded == updates
+
+
+def test_oversize_single_row_prevents_all_mutations():
+    e, captured = fixture()
+    db = repair.Database.__new__(repair.Database)
+    calls = []
+    db.query = lambda sql: calls.append(sql)
+    with pytest.raises(ValueError, match="single row"):
+        db.cas([{"before": captured["row"], "after": e["after"]},
+                {"before": {**captured["row"], "id": 2, "huge": "x" * repair.MAX_QUERY_BYTES}, "after": e["after"]}])
+    assert not calls
