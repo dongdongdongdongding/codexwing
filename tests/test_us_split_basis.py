@@ -84,8 +84,8 @@ def test_certificate_integrity_is_checked(monkeypatch, tmp_path):
         basis.reference.cache_clear()
 
 
-@pytest.mark.parametrize('symbol,corrected,deferred', [('AIXI',870,3),('DLXY',295,7),('SFWL',832,25),('WCT',474,5)])
-def test_four_partial_histories_keep_unsupported_rows_quarantined(symbol, corrected, deferred):
+@pytest.mark.parametrize('symbol,corrected,deferred', [('AIXI',870,3),('DLXY',295,7),('SFWL',832,25),('WCT',474,5),('CPOP',1295,7)])
+def test_partial_histories_keep_unsupported_rows_quarantined(symbol, corrected, deferred):
     ref = basis.reference(symbol)
     rows = deepcopy(ref['verified_adjusted_rows'])
     rows.update({day: rec['values'] for day, rec in ref['unverified_rows'].items()})

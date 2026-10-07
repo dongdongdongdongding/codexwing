@@ -16,6 +16,7 @@ REFERENCE = Path(__file__).with_name('data') / 'vwav_split_basis_20261007.json'
 REFERENCE_SHA256 = '7b83cbb065c54a1879715e35d8d46f0ec803d2d60a2c815875a8a1fd2ec47f8e'
 REFERENCES = {
     'VWAV': (REFERENCE, REFERENCE_SHA256),
+    'CPOP': (REFERENCE.with_name('cpop_split_basis_20261007.json'), 'b5dfbe3fc72ffd81a34858c91e6d96fae97184d976edfcbe0ebb1d539d9e8d85'),
     'AIXI': (REFERENCE.with_name('aixi_split_basis_20261007.json'), '0bed47a45f16b5dbe90ff52a9e98fad4dbc077eea8ed29d7629732e87663ba6d'),
     'DLXY': (REFERENCE.with_name('dlxy_split_basis_20261007.json'), '1f1cd5ab2c49ce77a9a1862c95e8edbf8264e230041c907d63b52517385c7088'),
     'SFWL': (REFERENCE.with_name('sfwl_split_basis_20261007.json'), 'a3ca2157c1f8389190b47d25073cacdfbbca6614a4192984ab2b02e465262a40'),
