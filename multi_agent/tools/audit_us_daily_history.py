@@ -40,7 +40,7 @@ FIELDS = ['open', 'high', 'low', 'close', 'raw_close', 'adj_close', 'volume', 'a
 def implementation():
     files = [__file__, bf.__file__, tape.__file__, ohlcv_quality.__file__,
              sys.modules[daily_bar_issues.__module__].__file__, us_split_basis.__file__,
-             us_split_basis.REFERENCE]
+             *(entry[0] for entry in us_split_basis.REFERENCES.values())]
     return {'files': {Path(p).name: file_sha(p) for p in files},
             'pandas': pd.__version__, 'numpy': np.__version__}
 

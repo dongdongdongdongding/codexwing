@@ -33,7 +33,8 @@ def inputs(universe, paths, *, start, end, output_prefix, feature_batch_size):
                 for s in universe.symbol.astype(str)},
         'implementation': {Path(p).name: file_sha(p) for p in
                            [bf.__file__, ohlcv_quality.__file__, us_symbol_lineage.__file__,
-                            us_split_basis.__file__, us_split_basis.REFERENCE, __file__]},
+                            us_split_basis.__file__, __file__,
+                            *(entry[0] for entry in us_split_basis.REFERENCES.values())]},
         'libraries': {'pandas': pd.__version__, 'numpy': np.__version__, 'pyarrow': pa.__version__},
     }
 

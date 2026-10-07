@@ -75,10 +75,39 @@ def test_real_extraction_refresh_and_known_fixed_provider_are_idempotent():
 
 def test_certificate_integrity_is_checked(monkeypatch, tmp_path):
     path = tmp_path / 'reference.json'; path.write_text('{}')
-    monkeypatch.setattr(basis, 'REFERENCE', path)
+    monkeypatch.setitem(basis.REFERENCES, 'VWAV', (path, basis.REFERENCE_SHA256))
     basis.reference.cache_clear()
     try:
         with pytest.raises(ValueError, match='integrity'):
             basis.reference()
     finally:
         basis.reference.cache_clear()
+
+
+@pytest.mark.parametrize('symbol,corrected,deferred', [('AIXI',870,3),('DLXY',295,7),('SFWL',832,25),('WCT',474,5)])
+def test_four_partial_histories_keep_unsupported_rows_quarantined(symbol, corrected, deferred):
+    ref = basis.reference(symbol)
+    rows = deepcopy(ref['verified_adjusted_rows'])
+    rows.update({day: rec['values'] for day, rec in ref['unverified_rows'].items()})
+    rows.update(ref['known_nominal_rows'])
+    raw = pd.DataFrame([{'date':pd.Timestamp(day),'symbol':symbol,'source':'yfinance',
+                         **dict(zip(ref['fields'], vals))} for day, vals in sorted(rows.items())])
+    actual = basis.normalize_known_split_rows(raw)
+    changed = ~(raw.eq(actual) | (raw.isna() & actual.isna())).all(axis=1)
+    assert changed.sum() == corrected
+    unsupported = actual.date.dt.strftime('%Y-%m-%d').isin(ref['unverified_rows'])
+    assert unsupported.sum() == deferred
+    pd.testing.assert_frame_equal(actual.loc[unsupported], raw.loc[unsupported])
+    assert daily_bar_issues(actual).ne('').equals(unsupported)
+    pd.testing.assert_frame_equal(basis.normalize_known_split_rows(actual), actual)
+    post = actual.iloc[-1:].copy(); post['date'] = pd.Timestamp(ref['effective'])
+    allowed = _validate_merged_bars(pd.concat([raw, post]), pd.concat([actual, post]), post.date.iloc[0])
+    assert {r['date'] for r in allowed} == set(ref['unverified_rows'])
+    payload = raw.set_index('date')[['open','high','low','raw_close','adj_close','volume']]
+    payload = payload.rename(columns={'raw_close':'Close','adj_close':'Adj Close'})
+    extracted = bf._extract_yfinance_frame(payload, symbol)
+    pd.testing.assert_frame_equal(extracted, actual.reindex(columns=extracted.columns))
+    # A newly revised known row cannot be certified by date alone.
+    revised = actual.loc[~unsupported].iloc[:1].copy()
+    revised['volume'] += 1
+    assert daily_bar_issues(revised).ne('').all()
