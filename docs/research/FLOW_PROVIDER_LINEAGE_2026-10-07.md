@@ -91,3 +91,6 @@ Audit root in production: `runtime_state/audit/flow_provider_lineage_20261007/`.
 
 The original source fields, prices, labels, models and issued ledgers remain
 unchanged. No H10/+5%/70%/2–3 firing-date replacement passed from this work.
+
+Follow-up execution is now in progress; see
+[metadata repair status and evidence](FLOW_METADATA_REPAIR_2026-10-07.md).
