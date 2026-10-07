@@ -303,6 +303,9 @@ def main():
                 if (sha(args.audit / "replacement_plan.json") != prior["replacement_plan_sha256"]
                         or sha(Path(prior["backup"])) != prior["before_sha256"]):
                     raise ValueError("prior_apply_evidence_changed")
+                if prior.get("state") == "prepared":
+                    prior.update(state="committed", recovery_verified_at=datetime.now(timezone.utc).isoformat())
+                    write_json(journal, prior)
                 print(json.dumps({"status": "already_applied", "changed_rows": 0,
                                   "deferred_conflict_rows": prior["deferred_conflict_rows"]}))
                 return 2 if prior["deferred_conflict_rows"] else 0

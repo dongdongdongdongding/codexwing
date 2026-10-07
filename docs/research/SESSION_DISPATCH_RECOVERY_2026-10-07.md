@@ -62,3 +62,20 @@ interrupted 실패를 기록하고 자동 중복 실행하지 않는다. 변경 
 않는다. `intraday_terminal_receipt.json`을 보존하고 `swing-main-mbgp`에서
 잔여 오류를 추적한다. 실행 분리는 데이터 정확성, 세션별 갱신 완료,
 신규 레인 H10/TP5/70% 및 주 2–3회 요건을 충족했다는 주장이 아니다.
+
+## 11:03 KST 이후 운영 확인
+
+기존 프로세스 54858/75970은 종료됐다. 마지막 실제 보고서
+`primary_market_session_ops_nasdaq_regular_close_20261007_015901.json`에서
+전체 배치는 rc9이며 실패 단계는 정규 분봉, 확장 분봉, 미국 일봉 패널 세 개다.
+종료를 성공으로 바꿔 기록하지 않았다.
+
+11:03:06 KST에 기존 `com.codex.swing.dailyops`가 not running이고 PID가 없는
+것을 확인한 뒤 bootout 했다. plist는 백업하고 LaunchAgents 바깥의
+`~/Library/Application Support/CodexSwing/retired_launchagents/`로 이동했다.
+새 폴러와 세 작업자 등록은 모두 유지된다. 증거는
+`runtime_state/audit/session_dispatch_20261007/legacy_retirement/receipt.json`이다.
+
+새 전체 배치 작업자 97991 → 97996은 10:59:37 KST에 시작해 두 대기 요청을
+한 번의 배치로 처리하고 있다. 기존 배치와 겹치지 않았으며 재시작하지
+않았다. 이 새 배치의 최종 결과는 아직 미확인이다.

@@ -5,6 +5,11 @@ The updater now reports failed requests, empty responses, coverage gaps and
 historical conflicts separately. This fixes false success reporting, **not** the
 entire flow dataset. Historical conflicts remain under `swing-main-px2s`.
 
+Later on October 7, these 10,679 conflicts were verified and corrected in two
+stages; the fresh 600-symbol read then reported zero conflicts. See
+[source normalization](FLOW_SOURCE_NORMALIZATION_2026-10-07.md). The initial
+observations and source hashes below remain the historical recovery record.
+
 ## Actual source diagnosis
 
 At 10:49 KST, the same Samsung 005930 endpoint returned:

@@ -145,11 +145,13 @@ def test_crash_after_rename_is_recognized_without_second_write(tmp_path, monkeyp
     monkeypatch.setattr(norm, "write_json", crash)
     with pytest.raises(OSError):
         norm.apply_plan(loaded, plan, tmp_path, audit)
+    monkeypatch.setattr(norm, "write_json", original)
     monkeypatch.setattr(norm, "legacy_writers", lambda: [])
     monkeypatch.setattr("sys.argv", ["normalize", "--apply", "--source-receipt", str(receipt),
                                     "--audit", str(audit), "--cache", str(tmp_path)])
     assert norm.main() == 0
     assert pd.read_parquet(tmp_path / "flow.parquet").iloc[0].frgn_ntby == -3
+    assert json.loads((audit / "apply_receipt.json").read_text())["state"] == "committed"
 
 
 def test_duplicate_dates_and_failed_envelopes_rejected():
@@ -188,3 +190,13 @@ def test_nominal_investor_total_must_equal_unadjusted_traded_volume():
     raw = dict(row(), etc_shnu_vol="90", etc_seln_vol="90")
     with pytest.raises(ValueError, match="investor_total_not_nominal_traded_volume"):
         norm.verify_row(raw, raw, raw, raw)
+
+
+def test_existing_v1_capture_policy_survives_tool_upgrade(tmp_path):
+    old, receipt, audit = fixture(tmp_path)
+    p = audit / "capture_plan.json"
+    prior = json.loads(p.read_text())
+    prior["policy"] = norm.POLICIES[0]
+    write_json(p, prior)
+    _, plan = norm.build_plan(receipt, audit, tmp_path)
+    assert plan["policy"] == norm.POLICIES[0] and plan["verified_conflict_rows"] == 1
