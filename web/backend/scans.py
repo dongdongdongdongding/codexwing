@@ -1,7 +1,8 @@
 """스캔 피드 (게시물 모델) — 스캔=기본단위(run_id), 자동+수동+디스코드 누적.
-게시물 목록 → 티커카드 → 정밀분석 패널. 정밀분석은 로컬 JSON 캐시(누적), Gemini lazy-once.
+게시물 목록 → 티커카드 → 정밀분석 패널. 정밀분석은 로컬 JSON 캐시(누적), 클릭시 1회 생성.
 
-결정(07 기획): 1b(Gemini 클릭시1회+캐시) 2a(로컬JSON) 3a(스캔피드) 4b(피처=스냅샷·차트=라이브).
+결정(07 기획): 1b(클릭시1회+캐시) 2a(로컬JSON) 3a(스캔피드) 4b(피처=스냅샷·차트=라이브).
+Gemini 판정은 2026-10-29 폐기 — 판정은 규칙기반, 과거 캐시의 Gemini 판정은 읽을 때 규칙기반으로 교체.
 소스: runtime_state/scan_sources.json (manual/discord 기록) + 기본 auto. run_id 접두사로 레인 추론.
 """
 from __future__ import annotations
@@ -226,7 +227,7 @@ def scan_detail(scan_id):
 
 
 def scan_analyze(scan_id, ticker):
-    """정밀분석 패널 — (scan_id,ticker) 로컬캐시. 미스시 생성(스캔컨텍스트 + services.analyze + Gemini) 후 저장."""
+    """정밀분석 패널 — (scan_id,ticker) 로컬캐시. 미스시 생성(스캔컨텍스트 + services.analyze) 후 저장."""
     code = str(ticker).split(".")[0]
     code = code.zfill(6) if code.isdigit() else code
     d = os.path.join(CACHE_DIR, scan_id.replace("/", "_"))
@@ -234,10 +235,13 @@ def scan_analyze(scan_id, ticker):
     fp = os.path.join(d, f"{code}.json")
     if os.path.exists(fp):
         try:
-            return json.load(open(fp))
+            cached = json.load(open(fp))
+            if (cached.get("verdict") or {}).get("source") != "rule":
+                cached["verdict"] = S._rule_verdict(cached)  # 캐시된 스냅샷 사실로 재판정(Gemini 문구 노출 금지)
+            return cached
         except Exception:
             pass
-    base = S.analyze(code)            # 현 데이터 기반 7블록(모델멤버십·차트가능·수급·이벤트·레짐·Gemini)
+    base = S.analyze(code)            # 현 데이터 기반 7블록(모델멤버십·차트가능·수급·이벤트·레짐·규칙판정)
     base["scan_id"] = scan_id
     base["cached_at"] = time.strftime("%Y-%m-%d %H:%M")
     try:

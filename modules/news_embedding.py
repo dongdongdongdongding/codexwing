@@ -1,57 +1,14 @@
 """
 News Embedding Module (V6 Phase 1)
 ===================================
-Generates semantic embedding vectors from news headlines using Gemini API.
-These embeddings capture market sentiment, themes, and catalysts that
-pure price-based features cannot detect.
+Gemini embedding calls were retired on 2026-10-29 (operator directive).
+The public API is kept so legacy training (train_global_brain.py) still runs,
+but every embedding is now a zero vector and no external API is called.
 
 Usage:
     from modules.news_embedding import get_news_embedding, get_batch_news_embeddings
 """
-import os
-import time
 import numpy as np
-import feedparser
-from urllib.parse import quote
-
-# Cache to avoid redundant API calls
-_embedding_cache = {}
-_genai = None
-_genai_configured = False
-
-
-def _ensure_genai():
-    """Lazy-load and configure genai"""
-    global _genai, _genai_configured
-    if _genai_configured:
-        return _genai is not None
-    
-    try:
-        import google.generativeai as genai
-        from dotenv import load_dotenv
-        load_dotenv()
-        api_key = os.getenv('GEMINI_API_KEY', '')
-        if not api_key:
-            _genai_configured = True
-            return False
-        genai.configure(api_key=api_key)
-        _genai = genai
-        _genai_configured = True
-        return True
-    except Exception:
-        _genai_configured = True
-        return False
-
-
-def _fetch_headlines(query, max_items=10):
-    """Fetch headlines from Google RSS"""
-    try:
-        url = f"https://news.google.com/rss/search?q={quote(query)}+stock&hl=en&gl=US"
-        feed = feedparser.parse(url)
-        headlines = [e.title for e in feed.entries[:max_items] if hasattr(e, 'title')]
-        return headlines
-    except Exception:
-        return []
 
 
 def get_news_embedding(ticker, stock_name=None, dim=3072):
@@ -64,43 +21,9 @@ def get_news_embedding(ticker, stock_name=None, dim=3072):
         dim: Expected embedding dimension
     
     Returns:
-        numpy array of shape (dim,) or zeros if unavailable
+        numpy zeros of shape (dim,) — the embedding source is retired
     """
-    # Check cache
-    cache_key = f"{ticker}_{time.strftime('%Y%m%d_%H')}"
-    if cache_key in _embedding_cache:
-        return _embedding_cache[cache_key]
-    
-    zeros = np.zeros(dim)
-    
-    if not _ensure_genai():
-        return zeros
-    
-    # Build search query
-    clean_ticker = ticker.replace('.KS', '').replace('.KQ', '')
-    query = stock_name if stock_name else clean_ticker
-    
-    headlines = _fetch_headlines(query, max_items=8)
-    if not headlines:
-        _embedding_cache[cache_key] = zeros
-        return zeros
-    
-    # Combine headlines into single text
-    combined = " | ".join(headlines[:8])
-    if len(combined) > 2000:
-        combined = combined[:2000]
-    
-    try:
-        result = _genai.embed_content(
-            model='models/gemini-embedding-001',
-            content=combined
-        )
-        embedding = np.array(result['embedding'], dtype=np.float32)
-        _embedding_cache[cache_key] = embedding
-        return embedding
-    except Exception as e:
-        _embedding_cache[cache_key] = zeros
-        return zeros
+    return np.zeros(dim)
 
 
 def get_batch_news_embeddings(tickers, pca_model=None, n_components=10):
@@ -116,13 +39,9 @@ def get_batch_news_embeddings(tickers, pca_model=None, n_components=10):
         dict of {ticker: numpy array of shape (n_components,)}
     """
     embeddings = {}
-    for i, ticker in enumerate(tickers):
+    for ticker in tickers:
         emb = get_news_embedding(ticker)
         embeddings[ticker] = emb
-        
-        # Rate limiting (Gemini free tier: 60 RPM)
-        if (i + 1) % 10 == 0:
-            time.sleep(1)
     
     if pca_model is not None:
         for ticker, emb in embeddings.items():
@@ -165,7 +84,6 @@ def create_news_features_for_training(tickers, n_components=10):
         
         if (i + 1) % 15 == 0:
             print(f"    [{i+1}/{len(tickers)}] embeddings fetched...")
-            time.sleep(1)  # Rate limiting
     
     print(f"  ✅ {len(valid_embeddings)}/{len(tickers)} valid embeddings")
     

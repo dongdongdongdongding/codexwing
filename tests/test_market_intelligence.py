@@ -1,6 +1,5 @@
 import unittest
 from unittest.mock import patch
-import urllib.error
 import os
 
 from modules import market_intelligence
@@ -10,8 +9,8 @@ class MarketIntelligenceTests(unittest.TestCase):
     def setUp(self):
         market_intelligence._intelligence_cache.clear()
 
-    def test_no_api_key_uses_rule_based_source_with_headlines(self):
-        with patch.dict(os.environ, {"GEMINI_API_KEY": ""}, clear=False), patch(
+    def test_uses_rule_based_source_with_headlines(self):
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-key"}, clear=False), patch(
             "modules.market_intelligence._fetch_global_headlines", return_value=["h1", "h2"]
         ), patch(
             "modules.market_intelligence._build_rule_fallback_result",
@@ -20,27 +19,9 @@ class MarketIntelligenceTests(unittest.TestCase):
                 "headline_count": len(headlines),
                 "key_insight": insight_suffix,
             },
-        ):
-            result = market_intelligence.get_market_intelligence("KOSPI", api_key="", force_refresh=True)
+        ), patch("urllib.request.urlopen", side_effect=AssertionError("no LLM call expected")):
+            result = market_intelligence.get_market_intelligence("KOSPI", force_refresh=True)
         self.assertEqual(result["source"], "rss_rule_based")
-        self.assertEqual(result["headline_count"], 2)
-        self.assertEqual(result["_display_origin"], "live")
-
-    def test_http_429_falls_back_to_rate_limited_source(self):
-        http_429 = urllib.error.HTTPError("https://example.com", 429, "Too Many Requests", hdrs=None, fp=None)
-        with patch("modules.market_intelligence._fetch_global_headlines", return_value=["h1", "h2"]), patch(
-            "urllib.request.urlopen",
-            side_effect=http_429,
-        ), patch(
-            "modules.market_intelligence._build_rule_fallback_result",
-            side_effect=lambda headlines, market, source, insight_suffix: {
-                "source": source,
-                "headline_count": len(headlines),
-                "key_insight": insight_suffix,
-            },
-        ):
-            result = market_intelligence.get_market_intelligence("KOSPI", api_key="test-key", force_refresh=True)
-        self.assertEqual(result["source"], "rss_rule_based_rate_limited")
         self.assertEqual(result["headline_count"], 2)
         self.assertEqual(result["_display_origin"], "live")
 
@@ -50,7 +31,7 @@ class MarketIntelligenceTests(unittest.TestCase):
             "timestamp": __import__("time").time(),
             "ttl": 1800,
         }
-        result = market_intelligence.get_market_intelligence("KOSPI", api_key="ignored", force_refresh=False)
+        result = market_intelligence.get_market_intelligence("KOSPI", force_refresh=False)
         self.assertEqual(result["source"], "gemini")
         self.assertEqual(result["_display_origin"], "cache")
 

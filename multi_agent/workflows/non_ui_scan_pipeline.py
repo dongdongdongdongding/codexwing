@@ -170,8 +170,7 @@ def _resolve_market_intel(
     try:
         from modules import market_intelligence as mi
 
-        gemini_key = os.environ.get("GEMINI_API_KEY", "")
-        intel = mi.get_market_intelligence(market, gemini_key, force_refresh=True)
+        intel = mi.get_market_intelligence(market, force_refresh=True)
         return intel, mi.calculate_news_adjustment
     except Exception:
         return {"source": "fallback", "key_insight": "market_intelligence import failed"}, _fallback_news_adjustment

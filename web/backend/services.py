@@ -18,7 +18,7 @@ EXP = os.path.join(REPO, "runtime_state/reports/experimental")
 
 try:
     from dotenv import load_dotenv
-    load_dotenv(os.path.join(REPO, ".env.local"))  # GEMINI/KIS/Supabase 키 로드
+    load_dotenv(os.path.join(REPO, ".env.local"))  # KIS/Supabase 키 로드
 except Exception:
     pass
 
@@ -1202,55 +1202,28 @@ def _regime_label(idx_mom, idx_vol):
     return "중립"
 
 
-def _gemini_verdict(facts):
-    """Gemini 종합판정(정직). 키/네트워크 실패시 규칙기반 폴백."""
-    key = os.environ.get("GEMINI_API_KEY", "")
+def _rule_verdict(facts):
+    """규칙기반 종합판정(정직). Gemini 판정은 2026-10-29 운영자 지시로 폐기 — LLM 호출 없음."""
     f = facts
     feat = f.get("features", {})
     fl = f.get("flow", {})
-    base = (
-        f"종목 {f['name']}({f['code']}, {f['market']}). "
-        f"모델: A {'픽('+f['model']['in_a']['lane_label']+', 확률'+str(f['model']['in_a'].get('prob'))+'%)' if f['model'].get('in_a') else '미픽'}, "
-        f"B {'픽' if f['model'].get('in_b') else '미픽'}. "
-        f"레짐 {f.get('regime')}. RSI {feat.get('rsi14')}, 20일수익 {feat.get('ret_20d')}%, "
-        f"20일고가이격 {feat.get('dist_hi20')}%. 수급(5일) 외국인 {fl.get('frgn_5d')} 기관 {fl.get('orgn_5d')}. "
-        f"공시 {len(f.get('events',{}).get('dart',[]))}건."
-    )
-    if not key:
-        # 규칙 폴백
-        pos, neg = [], []
-        if f["model"].get("in_a") or f["model"].get("in_b"):
-            pos.append("오늘 모델 픽")
-        else:
-            neg.append("오늘 모델 미픽")
-        if (fl.get("frgn_5d") or 0) > 0:
-            pos.append("외국인 순매수")
-        if (feat.get("ret_20d") or 0) > 15:
-            neg.append("단기 과열(20일 급등)")
-        if f.get("regime") == "하락":
-            neg.append("하락 레짐")
-        v = f"강점: {', '.join(pos) or '특이 없음'}. 리스크: {', '.join(neg) or '특이 없음'}. (규칙기반 요약 — Gemini 키 없음)"
-        return {"text": v, "source": "rule"}
-    try:
-        import urllib.request
-        prompt = (
-            "너는 신중한 한국 주식 퀀트 애널리스트다. 아래 사실만 근거로 이 종목의 현재 시점 매수 타당성을 "
-            "한국어 2~3문장으로 정직하게 평가하라. 강점과 리스크를 균형있게, 과장 금지, 확정적 단정 금지, "
-            "투자권유가 아님을 전제. 사실:\n" + base
-        )
-        body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode()
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}"
-        req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=12) as r:
-            d = json.loads(r.read())
-        text = d["candidates"][0]["content"]["parts"][0]["text"].strip()
-        return {"text": text, "source": "gemini-2.5-flash"}
-    except Exception as e:
-        return {"text": f"종합 판정 생성 실패(폴백): {base}", "source": f"fallback({type(e).__name__})"}
+    pos, neg = [], []
+    if f["model"].get("in_a") or f["model"].get("in_b"):
+        pos.append("오늘 모델 픽")
+    else:
+        neg.append("오늘 모델 미픽")
+    if (fl.get("frgn_5d") or 0) > 0:
+        pos.append("외국인 순매수")
+    if (feat.get("ret_20d") or 0) > 15:
+        neg.append("단기 과열(20일 급등)")
+    if f.get("regime") == "하락":
+        neg.append("하락 레짐")
+    v = f"강점: {', '.join(pos) or '특이 없음'}. 리스크: {', '.join(neg) or '특이 없음'}. (규칙기반 요약)"
+    return {"text": v, "source": "rule"}
 
 
 def analyze(code):
-    """③ 정밀분석 — 우리 데이터로 한 종목 종합(yfinance 폐기). A~E 사실 + G Gemini 판정."""
+    """③ 정밀분석 — 우리 데이터로 한 종목 종합(yfinance 폐기). A~E 사실 + G 규칙기반 판정."""
     import pandas as pd
     code6 = str(code).split(".")[0].zfill(6)
     name = resolve_name(code6, default=code6)
@@ -1311,7 +1284,7 @@ def analyze(code):
     out = {"code": code6, "name": name, "market": market,
            "model": {"in_a": in_a, "in_b": in_b}, "features": feat, "flow": flow,
            "events": events, "regime": regime}
-    out["verdict"] = _gemini_verdict(out)
+    out["verdict"] = _rule_verdict(out)
     return out
 
 

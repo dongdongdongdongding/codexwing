@@ -11,8 +11,6 @@ pandas-ta-classic
 plotly
 python-dotenv
 supabase
-google-genai
-google-generativeai
 schedule
 
 googlesearch-python

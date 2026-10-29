@@ -1,14 +1,15 @@
 """
 Market Intelligence Module (Phase 40)
 =====================================
-Uses Gemini LLM to analyze real-time global news headlines and extract:
+Rule-based analysis of real-time global news headlines (RSS/DART) to extract:
 - Geopolitical themes (e.g., war, trade war, pandemic)
 - Affected sectors (defense, energy, tech, etc.)
 - Market sentiment bias
 - Specific beneficiary/victim stock categories
 
-Called ONCE per scan session (not per stock) to avoid API overuse.
+Called ONCE per scan session (not per stock).
 The result is then used to adjust Alpha Scores for individual stocks.
+Gemini LLM analysis was retired on 2026-10-29 (operator directive); no LLM API is called.
 """
 
 import os
@@ -17,12 +18,9 @@ import time
 import calendar
 import re
 import html
-import socket
 import feedparser
 import urllib.parse
 import urllib.request
-import urllib.error
-from concurrent.futures import TimeoutError as FuturesTimeoutError
 from dotenv import load_dotenv
 from urllib.parse import quote
 from datetime import datetime, timezone
@@ -40,7 +38,6 @@ load_dotenv(".env.local")
 
 # Cache to avoid repeated API calls within same session
 _intelligence_cache = {}
-_invalid_key_warned = set()
 
 POSITIVE_HINTS = [
     "상승", "강세", "랠리", "반등", "호조", "수혜", "개선", "확대", "rebound", "rally",
@@ -119,21 +116,6 @@ DART_NEGATIVE_EVENT_RULES = [
     ("담보제공", -2, "LIQUIDITY", "담보제공"),
     ("최대주주변경", -2, "POLITICS", "최대주주변경"),
 ]
-
-
-def _coerce_json_text(raw_text: str) -> str:
-    text = str(raw_text or "").strip()
-    if not text:
-        return ""
-    if "```json" in text:
-        text = text.split("```json", 1)[1].split("```", 1)[0].strip()
-    elif "```" in text:
-        text = text.split("```", 1)[1].split("```", 1)[0].strip()
-    start = text.find("{")
-    end = text.rfind("}")
-    if start >= 0 and end > start:
-        return text[start:end + 1].strip()
-    return text
 
 
 def _build_rule_fallback_result(headlines, market, source: str, insight_suffix: str):
@@ -462,67 +444,6 @@ def _extract_disclosure_signals(headlines):
         "company_event_bias": company_event_bias,
         "driver_bump": driver_bump,
     }
-
-MARKET_INTEL_PROMPT = """당신은 시장별 뉴스를 근거로 요약하는 글로벌 매크로 전략가입니다.
-선택 시장은 {market} 입니다. 아래 헤드라인에서 실제로 보이는 정보만 사용해 JSON으로 정리하세요.
-반복적이고 추상적인 문구를 피하고, 선택 시장에 직접 연결되는 설명을 우선하세요.
-시장 전체를 움직이는 흐름을 우선하고, 개별 종목 공시(DART)는 보조 근거로만 사용하세요.
-핵심 인사이트는 반드시 "현재 버티는 축"과 "경계할 리스크"를 함께 담은 한 문장으로 작성하세요.
-수혜/피해 섹터와 키워드는 비워두지 말고, 명확한 섹터명이 없으면 거시/스타일 축(예: 반도체, 바이오, 성장주, 경기민감주, 방어주, 수급/유동성, 환율 민감주)으로라도 채우세요.
-
-[뉴스 헤드라인]
-{headlines}
-
-반드시 아래 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
-{{
-  "market_sentiment": "BULLISH" | "BEARISH" | "MIXED" | "NEUTRAL",
-  "sentiment_score": -100 ~ 100 (정수, 시장 전체 분위기),
-  "themes": [
-    {{
-      "theme": "테마명 (예: 중동 지정학 리스크, AI 혁명, 금리 인하 기대 등)",
-      "impact": "POSITIVE" | "NEGATIVE" | "MIXED",
-      "description": "한 줄 설명"
-    }}
-  ],
-  "macro_drivers": [
-    {{
-      "category": "GEOPOLITICS" | "OIL" | "FX" | "RATES" | "POLITICS" | "ECONOMY" | "LIQUIDITY" | "EARNINGS" | "REGULATION",
-      "signal": "BULLISH" | "BEARISH" | "MIXED" | "NEUTRAL",
-      "market_impact": -5 ~ 5 (정수, 선택 시장에 미치는 영향),
-      "description": "왜 이 요인이 현재 시장에 중요했는지 한 줄",
-      "evidence": "근거가 된 짧은 헤드라인 또는 요약"
-    }}
-  ],
-  "driver_scores": {{
-    "GEOPOLITICS": -5 ~ 5,
-    "OIL": -5 ~ 5,
-    "FX": -5 ~ 5,
-    "RATES": -5 ~ 5,
-    "POLITICS": -5 ~ 5,
-    "ECONOMY": -5 ~ 5,
-    "LIQUIDITY": -5 ~ 5,
-    "EARNINGS": -5 ~ 5,
-    "REGULATION": -5 ~ 5
-  }},
-  "cross_asset_signals": [
-    {{
-      "asset": "USD/KRW" | "DXY" | "US10Y" | "WTI" | "BRENT" | "GOLD" | "BTC" | "VIX",
-      "direction": "UP" | "DOWN" | "MIXED" | "NEUTRAL",
-      "market_impact": -5 ~ 5,
-      "description": "선택 시장에 주는 영향 한 줄"
-    }}
-  ],
-  "risk_flags": ["현재 시장을 누르는 핵심 리스크 태그 1~6개"],
-  "news_quality": "HIGH" | "MEDIUM" | "LOW",
-  "beneficiary_sectors": ["방산", "에너지", "반도체" 등 수혜 섹터 목록],
-  "victim_sectors": ["여행", "항공", "소비재" 등 피해 섹터 목록],
-  "beneficiary_keywords": ["방위산업", "미사일", "원유", "LNG" 등 수혜 종목 키워드],
-  "victim_keywords": ["여행사", "항공사", "면세점" 등 피해 종목 키워드],
-  "key_insight": "현재 시장에서 가장 중요한 투자 인사이트 한 줄",
-  "evidence_headlines": ["가장 중요한 근거 헤드라인 2~4개"]
-}}
-"""
-
 
 def _headline_queries(market: str):
     key = str(market or "KOSPI").upper()
@@ -1049,10 +970,10 @@ def _fetch_global_headlines(market="KR", max_items=15):
     return headlines
 
 
-def get_market_intelligence(market="KOSPI", api_key=None, force_refresh=False):
+def get_market_intelligence(market="KOSPI", force_refresh=False):
     """
-    Main entry point: Fetch news → Send to Gemini → Return structured intelligence.
-    Results are cached for 30 minutes to avoid excessive API calls.
+    Main entry point: Fetch news → Rule-based analysis → Return structured intelligence.
+    Results are cached (5 min while the market is open, 30 min otherwise).
     
     Returns:
         dict with keys: market_sentiment, sentiment_score, themes, 
@@ -1107,9 +1028,6 @@ def get_market_intelligence(market="KOSPI", api_key=None, force_refresh=False):
     }
     default_result['timestamp'] = datetime.now().strftime("%Y-%m-%d %H:%M")
     
-    if not api_key:
-        api_key = os.environ.get('GEMINI_API_KEY', '')
-    
     # 1. Fetch Headlines
     headlines = _fetch_global_headlines(market)
     
@@ -1119,255 +1037,17 @@ def get_market_intelligence(market="KOSPI", api_key=None, force_refresh=False):
         default_result = enrich_kr_intel_with_us_overnight_theme_lead(default_result, market=market)
         return _attach_display_origin(default_result, "live")
 
-    disclosure_meta = _extract_disclosure_signals(headlines)
-    if disclosure_meta.get("disclosure_events"):
-        default_result["disclosure_events"] = disclosure_meta["disclosure_events"]
-        default_result["company_event_bias"] = disclosure_meta["company_event_bias"]
-        for category, bump in disclosure_meta.get("driver_bump", {}).items():
-            default_result["driver_scores"][category] = int(max(-5, min(5, default_result["driver_scores"].get(category, 0) + bump)))
-
-    if not api_key:
-        print("⚠️ Market Intelligence: No Gemini API Key, using RSS rule-based mode")
-        result = _build_rule_fallback_result(
-            headlines,
-            market,
-            source="rss_rule_based",
-            insight_suffix="Gemini key unavailable, fallback mode active",
-        )
-        cache['data'] = result
-        cache['timestamp'] = now
-        _intelligence_cache[market_key] = cache
-        return _attach_display_origin(result, "live")
-    
-    # 2. Ask Gemini for Analysis
-    try:
-        prompt_headlines = headlines[:12]
-        headlines_text = "\n".join(prompt_headlines)
-        prompt = MARKET_INTEL_PROMPT.format(market=market, headlines=headlines_text)
-
-        timeout_sec = 25.0
-        try:
-            timeout_sec = float(os.environ.get("AG_MARKET_INTEL_GEMINI_TIMEOUT_SEC", "25"))
-        except Exception:
-            timeout_sec = 25.0
-
-        primary_model = (
-            os.environ.get("AG_MARKET_INTEL_GEMINI_PRIMARY_MODEL")
-            or os.environ.get("GEMINI_MARKET_INTEL_MODEL")
-            or "gemini-2.5-flash"
-        )
-        secondary_model = os.environ.get("AG_MARKET_INTEL_GEMINI_SECONDARY_MODEL", "gemini-2.5-pro")
-        model_candidates = []
-        for model_name in [primary_model, secondary_model]:
-            model_name = str(model_name or "").strip()
-            if model_name and model_name not in model_candidates:
-                model_candidates.append(model_name)
-
-        response_payload = None
-        last_exc = None
-        used_model = None
-
-        def _run_gemini_http(model_name: str):
-            endpoint = (
-                "https://generativelanguage.googleapis.com/v1beta/models/"
-                f"{urllib.parse.quote(model_name, safe='')}:generateContent?key={quote(api_key)}"
-            )
-            payload = {
-                "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {
-                    "temperature": 0.2,
-                    "responseMimeType": "application/json",
-                },
-            }
-            req = urllib.request.Request(
-                endpoint,
-                data=json.dumps(payload).encode("utf-8"),
-                headers={"Content-Type": "application/json"},
-                method="POST",
-            )
-            with urllib.request.urlopen(req, timeout=max(1.0, timeout_sec)) as resp:
-                return json.loads(resp.read().decode("utf-8"))
-
-        for model_name in model_candidates:
-            try:
-                response_payload = _run_gemini_http(model_name)
-                used_model = model_name
-                break
-            except urllib.error.HTTPError as e:
-                last_exc = e
-                if e.code == 429:
-                    break
-                if e.code in {400, 404}:
-                    continue
-                if e.code in {401, 403}:
-                    break
-                continue
-            except TimeoutError as e:
-                last_exc = FuturesTimeoutError(str(e))
-                break
-            except socket.timeout as e:
-                last_exc = FuturesTimeoutError(str(e))
-                break
-            except urllib.error.URLError as e:
-                if isinstance(getattr(e, "reason", None), (TimeoutError, socket.timeout)):
-                    last_exc = FuturesTimeoutError(str(e))
-                    break
-                last_exc = e
-                continue
-            except Exception as e:
-                if "timed out" in str(e).lower():
-                    last_exc = FuturesTimeoutError(str(e))
-                    break
-                last_exc = e
-                continue
-
-        if response_payload is None:
-            raise last_exc or FuturesTimeoutError()
-
-        raw_text = ""
-        try:
-            candidates = response_payload.get("candidates", []) if isinstance(response_payload, dict) else []
-            for candidate in candidates:
-                if not isinstance(candidate, dict):
-                    continue
-                content = candidate.get("content", {})
-                if not isinstance(content, dict):
-                    continue
-                parts = content.get("parts", [])
-                if not isinstance(parts, list):
-                    continue
-                text_parts = [str(part.get("text") or "").strip() for part in parts if isinstance(part, dict) and str(part.get("text") or "").strip()]
-                if text_parts:
-                    raw_text = "\n".join(text_parts).strip()
-                    break
-        except Exception:
-            raw_text = ""
-        if not raw_text:
-            raise json.JSONDecodeError("Empty Gemini response text", doc="", pos=0)
-        
-        json_text = _coerce_json_text(raw_text)
-        result = json.loads(json_text)
-        result['raw_headlines'] = headlines
-        result['headline_count'] = len(headlines)
-        disclosure_meta = _extract_disclosure_signals(headlines)
-        evidence = result.get('evidence_headlines')
-        if not isinstance(evidence, list):
-            result['evidence_headlines'] = headlines[:4]
-        result['source'] = 'gemini'
-        result['model'] = used_model
-        result['timestamp'] = datetime.now().strftime("%Y-%m-%d %H:%M")
-        
-        # Validate required keys
-        for key in ['market_sentiment', 'sentiment_score', 'beneficiary_sectors',
-                     'victim_sectors', 'beneficiary_keywords', 'victim_keywords', 'evidence_headlines',
-                     'macro_drivers', 'driver_scores', 'cross_asset_signals', 'risk_flags', 'news_quality',
-                     'disclosure_events', 'company_event_bias']:
-            if key not in result:
-                result[key] = default_result.get(key, [])
-        
-        # Ensure sentiment_score is int
-        result['sentiment_score'] = int(result.get('sentiment_score', 0))
-        if not isinstance(result.get('driver_scores'), dict):
-            result['driver_scores'] = default_result['driver_scores']
-        else:
-            normalized = {}
-            for category in MACRO_CATEGORIES:
-                try:
-                    normalized[category] = int(float(result['driver_scores'].get(category, 0)))
-                except Exception:
-                    normalized[category] = 0
-            for category, bump in disclosure_meta.get("driver_bump", {}).items():
-                normalized[category] = int(max(-5, min(5, normalized.get(category, 0) + bump)))
-            result['driver_scores'] = normalized
-        if not isinstance(result.get("company_event_bias"), dict):
-            result["company_event_bias"] = {}
-        for corp_name, score in disclosure_meta.get("company_event_bias", {}).items():
-            existing = result["company_event_bias"].get(corp_name, 0)
-            try:
-                result["company_event_bias"][corp_name] = int(max(-8, min(8, int(existing) + int(score))))
-            except Exception:
-                result["company_event_bias"][corp_name] = int(score)
-        if not isinstance(result.get("disclosure_events"), list):
-            result["disclosure_events"] = []
-        result["disclosure_events"] = (disclosure_meta.get("disclosure_events", []) + result["disclosure_events"])[:8]
-        result.update(build_theme_intelligence(market, result))
-        result = _finalize_intelligence_payload(result, headlines, market)
-        result = enrich_kr_intel_with_us_overnight_theme_lead(result, market=market)
-
-        # Cache it
-        cache['data'] = result
-        cache['timestamp'] = now
-        _intelligence_cache[market_key] = cache
-        
-        print(f"🧠 Market Intelligence[{used_model}]: {result.get('market_sentiment')} (Score: {result.get('sentiment_score')})")
-        print(f"   Key Insight: {result.get('key_insight', 'N/A')}")
-        
-        return _attach_display_origin(result, "live")
-    except FuturesTimeoutError:
-        print("⚠️ Market Intelligence: Gemini request timed out, falling back to RSS rule-based mode")
-        result = _build_rule_fallback_result(
-            headlines,
-            market,
-            source="rss_rule_based_timeout",
-            insight_suffix="Gemini timeout, fallback mode active",
-        )
-        cache['data'] = result
-        cache['timestamp'] = now
-        _intelligence_cache[market_key] = cache
-        return _attach_display_origin(result, "live")
-    except json.JSONDecodeError as e:
-        print(f"⚠️ Market Intelligence JSON Parse Error: {e}")
-        print(f"   Raw response: {raw_text[:200]}")
-        result = _build_rule_fallback_result(
-            headlines,
-            market,
-            source="rss_rule_based_parse_fallback",
-            insight_suffix=f"JSON parse failed; fallback used for {market}",
-        )
-        cache['data'] = result
-        cache['timestamp'] = now
-        _intelligence_cache[market_key] = cache
-        return _attach_display_origin(result, "live")
-    except Exception as e:
-        err_text = str(e)
-        if isinstance(e, urllib.error.HTTPError) and getattr(e, "code", None) == 429:
-            print("⚠️ Market Intelligence: Gemini rate limit hit, falling back to headline-based rule mode")
-            result = _build_rule_fallback_result(
-                headlines,
-                market,
-                source="rss_rule_based_rate_limited",
-                insight_suffix="Gemini rate-limited; headline-based fallback active",
-            )
-            cache['data'] = result
-            cache['timestamp'] = now
-            _intelligence_cache[market_key] = cache
-            return _attach_display_origin(result, "live")
-        if "API_KEY_INVALID" in err_text or "API key not valid" in err_text:
-            warn_key = f"{market_key}:invalid_api_key"
-            if warn_key not in _invalid_key_warned:
-                print("⚠️ Market Intelligence: Gemini API key is invalid, falling back to RSS rule-based mode")
-                _invalid_key_warned.add(warn_key)
-            result = _build_rule_fallback_result(
-                headlines,
-                market,
-                source="rss_rule_based_invalid_key",
-                insight_suffix="Gemini key invalid, fallback mode active",
-            )
-            cache['data'] = result
-            cache['timestamp'] = now
-            _intelligence_cache[market_key] = cache
-            return _attach_display_origin(result, "live")
-        print(f"⚠️ Market Intelligence Error: {e}")
-        result = _build_rule_fallback_result(
-            headlines,
-            market,
-            source="rss_rule_based_error",
-            insight_suffix=f"Market intelligence error; fallback used for {market}",
-        )
-        cache['data'] = result
-        cache['timestamp'] = now
-        _intelligence_cache[market_key] = cache
-        return _attach_display_origin(result, "live")
+    # 2. Rule-based analysis (Gemini LLM analysis retired 2026-10-29)
+    result = _build_rule_fallback_result(
+        headlines,
+        market,
+        source="rss_rule_based",
+        insight_suffix="",
+    )
+    cache['data'] = result
+    cache['timestamp'] = now
+    _intelligence_cache[market_key] = cache
+    return _attach_display_origin(result, "live")
 
 
 def calculate_news_adjustment(stock_name, ticker, sector_hint, intel_data):
